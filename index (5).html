@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RMIT Instagram Challenge</title>
+  <style>
+    :root {
+      --red: #ef1236;
+      --red-dark: #a0001b;
+      --navy: #0d1985;
+      --ink: #161616;
+      --muted: #5f6472;
+      --white: #ffffff;
+      --shadow: 0 16px 38px rgba(18, 20, 37, 0.12);
+      --font-main: Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: var(--font-main);
+      background: #f3f3f6;
+      color: var(--ink);
+    }
+
+    button, input { font: inherit; }
+
+    html[lang="en"] body,
+    html[lang="vi"] body,
+    html[lang="en"] button,
+    html[lang="vi"] button,
+    html[lang="en"] input,
+    html[lang="vi"] input {
+      font-family: var(--font-main);
+    }
+
+    html[lang="vi"] h1,
+    html[lang="vi"] h2 {
+      letter-spacing: -0.045em;
+      line-height: 1.06;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100svh;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .screen {
+      display: none;
+      position: relative;
+      min-height: 100svh;
+      padding: 24px 18px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .screen.active { display: block; }
+
+    .page-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      display: block;
+      pointer-events: none;
+    }
+
+    .page-bg[src=""] { display: none; }
+
+    .layer {
+      position: relative;
+      z-index: 2;
+      min-height: calc(100svh - 48px);
+    }
+
+    h1 {
+      color: var(--navy);
+      font-size: clamp(2.15rem, 11vw, 3.4rem);
+      line-height: 1.03;
+      letter-spacing: -0.055em;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      color: var(--navy);
+      font-size: clamp(1.85rem, 10vw, 3rem);
+      line-height: 1.02;
+      letter-spacing: -0.055em;
+      margin-bottom: 10px;
+    }
+
+    .lead {
+      color: var(--navy);
+      font-size: 0.96rem;
+      line-height: 1.45;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .input-stack { display: grid; gap: 10px; margin: 16px 0 14px; }
+    .field { display: grid; gap: 6px; }
+
+    label {
+      color: var(--navy);
+      font-size: 0.82rem;
+      font-weight: 900;
+    }
+
+    input[type="text"], input[type="file"] {
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid rgba(13, 25, 133, 0.14);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 13px 14px;
+      outline: none;
+      font-size: 0.96rem;
+      box-shadow: 0 8px 20px rgba(18, 20, 37, 0.05);
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 4px rgba(239, 18, 54, 0.09);
+    }
+
+    .language-title {
+      color: var(--navy);
+      font-size: 0.9rem;
+      font-weight: 900;
+      text-align: center;
+      margin: 8px 0 9px;
+    }
+
+    .btn-row, .language-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn {
+      min-height: 46px;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-size: 0.98rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 0.16s ease;
+    }
+
+    .btn:active { transform: scale(0.98); }
+
+    .btn-primary { background: var(--red); color: #fff; box-shadow: 0 12px 24px rgba(239, 18, 54, 0.18); }
+    .btn-secondary { background: var(--navy); color: #fff; }
+    .btn-ghost { background: rgba(236, 236, 239, 0.94); color: var(--ink); }
+    .btn-full { grid-column: 1 / -1; }
+
+    .welcome-layer {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding-top: clamp(58px, 11vh, 92px);
+    }
+
+    .welcome-input-panel {
+      background: rgba(255, 255, 255, 0.76);
+      border-radius: 22px;
+      padding: 12px;
+      backdrop-filter: blur(4px);
+    }
+
+    .tutorial-layer {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding-bottom: 28px;
+    }
+
+    .quiz-layer {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding-top: 42px;
+    }
+
+    .quiz-head { display: grid; gap: 10px; margin-bottom: 14px; }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      padding: 8px 13px;
+      border-radius: 999px;
+      background: rgba(239, 18, 54, 0.1);
+      color: var(--red);
+      font-size: 0.78rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .question-count {
+      width: fit-content;
+      background: var(--navy);
+      color: #fff;
+      border-radius: 999px;
+      padding: 8px 13px;
+      font-size: 0.84rem;
+      font-weight: 900;
+    }
+
+    .progress-shell {
+      height: 10px;
+      background: rgba(231, 234, 247, 0.92);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--red), #ff6a83);
+      transition: width 0.25s ease;
+    }
+
+    .options { display: grid; gap: 12px; }
+
+    .option {
+      width: 100%;
+      border: 1px solid rgba(13, 25, 133, 0.08);
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 22px;
+      padding: 15px;
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 13px;
+      align-items: center;
+      text-align: left;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+    }
+
+    .option-letter {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: rgba(239, 18, 54, 0.1);
+      color: var(--red);
+      font-weight: 950;
+    }
+
+    .option-title { display: block; font-weight: 900; color: var(--navy); margin-bottom: 4px; font-size: 1rem; }
+    .option-desc { display: block; color: var(--muted); font-size: 0.9rem; line-height: 1.45; }
+
+    .upload-layer {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding-top: clamp(230px, 34vh, 310px);
+      padding-bottom: 18px;
+      gap: 10px;
+    }
+
+    .upload-box {
+      background: rgba(255, 255, 255, 0.70);
+      border: 1px solid rgba(13, 25, 133, 0.08);
+      border-radius: 24px;
+      padding: 12px;
+      backdrop-filter: blur(3px);
+      box-shadow: 0 10px 24px rgba(18, 20, 37, 0.08);
+    }
+
+    .photo-preview, .photo-placeholder {
+      width: 100%;
+      height: 170px;
+      border-radius: 22px;
+      margin-top: 10px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(13, 25, 133, 0.08);
+    }
+
+    .photo-preview { display: none; object-fit: cover; }
+
+    .photo-placeholder {
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+      font-weight: 800;
+      padding: 18px;
+    }
+
+    .result-layer { display: grid; gap: 16px; align-content: start; padding-top: 36px; }
+
+    .result-intro {
+      background: rgba(255, 255, 255, 0.78);
+      border-radius: 26px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(4px);
+    }
+
+    .result-intro .lead { text-align: left; margin-bottom: 0; }
+
+    .story-wrap { display: grid; place-items: center; }
+
+    .story-card {
+      width: min(320px, 100%);
+      aspect-ratio: 9 / 16;
+      position: relative;
+      overflow: hidden;
+      border-radius: 32px;
+      background: linear-gradient(160deg, #fffaf0 0%, #fff4df 52%, #ffffff 100%);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(13, 25, 133, 0.06);
+      --persona-text-color: var(--red-dark);
+      --persona-body-color: var(--navy);
+      --live-left: 13%;
+      --live-top: 55.5%;
+      --live-width: 74%;
+    }
+
+    .story-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+      z-index: 0;
+    }
+
+    .story-bg.active { display: block; }
+    .story-card.has-bg .story-default-bg { display: none; }
+
+    .story-default-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 82% 10%, rgba(239,18,54,0.28), transparent 18%),
+        radial-gradient(circle at 10% 86%, rgba(13,25,133,0.10), transparent 24%),
+        linear-gradient(160deg, #fffaf0 0%, #fff4df 52%, #ffffff 100%);
+      z-index: 0;
+    }
+
+    .story-header {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      background: linear-gradient(135deg, var(--red-dark), var(--red));
+      color: #fff;
+      padding: 18px 18px 16px;
+    }
+
+    .story-kicker {
+      font-size: 0.66rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-weight: 900;
+      margin-bottom: 8px;
+      opacity: 0.9;
+    }
+
+    .story-title { font-size: 1.45rem; font-weight: 900; line-height: 0.95; letter-spacing: -0.04em; }
+
+    .story-logo-stack { display: grid; justify-items: end; gap: 6px; }
+
+    .story-logo-slot {
+      width: 62px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+    }
+
+    .story-logo-slot img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .story-logo-slot img[src=""] { display: none; }
+
+    .story-body {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+    }
+
+    .avatar-frame {
+      width: 76%;
+      aspect-ratio: 1 / 1;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 26px;
+      padding: 8px;
+      border: 2px solid rgba(160, 0, 27, 0.18);
+      box-shadow: 0 12px 22px rgba(160, 0, 27, 0.10);
+    }
+
+    .avatar-frame img, .avatar-empty {
+      width: 100%;
+      height: 100%;
+      border-radius: 20px;
+    }
+
+    .avatar-frame img { object-fit: cover; display: none; }
+
+    .avatar-empty {
+      display: grid;
+      place-items: center;
+      text-align: center;
+      background: #f3ecdf;
+      color: #8a7762;
+      font-weight: 900;
+      font-size: 0.88rem;
+      padding: 16px;
+    }
+
+    .story-footer {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      border-top: 1px solid rgba(160, 0, 27, 0.15);
+      padding-top: 10px;
+      color: rgba(22, 22, 22, 0.62);
+      font-size: 0.62rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      z-index: 2;
+    }
+
+    .result-actions {
+      background: rgba(255, 255, 255, 0.78);
+      border-radius: 26px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(4px);
+    }
+
+    .download-help { margin-top: 12px; font-size: 0.76rem; line-height: 1.4; color: var(--muted); }
+
+    @media (min-width: 431px) {
+      .app { box-shadow: 0 20px 50px rgba(0,0,0,0.12); }
+    }
+    .question-bg { display: none; }
+    .question-bg.active { display: block; }
+    .question-bg.active[src=""] { display: none; }
+    .story-card {
+      background: transparent;
+    }
+
+    .story-card .story-default-bg,
+    .story-card .story-header {
+      display: none !important;
+    }
+
+    .story-card.has-bg {
+      background: transparent;
+    }
+
+    .story-body {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: block;
+      padding: 0;
+    }
+
+    .avatar-frame {
+      position: absolute;
+      left: 21.2%;
+      top: 23.3%;
+      width: 57%;
+      height: 30%;
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      border-radius: 18px;
+      box-shadow: none;
+      overflow: hidden;
+    }
+
+    .avatar-frame img,
+    .avatar-empty {
+      border-radius: 18px;
+    }
+
+    .avatar-empty {
+      background: rgba(255,255,255,0.68);
+      color: rgba(13,25,133,0.65);
+      font-size: 0.78rem;
+    }
+
+    .story-footer {
+      display: none;
+    }
+    .card-live-info {
+      position: absolute;
+      left: var(--name-left, 46%);
+      top: var(--name-top, 18.0%);
+      width: var(--name-width, 37%);
+      z-index: 4;
+      display: block;
+      text-align: left;
+      pointer-events: none;
+    }
+
+    .card-student-name {
+      color: #ffffff;
+      font-family: var(--font-main);
+      font-size: 0.82rem;
+      font-weight: 750;
+      line-height: 1.05;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-high-school {
+      display: none;
+    }
+
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="screen welcome-screen active" id="welcomeScreen">
+      <img class="page-bg" id="welcomeBg" src="homepage.png" alt="" />
+
+      <div class="layer welcome-layer">
+        <h1 id="welcomeTitle">Welcome High School to RMIT</h1>
+        <p class="lead" id="welcomeLead">Discover your RMIT vibe and receive a beautiful Persona Card to share on Instagram Story.</p>
+
+        <div class="welcome-input-panel">
+          <div class="input-stack">
+            <div class="field">
+              <label for="schoolInput" id="schoolInputLabel">High school name</label>
+              <input id="schoolInput" type="text" value="High School" placeholder="Enter your high school name" autocomplete="organization" />
+            </div>
+
+            <div class="field">
+              <label for="studentNameInput" id="studentNameInputLabel">Student name</label>
+              <input id="studentNameInput" type="text" placeholder="Enter your name" autocomplete="name" />
+            </div>
+          </div>
+
+          <div class="language-title" id="languageTitle">Choose English or Vietnamese</div>
+          <div class="language-row">
+            <button class="btn btn-primary" data-language="en" type="button">English</button>
+            <button class="btn btn-primary" data-language="vi" type="button">Vietnamese</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen tutorial-screen" id="tutorialScreen">
+      <img class="page-bg" id="tutorialBg" src="tutorial.png" alt="" />
+
+      <div class="layer tutorial-layer">
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="backWelcomeBtn" type="button">Back</button>
+          <button class="btn btn-primary" id="startBtn" type="button">Start quiz</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen quiz-screen" id="quizScreen">
+      <img class="page-bg question-bg" id="q1Bg" src="https://i.postimg.cc/t4X0KLP3/q1.png" alt="" />
+      <img class="page-bg question-bg" id="q2Bg" src="https://i.postimg.cc/cLsqpVY7/q2.png" alt="" />
+      <img class="page-bg question-bg" id="q3Bg" src="https://i.postimg.cc/MpWkChRb/q3.png" alt="" />
+      <img class="page-bg question-bg" id="q4Bg" src="https://i.postimg.cc/vZ3Rb3L9/q4.png" alt="" />
+      <img class="page-bg question-bg" id="q5Bg" src="https://i.postimg.cc/g2N9mNq3/q5.png" alt="" />
+
+      <div class="layer quiz-layer">
+        <div class="quiz-head">
+          <div>
+            <div class="eyebrow" id="quizEyebrow">Choose your vibe</div>
+            <h2 id="questionText">Question text</h2>
+          </div>
+          <div class="question-count" id="questionCount">1 / 5</div>
+        </div>
+
+        <div class="progress-shell"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="options" id="optionsWrap"></div>
+      </div>
+    </section>
+
+    <section class="screen upload-screen" id="uploadScreen">
+      <img class="page-bg" id="uploadBg" src="upload.png" alt="" />
+
+      <div class="layer upload-layer">
+        <div class="upload-box">
+          <input type="file" id="photoInput" accept="image/*" />
+          <div class="photo-placeholder" id="photoPlaceholder">Your uploaded photo preview will appear here</div>
+          <img class="photo-preview" id="photoPreview" alt="Uploaded preview" />
+        </div>
+
+        <div class="btn-row" style="grid-template-columns:1fr;">
+          <button class="btn btn-primary btn-full" id="showResultBtn" type="button">➜ Reveal my Persona Card</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen result-screen" id="resultScreen">
+      <img class="page-bg" id="resultBg" src="" alt="" />
+
+      <div class="layer result-layer">
+        <div class="result-intro">
+          <div class="eyebrow" id="resultEyebrow">Your Persona Card</div>
+          <h2 id="resultTitle">Your Instagram Story card is ready.</h2>
+          <p class="lead" id="resultText">Download it and share to your story. Don’t forget to tag @rmitsathanoi.</p>
+        </div>
+
+        <div class="story-wrap">
+          <article class="story-card" id="personaCard">
+            <div class="story-default-bg"></div>
+            <img class="story-bg" id="personaBgTBS" src="tbs.png" alt="" />
+            <img class="story-bg" id="personaBgSCD" src="scd.png" alt="" />
+            <img class="story-bg" id="personaBgSSET" src="sset.png" alt="" />
+
+            <div class="story-header">
+              <div>
+                <div class="story-kicker" id="storyKicker">RMIT High School Tour</div>
+                <div class="story-title" id="storyTitle">Instagram Challenge</div>
+              </div>
+              <div class="story-logo-stack">
+                <div class="story-logo-slot"><img src="" alt="RMIT logo" /></div>
+                <div class="story-logo-slot"><img src="" alt="SAT logo" /></div>
+              </div>
+            </div>
+
+            <div class="story-body">
+              <div class="avatar-frame">
+                <img id="cardAvatar" alt="Student avatar" />
+                <div class="avatar-empty" id="avatarEmpty">Upload photo to show avatar</div>
+              </div>
+              <div class="card-live-info">
+                <div class="card-student-name" id="cardStudentName">Student Name</div>
+              </div>
+            </div>
+
+            <div class="story-footer">
+              <span id="footerLeft">Ready for what's next</span>
+              <span id="footerRight">#RMITVietnam</span>
+            </div>
+          </article>
+        </div>
+
+        <div class="result-actions">
+          <div class="btn-row" style="grid-template-columns:1fr;">
+            <button class="btn btn-primary btn-full" id="downloadBtn" type="button">Download Persona Card</button>
+            <button class="btn btn-secondary btn-full" id="backToUploadBtn" type="button">Upload / change photo</button>
+            <button class="btn btn-ghost btn-full" id="restartBtn" type="button">Restart Quiz</button>
+          </div>
+          <p class="download-help" id="downloadHelp">On iPhone/iPad: tap the button, then press &amp; hold the image → Save to Photos. On Android: the image will download automatically.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const content = {
+      en: {
+        welcomeWithSchool: "Welcome {school} to RMIT",
+        welcomeLead: "Discover your RMIT vibe and receive a beautiful Persona Card to share on Instagram Story.",
+        schoolInputLabel: "High school name",
+        schoolPlaceholder: "Enter your high school name",
+        studentNameInputLabel: "Student name",
+        studentNamePlaceholder: "Enter your name",
+        languageTitle: "Choose English or Vietnamese",
+        back: "Back",
+        start: "Start quiz",
+        quizEyebrow: "Choose your vibe",
+        photoPlaceholder: "Your uploaded photo preview will appear here",
+        reveal: "➜ Reveal my Persona Card",
+        resultEyebrow: "Your Persona Card",
+        resultTitle: "Your Instagram Story card is ready.",
+        resultText: "Download it and share to your story. Don’t forget to tag @rmitsathanoi.",
+        downloadBtn: "Download Persona Card",
+        backToUploadBtn: "Upload / change photo",
+        restartBtn: "Restart Quiz",
+        storyKicker: "RMIT High School Tour",
+        storyTitle: "Instagram Challenge",
+        avatarEmpty: "Upload photo to show avatar",
+        footerLeft: "Ready for what's next",
+        footerRight: "#RMITVietnam",
+        questions: [
+          {
+            q: "In a group project, you are usually the one who…",
+            options: {
+              A: { title: "Plans the strategy and organizes the team", desc: "" },
+              B: { title: "Comes up with creative ideas and content", desc: "" },
+              C: { title: "Solves technical or logical problems", desc: "" }
+            }
+          },
+          {
+            q: "What sounds most exciting to you?",
+            options: {
+              A: { title: "Building a business or leading a project", desc: "" },
+              B: { title: "Creating content, visuals, or storytelling", desc: "" },
+              C: { title: "Developing technology or innovative solutions", desc: "" }
+            }
+          },
+          {
+            q: "If you could join any workshop, you would choose…",
+            options: {
+              A: { title: "Entrepreneurship, leadership, or business strategy", desc: "" },
+              B: { title: "Content creation, branding, or design", desc: "" },
+              C: { title: "Innovation, future technology, or problem-solving", desc: "" }
+            }
+          },
+          {
+            q: "When solving a problem, you usually…",
+            options: {
+              A: { title: "Think strategically and focus on results", desc: "" },
+              B: { title: "Think creatively and express ideas visually", desc: "" },
+              C: { title: "Analyze the system and find the root cause", desc: "" }
+            }
+          },
+          {
+            q: "You want people to remember you as someone who is…",
+            options: {
+              A: { title: "Confident, ambitious, and a strong leader", desc: "" },
+              B: { title: "Creative, expressive, and original", desc: "" },
+              C: { title: "Smart, innovative, and solution-oriented", desc: "" }
+            }
+          }
+        ],
+        results: {
+          A: { persona: "The Impact Strategist", school: "The Business School", tagline: "You turn ideas into direction, direction into action, and action into real-world impact." },
+          B: { persona: "The Creative Connector", school: "School of Communication & Design", tagline: "You bring stories, visuals, and people together — making every idea feel alive and memorable." },
+          C: { persona: "The Future Builder", school: "School of Science, Engineering & Technology", tagline: "You are curious about how things work, and even more excited about how they could work better." }
+        }
+      },
+      vi: {
+        welcomeWithSchool: "Chào mừng {school} đến với RMIT",
+        welcomeLead: "Khám phá vibe của bạn tại RMIT và nhận một Persona Card thật đẹp để chia sẻ lên Instagram Story.",
+        schoolInputLabel: "Tên trường THPT",
+        schoolPlaceholder: "Nhập tên trường THPT",
+        studentNameInputLabel: "Tên học sinh",
+        studentNamePlaceholder: "Nhập tên của bạn",
+        languageTitle: "Chọn Tiếng Anh hoặc Tiếng Việt",
+        back: "Quay lại",
+        start: "Bắt đầu quiz",
+        quizEyebrow: "Chọn vibe của bạn",
+        photoPlaceholder: "Ảnh preview của bạn sẽ hiện ở đây",
+        reveal: "➜ Xem Persona Card",
+        resultEyebrow: "Persona Card của bạn",
+        resultTitle: "Instagram Story của bạn đã sẵn sàng.",
+        resultText: "Tải về và chia sẻ lên story. Đừng quên tag @rmitsathanoi nhé.",
+        downloadBtn: "Tải về Persona Card",
+        backToUploadBtn: "Tải lên ảnh mới/ đổi ảnh",
+        restartBtn: "Làm lại Quiz",
+        storyKicker: "RMIT High School Tour",
+        storyTitle: "Instagram Challenge",
+        avatarEmpty: "Tải ảnh để hiện avatar",
+        footerLeft: "Ready for what's next",
+        footerRight: "#RMITVietnam",
+        questions: [
+          {
+            q: "Trong một dự án nhóm, bạn thường là người…",
+            options: {
+              A: { title: "Lên chiến lược và kế hoạch cho nhóm", desc: "" },
+              B: { title: "Nghĩ ý tưởng và sáng tạo nội dung", desc: "" },
+              C: { title: "Giải quyết các vấn đề kỹ thuật hoặc logic", desc: "" }
+            }
+          },
+          {
+            q: "Điều nào khiến bạn hứng thú nhất?",
+            options: {
+              A: { title: "Xây dựng một công ty hoặc dẫn dắt dự án", desc: "" },
+              B: { title: "Sáng tạo nội dung, hình ảnh hoặc câu chuyện", desc: "" },
+              C: { title: "Phát triển công nghệ hoặc giải pháp mới", desc: "" }
+            }
+          },
+          {
+            q: "Nếu được tham gia một workshop bất kỳ, bạn sẽ chọn…",
+            options: {
+              A: { title: "Khởi nghiệp, lãnh đạo hoặc chiến lược kinh doanh ", desc: "" },
+              B: { title: "Sáng tạo nội dung, xây dựng thương hiệu hoặc thiết kế", desc: "" },
+              C: { title: "Đổi mới sáng tạo, công nghệ tiên tiến hoặc phương án giải quyết vấn đề", desc: "" }
+            }
+          },
+          {
+            q: "Khi giải quyết một vấn đề, bạn thường…",
+            options: {
+              A: { title: "Nghĩ theo hướng chiến lược và kết quả", desc: "" },
+              B: { title: "Nghĩ sáng tạo và thể hiện ý tưởng độc đáo", desc: "" },
+              C: { title: "Phân tích logic và tìm nguyên nhân gốc rễ", desc: "" }
+            }
+          },
+          {
+            q: "Bạn muốn mọi người nhớ đến mình là người…",
+            options: {
+              A: { title: "Tự tin, tham vọng và có tố chất lãnh đạo", desc: "" },
+              B: { title: "Sáng tạo, có gu và giàu cá tính", desc: "" },
+              C: { title: "Thông minh, đổi mới và giỏi giải quyết vấn đề", desc: "" }
+            }
+          }
+        ],
+        results: {
+          A: { persona: "The Impact Strategist", school: "The Business School", tagline: "Bạn biến ý tưởng thành định hướng, biến định hướng thành hành động và tạo ra tác động thực tế." },
+          B: { persona: "The Creative Connector", school: "School of Communication & Design", tagline: "Bạn kết nối câu chuyện, hình ảnh và con người — khiến mỗi ý tưởng trở nên sống động và đáng nhớ." },
+          C: { persona: "The Future Builder", school: "School of Science, Engineering & Technology", tagline: "Bạn tò mò về cách mọi thứ vận hành, và còn hào hứng hơn với cách làm chúng tốt hơn." }
+        }
+      }
+    };
+
+    const PERSONA_CARD_CONFIG = {
+      A: { bgId: "personaBgTBS", textColor: "#a0001b", bodyColor: "#0d1985", canvasBgSrc: "" },
+      B: { bgId: "personaBgSCD", textColor: "#0d1985", bodyColor: "#a0001b", canvasBgSrc: "" },
+      C: { bgId: "personaBgSSET", textColor: "#123c69", bodyColor: "#0d1985", canvasBgSrc: "" }
+    };
+
+    const PERSONA_LIVE_TEXT_LAYOUT = {
+      nameLeftPercent: 44,
+      nameTopPercent: 18.0,
+      nameWidthPercent: 37,
+      nameFontRem: 0.62,
+      nameLineHeight: 0.95
+    };
+
+    let currentLanguage = "en";
+    let currentQuestion = 0;
+    let answers = [];
+    let uploadedImageData = "";
+
+    const screens = {
+      welcome: document.getElementById("welcomeScreen"),
+      tutorial: document.getElementById("tutorialScreen"),
+      quiz: document.getElementById("quizScreen"),
+      upload: document.getElementById("uploadScreen"),
+      result: document.getElementById("resultScreen")
+    };
+
+    const schoolInput = document.getElementById("schoolInput");
+    const studentNameInput = document.getElementById("studentNameInput");
+    const startBtn = document.getElementById("startBtn");
+    const backWelcomeBtn = document.getElementById("backWelcomeBtn");
+    const photoInput = document.getElementById("photoInput");
+    const showResultBtn = document.getElementById("showResultBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const backToUploadBtn = document.getElementById("backToUploadBtn");
+    const restartBtn = document.getElementById("restartBtn");
+
+    function t() { return content[currentLanguage]; }
+    function getSchoolName() { return schoolInput.value.trim() || "High School"; }
+    function getStudentName() { return studentNameInput.value.trim(); }
+
+    function canvasFont(weight, size) {
+      return `${weight} ${size}px Helvetica, Arial, sans-serif`;
+    }
+
+    function safeFilename(text) {
+      return text.toLowerCase().trim().replace(/[^a-z0-9\u00C0-\u1EF9]+/gi, "-").replace(/^-+|-+$/g, "") || "student";
+    }
+
+    function setText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+
+    function showScreen(name) {
+      Object.values(screens).forEach(screen => screen.classList.remove("active"));
+      screens[name].classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function updateQuestionBackground() {
+      document.querySelectorAll(".question-bg").forEach(bg => bg.classList.remove("active"));
+      const bg = document.getElementById(`q${currentQuestion + 1}Bg`);
+      if (bg) bg.classList.add("active");
+    }
+
+    function updateWelcomeTitle() {
+      setText("welcomeTitle", t().welcomeWithSchool.replace("{school}", getSchoolName()));
+    }
+
+    function setLanguage(lang) {
+      currentLanguage = lang;
+      document.documentElement.lang = lang;
+document.getElementById("tutorialBg").src = lang === "vi" ? "tutorial-vi.png" : "tutorial.png";
+document.getElementById("uploadBg").src = lang === "vi" ? "upload-vi.png" : "upload.png";
+
+      setText("welcomeLead", t().welcomeLead);
+      setText("schoolInputLabel", t().schoolInputLabel);
+      schoolInput.placeholder = t().schoolPlaceholder;
+      setText("studentNameInputLabel", t().studentNameInputLabel);
+      studentNameInput.placeholder = t().studentNamePlaceholder;
+      setText("languageTitle", t().languageTitle);
+      setText("backWelcomeBtn", t().back);
+      setText("startBtn", t().start);
+      setText("quizEyebrow", t().quizEyebrow);
+      setText("photoPlaceholder", t().photoPlaceholder);
+      setText("showResultBtn", t().reveal);
+      setText("resultEyebrow", t().resultEyebrow);
+      setText("resultTitle", t().resultTitle);
+      setText("resultText", t().resultText);
+      setText("downloadBtn", t().downloadBtn);
+      setText("backToUploadBtn", t().backToUploadBtn);
+      setText("restartBtn", t().restartBtn);
+      setText("storyKicker", t().storyKicker);
+      setText("storyTitle", t().storyTitle);
+      setText("avatarEmpty", t().avatarEmpty);
+      setText("footerLeft", t().footerLeft);
+      setText("footerRight", t().footerRight);
+
+      updateWelcomeTitle();
+      if (screens.quiz.classList.contains("active")) renderQuestion();
+      if (screens.result.classList.contains("active")) renderResult();
+
+      showScreen("tutorial");
+    }
+
+    function renderQuestion() {
+      const question = t().questions[currentQuestion];
+      const optionsWrap = document.getElementById("optionsWrap");
+      const progress = (currentQuestion / t().questions.length) * 100;
+
+      updateQuestionBackground();
+      setText("questionText", question.q);
+      setText("questionCount", `${currentQuestion + 1} / ${t().questions.length}`);
+      document.getElementById("progressFill").style.width = `${progress}%`;
+      optionsWrap.innerHTML = "";
+
+      ["A", "B", "C"].forEach(letter => {
+        const option = question.options[letter];
+        const button = document.createElement("button");
+        button.className = "option";
+        button.type = "button";
+        button.innerHTML = `
+          <span class="option-letter">${letter}</span>
+          <span>
+            <span class="option-title">${option.title}</span>
+            ${option.desc ? `<span class="option-desc">${option.desc}</span>` : ""}
+          </span>`;
+        button.addEventListener("click", () => chooseAnswer(letter));
+        optionsWrap.appendChild(button);
+      });
+    }
+
+    function chooseAnswer(letter) {
+      answers.push(letter);
+      currentQuestion += 1;
+
+      if (currentQuestion < t().questions.length) {
+        renderQuestion();
+      } else {
+        document.getElementById("progressFill").style.width = "100%";
+        showScreen("upload");
+      }
+    }
+
+    function getResultLetter() {
+      const count = { A: 0, B: 0, C: 0 };
+      answers.forEach(x => count[x]++);
+      const max = Math.max(count.A, count.B, count.C);
+      const tied = Object.keys(count).filter(key => count[key] === max);
+
+      if (tied.length === 1) return tied[0];
+
+      for (let i = answers.length - 1; i >= 0; i--) {
+        if (tied.includes(answers[i])) return answers[i];
+      }
+
+      return "A";
+    }
+
+    function renderResult() {
+      const resultLetter = getResultLetter();
+      const config = PERSONA_CARD_CONFIG[resultLetter];
+      const personaCard = document.getElementById("personaCard");
+      setText("cardStudentName", getStudentName() || "Student Name");
+      setText("footerLeft", t().footerLeft);
+
+      personaCard.style.setProperty("--persona-text-color", config.textColor || "#0d1985");
+      personaCard.style.setProperty("--name-left", `${PERSONA_LIVE_TEXT_LAYOUT.nameLeftPercent}%`);
+      personaCard.style.setProperty("--name-top", `${PERSONA_LIVE_TEXT_LAYOUT.nameTopPercent}%`);
+      personaCard.style.setProperty("--name-width", `${PERSONA_LIVE_TEXT_LAYOUT.nameWidthPercent}%`);
+      personaCard.style.setProperty("--persona-body-color", config.bodyColor || "#0d1985");
+
+      document.querySelectorAll(".story-bg").forEach(bg => bg.classList.remove("active"));
+      const activeBg = document.getElementById(config.bgId);
+
+      if (activeBg && activeBg.getAttribute("src")) {
+        activeBg.classList.add("active");
+        personaCard.classList.add("has-bg");
+      } else {
+        personaCard.classList.remove("has-bg");
+      }
+
+      const cardAvatar = document.getElementById("cardAvatar");
+      const avatarEmpty = document.getElementById("avatarEmpty");
+
+      if (uploadedImageData) {
+        cardAvatar.src = uploadedImageData;
+        cardAvatar.style.display = "block";
+        avatarEmpty.style.display = "none";
+      } else {
+        cardAvatar.style.display = "none";
+        avatarEmpty.style.display = "grid";
+      }
+    }
+
+    function resetQuiz() {
+      currentQuestion = 0;
+      answers = [];
+      uploadedImageData = "";
+      document.getElementById("progressFill").style.width = "0%";
+
+      photoInput.value = "";
+      const preview = document.getElementById("photoPreview");
+      preview.src = "";
+      preview.style.display = "none";
+      document.getElementById("photoPlaceholder").style.display = "grid";
+
+      document.getElementById("cardAvatar").src = "";
+      document.getElementById("cardAvatar").style.display = "none";
+      document.getElementById("avatarEmpty").style.display = "grid";
+
+      updateWelcomeTitle();
+      showScreen("welcome");
+    }
+
+    function roundedRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 4) {
+      const words = text.split(" ");
+      let line = "";
+      const lines = [];
+
+      words.forEach(word => {
+        const testLine = line + word + " ";
+        if (ctx.measureText(testLine).width > maxWidth && line !== "") {
+          lines.push(line.trim());
+          line = word + " ";
+        } else {
+          line = testLine;
+        }
+      });
+
+      lines.push(line.trim());
+      lines.slice(0, maxLines).forEach((lineText, index) => {
+        ctx.fillText(lineText, x, y + index * lineHeight);
+      });
+    }
+
+    function getImageSource(imgElement, fallbackSrc = "") {
+      if (imgElement && imgElement.currentSrc) return imgElement.currentSrc;
+      if (imgElement && imgElement.src) return imgElement.src;
+      return fallbackSrc;
+    }
+
+    function getCurrentAvatarSource() {
+      const cardAvatar = document.getElementById("cardAvatar");
+      if (uploadedImageData) return uploadedImageData;
+      if (cardAvatar && cardAvatar.currentSrc) return cardAvatar.currentSrc;
+      if (cardAvatar && cardAvatar.src) return cardAvatar.src;
+      return "";
+    }
+
+    function loadImage(src) {
+      return new Promise(resolve => {
+        if (!src) return resolve(null);
+
+        const image = new Image();
+        image.onload = async () => {
+          try {
+            if (image.decode) await image.decode();
+          } catch (error) {}
+          resolve(image);
+        };
+        image.onerror = () => resolve(null);
+        image.src = src;
+      });
+    }
+
+    function blobToDataURL(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function loadCanvasSafeImage(src) {
+      if (!src) return null;
+      if (src.startsWith("data:")) {
+        return loadImage(src);
+      }
+      if (src.startsWith("blob:")) {
+        return loadImage(src);
+      }
+
+      try {
+        const response = await fetch(src, { cache: "force-cache" });
+        if (!response.ok) {
+          throw new Error(`Could not fetch image: ${src}`);
+        }
+
+        const blob = await response.blob();
+        const dataUrl = await blobToDataURL(blob);
+        return loadImage(dataUrl);
+      } catch (error) {
+        console.warn("Canvas-safe image loading failed. Falling back to direct image loading:", src, error);
+        return loadImage(src);
+      }
+    }
+
+    function drawPersonaLiveText(ctx, W, H, config) {
+      const layout = PERSONA_LIVE_TEXT_LAYOUT;
+      const x = W * (layout.nameLeftPercent / 100);
+      const y = H * (layout.nameTopPercent / 100);
+      const maxWidth = W * (layout.nameWidthPercent / 100);
+      const scale = H / 568.8889;
+      const rem = 16 * scale;
+      const fontSize = layout.nameFontRem * rem;
+
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = canvasFont(950, Math.round(fontSize));
+      wrapText(ctx, getStudentName() || "Student Name", x, y, maxWidth, fontSize * layout.nameLineHeight, 1);
+      ctx.textBaseline = "alphabetic";
+    }
+
+    function drawCoverImage(ctx, image, x, y, w, h) {
+      const imageRatio = image.width / image.height;
+      const boxRatio = w / h;
+      let drawW = w, drawH = h, drawX = x, drawY = y;
+
+      if (imageRatio > boxRatio) {
+        drawH = h;
+        drawW = h * imageRatio;
+        drawX = x - (drawW - w) / 2;
+      } else {
+        drawW = w;
+        drawH = w / imageRatio;
+        drawY = y - (drawH - h) / 2;
+      }
+
+      ctx.drawImage(image, drawX, drawY, drawW, drawH);
+    }
+
+    photoInput.addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const objectUrl = URL.createObjectURL(file);
+      const image = new Image();
+
+      image.onload = () => {
+        const maxSize = 1400;
+        const scale = Math.min(maxSize / image.width, maxSize / image.height, 1);
+
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(image.width * scale);
+        canvas.height = Math.round(image.height * scale);
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+        uploadedImageData = canvas.toDataURL("image/jpeg", 0.86);
+
+        const preview = document.getElementById("photoPreview");
+        preview.src = uploadedImageData;
+        preview.style.display = "block";
+        document.getElementById("photoPlaceholder").style.display = "none";
+
+        URL.revokeObjectURL(objectUrl);
+      };
+
+      image.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        alert("Sorry, this image could not be loaded. Please try another JPG or PNG photo.");
+      };
+
+      image.src = objectUrl;
+    });
+
+    async function downloadPersonaCard() {
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
+      const resultLetter = getResultLetter();
+      const config = PERSONA_CARD_CONFIG[resultLetter];
+
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = 1080;
+      canvas.height = 1920;
+
+      const W = canvas.width;
+      const H = canvas.height;
+
+      const gradient = ctx.createLinearGradient(0, 0, W, H);
+      gradient.addColorStop(0, "#fffaf0");
+      gradient.addColorStop(0.55, "#fff3de");
+      gradient.addColorStop(1, "#ffffff");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, W, H);
+
+      const bgElement = document.getElementById(config.bgId);
+      const selectedBgSrc = bgElement && bgElement.getAttribute("src")
+        ? getImageSource(bgElement, bgElement.getAttribute("src"))
+        : config.canvasBgSrc;
+
+      const bgImage = await loadCanvasSafeImage(selectedBgSrc);
+
+      if (bgImage) {
+        drawCoverImage(ctx, bgImage, 0, 0, W, H);
+      } else {
+        alert("Persona card background could not be loaded. If your images are in the same folder as index.html, use paths like tbs.png, scd.png, and sset.png, and make sure those files are uploaded with the HTML.");
+      }
+      const avatarX = 229;
+      const avatarY = 448;
+      const avatarW = 616;
+      const avatarH = 565;
+
+      const avatarSrc = getCurrentAvatarSource();
+      const avatar = await loadCanvasSafeImage(avatarSrc);
+
+      if (avatar) {
+        ctx.save();
+        roundedRect(ctx, avatarX, avatarY, avatarW, avatarH, 44);
+        ctx.clip();
+        drawCoverImage(ctx, avatar, avatarX, avatarY, avatarW, avatarH);
+        ctx.restore();
+      }
+      drawPersonaLiveText(ctx, W, H, config);
+
+      const studentPart = getStudentName() ? safeFilename(getStudentName()) + "-" : "";
+      const fileName = `${studentPart}rmit-persona-card-instagram-story.png`;
+
+      const isIOS = /iP(ad|hone|od)/.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+      if (isIOS) {
+        try {
+          const dataUrl = canvas.toDataURL("image/png");
+          const win = window.open("", "_blank");
+          if (win) {
+            win.document.write(
+              `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Persona Card</title></head>` +
+              `<body style="margin:0;background:#000;display:flex;justify-content:center;align-items:center;min-height:100vh">` +
+              `<img src="${dataUrl}" style="max-width:100%;max-height:100vh" />`+
+              `<p style="position:fixed;bottom:16px;left:0;right:0;text-align:center;color:#fff;font-family:sans-serif;font-size:14px">Press and hold the image → Save to Photos</p>` +
+              `</body></html>`
+            );
+            win.document.close();
+          } else {
+            alert("Pop-up was blocked. Please allow pop-ups for this site and try again.");
+          }
+        } catch (error) {
+          alert("Could not open the image. Make sure the page is not blocked by your browser.");
+          console.error(error);
+        }
+      } else {
+        try {
+          canvas.toBlob(blob => {
+            if (!blob) {
+              alert("Download failed. Make sure the page is opened from your hosting link and that the persona background image is in the same folder as index.html.");
+              return;
+            }
+
+            const objectUrl = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = objectUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+          }, "image/png");
+        } catch (error) {
+          alert("Download failed because the canvas was blocked by the browser. Make sure the page is opened from your hosting link, not directly as a local file, and that tbs.png/scd.png/sset.png are uploaded in the same folder as index.html.");
+          console.error(error);
+        }
+      }
+    }
+
+    document.querySelectorAll("[data-language]").forEach(button => {
+      button.addEventListener("click", () => setLanguage(button.dataset.language));
+    });
+
+    schoolInput.addEventListener("input", () => {
+      updateWelcomeTitle();
+      if (screens.result.classList.contains("active")) renderResult();
+    });
+
+    studentNameInput.addEventListener("input", () => {
+      if (screens.result.classList.contains("active")) renderResult();
+    });
+
+    backWelcomeBtn.addEventListener("click", () => showScreen("welcome"));
+
+    startBtn.addEventListener("click", () => {
+      currentQuestion = 0;
+      answers = [];
+      renderQuestion();
+      showScreen("quiz");
+    });
+
+    showResultBtn.addEventListener("click", () => {
+      renderResult();
+      showScreen("result");
+    });
+
+    backToUploadBtn.addEventListener("click", () => showScreen("upload"));
+    restartBtn.addEventListener("click", resetQuiz);
+    downloadBtn.addEventListener("click", downloadPersonaCard);
+
+    updateWelcomeTitle();
+  </script>
+</body>
+</html>
