@@ -514,7 +514,7 @@
     .card-live-info {
       position: absolute;
       left: var(--name-left, 46%);
-      top: var(--name-top, 16.4%);
+      top: var(--name-top, 19.8%);
       width: var(--name-width, 37%);
       z-index: 4;
       display: block;
@@ -542,7 +542,7 @@
 <body>
   <main class="app">
     <section class="screen welcome-screen active" id="welcomeScreen">
-      <img class="page-bg" id="welcomeBg" src="homepage.png" alt="Welcome page background" />
+      <img class="page-bg" id="welcomeBg" src="homepage.png" alt="" />
 
       <div class="layer welcome-layer">
         <h1 id="welcomeTitle">Welcome High School to RMIT</h1>
@@ -571,7 +571,7 @@
     </section>
 
     <section class="screen tutorial-screen" id="tutorialScreen">
-      <img class="page-bg" id="tutorialBg" src="tutorial.png" alt="Tutorial page background" />
+      <img class="page-bg" id="tutorialBg" src="tutorial.png" alt="" />
 
       <div class="layer tutorial-layer">
         <div class="btn-row">
@@ -582,11 +582,11 @@
     </section>
 
     <section class="screen quiz-screen" id="quizScreen">
-      <img class="page-bg question-bg" id="q1Bg" src="https://i.postimg.cc/t4X0KLP3/q1.png" alt="Question 1 background" />
-      <img class="page-bg question-bg" id="q2Bg" src="https://i.postimg.cc/cLsqpVY7/q2.png" alt="Question 2 background" />
-      <img class="page-bg question-bg" id="q3Bg" src="https://i.postimg.cc/MpWkChRb/q3.png" alt="Question 3 background" />
-      <img class="page-bg question-bg" id="q4Bg" src="https://i.postimg.cc/vZ3Rb3L9/q4.png" alt="Question 4 background" />
-      <img class="page-bg question-bg" id="q5Bg" src="https://i.postimg.cc/g2N9mNq3/q5.png" alt="Question 5 background" />
+      <img class="page-bg question-bg" id="q1Bg" src="https://i.postimg.cc/t4X0KLP3/q1.png" alt="" />
+      <img class="page-bg question-bg" id="q2Bg" src="https://i.postimg.cc/cLsqpVY7/q2.png" alt="" />
+      <img class="page-bg question-bg" id="q3Bg" src="https://i.postimg.cc/MpWkChRb/q3.png" alt="" />
+      <img class="page-bg question-bg" id="q4Bg" src="https://i.postimg.cc/vZ3Rb3L9/q4.png" alt="" />
+      <img class="page-bg question-bg" id="q5Bg" src="https://i.postimg.cc/g2N9mNq3/q5.png" alt="" />
 
       <div class="layer quiz-layer">
         <div class="quiz-head">
@@ -603,7 +603,7 @@
     </section>
 
     <section class="screen upload-screen" id="uploadScreen">
-      <img class="page-bg" id="uploadBg" src="upload.png" alt="Upload page background" />
+      <img class="page-bg" id="uploadBg" src="upload.png" alt="" />
 
       <div class="layer upload-layer">
         <div class="upload-box">
@@ -619,7 +619,7 @@
     </section>
 
     <section class="screen result-screen" id="resultScreen">
-      <img class="page-bg" id="resultBg" src="" alt="Result page background" />
+      <img class="page-bg" id="resultBg" src="" alt="" />
 
       <div class="layer result-layer">
         <div class="result-intro">
@@ -631,9 +631,9 @@
         <div class="story-wrap">
           <article class="story-card" id="personaCard">
             <div class="story-default-bg"></div>
-            <img class="story-bg" id="personaBgTBS" src="tbs.png" alt="The Business School card background" />
-            <img class="story-bg" id="personaBgSCD" src="scd.png" alt="School of Communication & Design card background" />
-            <img class="story-bg" id="personaBgSSET" src="sset.png" alt="School of Science, Engineering & Technology card background" />
+            <img class="story-bg" id="personaBgTBS" src="tbs.png" alt="" />
+            <img class="story-bg" id="personaBgSCD" src="scd.png" alt="" />
+            <img class="story-bg" id="personaBgSSET" src="sset.png" alt="" />
 
             <div class="story-header">
               <div>
@@ -669,7 +669,7 @@
             <button class="btn btn-secondary btn-full" id="backToUploadBtn" type="button">Upload / change photo</button>
             <button class="btn btn-ghost btn-full" id="restartBtn" type="button">Restart Quiz</button>
           </div>
-          <p class="download-help">For reliable download, host all logos and background images in the same project folder as this HTML file.</p>
+          <p class="download-help" id="downloadHelp">On iPhone/iPad: tap the button, then press &amp; hold the image → Save to Photos. On Android: the image will download automatically.</p>
         </div>
       </div>
     </section>
@@ -831,7 +831,7 @@
 
     const PERSONA_LIVE_TEXT_LAYOUT = {
       nameLeftPercent: 44,
-      nameTopPercent: 17.4,
+      nameTopPercent: 19.8,
       nameWidthPercent: 37,
       nameFontRem: 0.62,
       nameLineHeight: 0.95
@@ -1263,26 +1263,51 @@ document.getElementById("uploadBg").src = lang === "vi" ? "upload-vi.png" : "upl
       const studentPart = getStudentName() ? safeFilename(getStudentName()) + "-" : "";
       const fileName = `${studentPart}rmit-persona-card-instagram-story.png`;
 
-      try {
-        canvas.toBlob(blob => {
-          if (!blob) {
-            alert("Download failed. Make sure the page is opened from your hosting link and that the persona background image is in the same folder as index.html.");
-            return;
+      const isIOS = /iP(ad|hone|od)/.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+      if (isIOS) {
+        try {
+          const dataUrl = canvas.toDataURL("image/png");
+          const win = window.open("", "_blank");
+          if (win) {
+            win.document.write(
+              `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Persona Card</title></head>` +
+              `<body style="margin:0;background:#000;display:flex;justify-content:center;align-items:center;min-height:100vh">` +
+              `<img src="${dataUrl}" style="max-width:100%;max-height:100vh" />`+
+              `<p style="position:fixed;bottom:16px;left:0;right:0;text-align:center;color:#fff;font-family:sans-serif;font-size:14px">Press and hold the image → Save to Photos</p>` +
+              `</body></html>`
+            );
+            win.document.close();
+          } else {
+            alert("Pop-up was blocked. Please allow pop-ups for this site and try again.");
           }
+        } catch (error) {
+          alert("Could not open the image. Make sure the page is not blocked by your browser.");
+          console.error(error);
+        }
+      } else {
+        try {
+          canvas.toBlob(blob => {
+            if (!blob) {
+              alert("Download failed. Make sure the page is opened from your hosting link and that the persona background image is in the same folder as index.html.");
+              return;
+            }
 
-          const objectUrl = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = objectUrl;
-          link.download = fileName;
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
+            const objectUrl = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = objectUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
 
-          setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
-        }, "image/png");
-      } catch (error) {
-        alert("Download failed because the canvas was blocked by the browser. Make sure the page is opened from your hosting link, not directly as a local file, and that tbs.png/scd.png/sset.png are uploaded in the same folder as index.html.");
-        console.error(error);
+            setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+          }, "image/png");
+        } catch (error) {
+          alert("Download failed because the canvas was blocked by the browser. Make sure the page is opened from your hosting link, not directly as a local file, and that tbs.png/scd.png/sset.png are uploaded in the same folder as index.html.");
+          console.error(error);
+        }
       }
     }
 
