@@ -462,10 +462,10 @@
 
     .avatar-frame {
       position: absolute;
-      left: calc(var(--avatar-left, 21%) + 4px);
-      top: calc(var(--avatar-top, 23%) + 4px);
-      width: calc(var(--avatar-width, 58%) - 8px);
-      height: calc(var(--avatar-height, 31%) - 8px);
+      left: calc(var(--avatar-left, 21%) + 3px);
+      top: calc(var(--avatar-top, 23%) + 3px);
+      width: calc(var(--avatar-width, 58%) - 6px);
+      height: calc(var(--avatar-height, 31%) - 6px);
       margin: 0;
       padding: 0;
       background: transparent;
@@ -1533,8 +1533,8 @@
       }
 
       const layout = config.layout;
-      // 14px at 1080 canvas ≈ 4px visible inset on a 320px preview card
-      const AVATAR_INSET = 14;
+      // 11px at 1080 canvas ≈ 3px visible inset on a 320px preview card
+      const AVATAR_INSET = 11;
       const avatarX = W * (layout.avatarLeftPct / 100) + AVATAR_INSET;
       const avatarY = H * (layout.avatarTopPct / 100) + AVATAR_INSET;
       const avatarW = W * (layout.avatarWidthPct / 100) - AVATAR_INSET * 2;
