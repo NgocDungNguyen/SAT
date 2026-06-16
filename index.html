@@ -673,12 +673,10 @@
     .btn-share-ig {
       background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 52%, #fcb045 100%);
       color: #fff;
-      font-size: 0.82rem;
     }
     .btn-share-fb {
       background: #1877f2;
       color: #fff;
-      font-size: 0.82rem;
     }
     .btn-share-ig:hover, .btn-share-fb:hover { opacity: 0.88; transform: translateY(-1px); }
 
@@ -714,6 +712,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      margin-bottom: 20px;
     }
     .campaign-tags-label {
       font-size: 0.7rem;
@@ -921,11 +920,17 @@
     .student-counter-num { color: var(--red); }
 
     /* ── Course Match Cards ──────────────────────────────────────────── */
-    .course-cards-wrap { margin-bottom: 14px; }
+    .course-cards-wrap {
+      margin-top: 20px;
+      background: rgba(13, 25, 133, 0.04);
+      border: 1.5px solid rgba(13, 25, 133, 0.11);
+      border-radius: 18px;
+      padding: 14px 14px 10px;
+    }
     .course-cards-eyebrow {
       display: block; font-size: 0.7rem; font-weight: 900;
       color: var(--navy); text-transform: uppercase;
-      letter-spacing: 0.08em; margin-bottom: 8px;
+      letter-spacing: 0.08em; margin-bottom: 10px;
     }
     .course-cards-list { display: grid; gap: 8px; }
     .course-card {
@@ -1045,7 +1050,6 @@
         <div class="result-intro">
           <div class="eyebrow" id="resultEyebrow">Your Persona Card</div>
           <h2 id="resultTitle">Your Instagram Story card is ready.</h2>
-          <p class="lead" id="resultText">Download it and share to your story. Don’t forget to tag @rmitsathanoi.</p>
         </div>
 
         <div class="story-wrap">
@@ -1094,7 +1098,7 @@
             <button class="btn btn-primary btn-full" id="downloadBtn" type="button">Download Persona Card</button>
             <div class="story-share-row">
               <button class="btn btn-full btn-share-ig" id="igStoryBtn" type="button">📸 Share to IG Story</button>
-              <button class="btn btn-full btn-share-fb" id="fbStoryBtn" type="button">📘 FB Story</button>
+              <button class="btn btn-full btn-share-fb" id="fbStoryBtn" type="button">📘 Share to FB Story</button>
             </div>
             <button class="btn btn-secondary btn-full" id="backToUploadBtn" type="button">Upload / change photo</button>
             <button class="btn btn-ghost btn-full" id="restartBtn" type="button">Restart Quiz</button>
@@ -1137,10 +1141,9 @@
         reveal: "➜ Reveal my Persona Card",
         resultEyebrow: "Your Persona Card",
         resultTitle: "Your Instagram Story card is ready.",
-        resultText: "Download it and share to your story. Don’t forget to tag @rmitsathanoi.",
         downloadBtn: "Download Persona Card",
         igStoryBtn: "📸 Share to IG Story",
-        fbStoryBtn: "📘 FB Story",
+        fbStoryBtn: "📘 Share to FB Story",
         backToUploadBtn: "Upload / change photo",
         restartBtn: "Restart Quiz",
         campaignTagsLabel: "Story caption",
@@ -1214,10 +1217,9 @@
         reveal: "➜ Xem Persona Card",
         resultEyebrow: "Persona Card của bạn",
         resultTitle: "Instagram Story của bạn đã sẵn sàng.",
-        resultText: "Tải về và chia sẻ lên story. Đừng quên tag @rmitsathanoi nhé.",
         downloadBtn: "Tải về Persona Card",
         igStoryBtn: "📸 Chia sẻ lên IG Story",
-        fbStoryBtn: "📘 FB Story",
+        fbStoryBtn: "📘 Chia sẻ lên FB Story",
         backToUploadBtn: "Tải lên / đổi ảnh",
         restartBtn: "Làm lại Quiz",
         campaignTagsLabel: "Caption cho Story",
@@ -1391,7 +1393,6 @@
       setText("showResultBtn", t().reveal);
       setText("resultEyebrow", t().resultEyebrow);
       setText("resultTitle", t().resultTitle);
-      setText("resultText", t().resultText);
       setText("downloadBtn",       t().downloadBtn);
       setText("igStoryBtn",        t().igStoryBtn);
       setText("fbStoryBtn",        t().fbStoryBtn);
@@ -2242,6 +2243,10 @@
       document.querySelector(".card-live-info").style.visibility = "hidden";
       showScreen("result");
 
+      // Card shows plain white during the 6s slot.mp3 buildup — no background image yet
+      document.querySelectorAll(".story-bg").forEach(bg => bg.classList.remove("active"));
+      document.getElementById("personaCard").classList.remove("has-bg");
+
       // t = 0s — play slot.mp3 the instant the result screen appears
       playSlotSound();
 
@@ -2255,8 +2260,9 @@
           personaCard.style.setProperty("--name-font-size", `${Math.round(cssFontPx * 10) / 10}px`);
         }
 
-        // t = 6s — slot machine cycling begins
+        // t = 6s — slot machine cycling begins; restore card bg layer
         setTimeout(() => {
+          document.getElementById("personaCard").classList.add("has-bg");
           runSlotMachine(targetIndex, () => {
             // Reveal avatar and name after landing (~t=16s)
             document.querySelector(".avatar-frame").style.visibility = "";
