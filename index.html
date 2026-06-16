@@ -345,7 +345,6 @@
     }
 
     .story-bg.active { display: block; }
-    iframe.story-bg { border: none; }
     .story-card.has-bg .story-default-bg { display: none; }
 
     .story-default-bg {
@@ -804,9 +803,7 @@
             <div class="story-default-bg"></div>
             <img class="story-bg" id="personaBgTBS" src="tbs.png" alt="" />
             <img class="story-bg" id="personaBgSCD" src="scd.png" alt="" />
-            <iframe class="story-bg" id="personaBgSSET"
-              src="https://www.canva.com/design/DAHJqY6ED3k/jQYOXXjZN-qIzYrmK-bGFQ/view?embed"
-              allowfullscreen allow="fullscreen" scrolling="no" title="SSET Persona Card"></iframe>
+            <img class="story-bg" id="personaBgSSET" src="sset.png" alt="" />
 
             <div class="story-header">
               <div>
@@ -1436,20 +1433,16 @@
         ctx.fillRect(0, 0, W, H);
 
         const bgElement = document.getElementById(config.bgId);
-        const isIframeBg = bgElement && bgElement.tagName === "IFRAME";
+        const selectedBgSrc = bgElement && bgElement.getAttribute("src")
+          ? getImageSource(bgElement, bgElement.getAttribute("src"))
+          : config.canvasBgSrc;
 
-        if (!isIframeBg) {
-          const selectedBgSrc = bgElement && bgElement.getAttribute("src")
-            ? getImageSource(bgElement, bgElement.getAttribute("src"))
-            : config.canvasBgSrc;
+        const bgImage = await loadCanvasSafeImage(selectedBgSrc);
 
-          const bgImage = await loadCanvasSafeImage(selectedBgSrc);
-
-          if (bgImage) {
-            drawCoverImage(ctx, bgImage, 0, 0, W, H);
-          } else {
-            console.warn("Background image not available, using gradient fallback.");
-          }
+        if (bgImage) {
+          drawCoverImage(ctx, bgImage, 0, 0, W, H);
+        } else {
+          alert("Persona card background could not be loaded. Make sure tbs.png, scd.png, and sset.png are in the same folder as index.html.");
         }
 
         const avatarX = 231;
