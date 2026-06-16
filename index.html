@@ -270,7 +270,7 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      padding-top: clamp(210px, 31vh, 290px);
+      padding-top: clamp(190px, 28vh, 270px);
       padding-bottom: 18px;
       gap: 10px;
     }
@@ -819,8 +819,8 @@
 
       <div class="layer upload-layer">
         <div class="upload-box">
-          <input type="file" id="photoInput" accept="image/*" style="display:none" />
-          <input type="file" id="cameraInput" accept="image/*" capture="user" style="display:none" />
+          <input type="file" id="photoInput" accept="image/*" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;" />
+          <input type="file" id="cameraInput" accept="image/*" capture="user" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;" />
           <div class="photo-placeholder" id="photoPlaceholder">Your uploaded photo preview will appear here</div>
           <img class="photo-preview" id="photoPreview" alt="Uploaded preview" />
           <div class="photo-btn-row">
@@ -1606,27 +1606,32 @@
       shareBtn.textContent = "Preparing…";
 
       try {
+        // Build canvas first, then convert to blob+File, then share — all in one
+        // microtask chain so iOS Safari preserves the user-gesture context
         const canvas = await buildPersonaCanvas();
         const studentPart = getStudentName() ? safeFilename(getStudentName()) + "-" : "";
         const fileName = `${studentPart}rmit-persona.png`;
 
         const blob = await new Promise((resolve, reject) => {
-          canvas.toBlob(b => b ? resolve(b) : reject(new Error("toBlob null")), "image/png");
+          canvas.toBlob(b => b ? resolve(b) : reject(new Error("toBlob returned null")), "image/png");
         });
         const file = new File([blob], fileName, { type: "image/png" });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: "My RMIT Persona Card" });
+          // Native share sheet with image file — works on iOS 15+ and Android Chrome 75+
+          await navigator.share({ files: [file], title: "My RMIT Persona Card", text: "#RMITVietnam" });
         } else if (navigator.share) {
+          // Older browsers that support share but not file sharing
           await navigator.share({ title: "My RMIT Persona Card", text: "Check out my RMIT Instagram persona! #RMITVietnam" });
         } else {
-          // Fallback: same path as download
-          downloadPersonaCard();
+          // Desktop or unsupported — fall back to download
+          await downloadPersonaCard();
         }
       } catch (e) {
         if (e.name !== "AbortError") {
-          console.error(e);
-          downloadPersonaCard();
+          // NotAllowedError = user gesture expired on some browsers → fall back to download
+          console.warn("Share failed, falling back to download:", e.name, e.message);
+          await downloadPersonaCard();
         }
       } finally {
         shareBtn.disabled = false;
