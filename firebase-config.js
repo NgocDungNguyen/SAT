@@ -8,7 +8,7 @@
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyB1n7HCrtbDXvmes__qciRFcu1kKc4_DY0",
   authDomain:        "sats-2b120.firebaseapp.com",
-  databaseURL:       "https://sats-2b120-default-rtdb.firebaseio.com",
+  databaseURL:       "https://sats-2b120-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId:         "sats-2b120",
   storageBucket:     "sats-2b120.firebasestorage.app",
   messagingSenderId: "174217722947",
