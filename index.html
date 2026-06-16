@@ -897,6 +897,78 @@
       .result-intro .eyebrow { margin-top: 0; }
     }
 
+    /* ── Slot Machine Overlay ────────────────────────────────────────── */
+    .slot-overlay {
+      position: fixed; inset: 0; z-index: 9500;
+      background: rgba(8, 14, 80, 0.97);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .slot-overlay.active { display: flex; }
+    .slot-label {
+      color: rgba(255, 255, 255, 0.92);
+      font-family: var(--font-main); font-size: 1.05rem;
+      font-weight: 800; text-align: center;
+      margin-bottom: 22px; letter-spacing: -0.02em;
+    }
+    .slot-card-frame {
+      height: clamp(300px, 62vh, 520px);
+      aspect-ratio: 9 / 16;
+      border-radius: 22px; overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.65), 0 0 0 2px rgba(255,255,255,0.1);
+    }
+    .slot-card-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    @keyframes slotLand {
+      0%   { transform: scale(1.06); }
+      55%  { transform: scale(0.97); }
+      75%  { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+    .slot-card-frame.slot-land { animation: slotLand 0.55s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .slot-dots { display: flex; gap: 8px; margin-top: 22px; }
+    .slot-dots span {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      animation: dotBounce 0.9s ease-in-out infinite;
+    }
+    .slot-dots span:nth-child(2) { animation-delay: 0.18s; }
+    .slot-dots span:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes dotBounce {
+      0%, 100% { transform: translateY(0); opacity: 0.5; }
+      50%       { transform: translateY(-6px); opacity: 1; }
+    }
+
+    /* ── Student Counter ─────────────────────────────────────────────── */
+    .student-counter-box {
+      background: rgba(255, 255, 255, 0.52);
+      border: 1px solid rgba(255, 255, 255, 0.62);
+      border-radius: 18px; padding: 10px 16px;
+      backdrop-filter: blur(4px); text-align: center; margin-top: 10px;
+    }
+    .student-counter-text { color: var(--navy); font-size: 0.88rem; font-weight: 800; line-height: 1.45; }
+    .student-counter-num { color: var(--red); }
+
+    /* ── Course Match Cards ──────────────────────────────────────────── */
+    .course-cards-wrap { margin-bottom: 14px; }
+    .course-cards-eyebrow {
+      display: block; font-size: 0.7rem; font-weight: 900;
+      color: var(--navy); text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 8px;
+    }
+    .course-cards-list { display: grid; gap: 8px; }
+    .course-card {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      background: rgba(13, 25, 133, 0.05); border: 1.5px solid rgba(13, 25, 133, 0.12);
+      border-radius: 16px; padding: 12px 16px;
+      text-decoration: none; color: var(--navy);
+      font-family: var(--font-main); transition: background 0.15s, transform 0.12s;
+    }
+    .course-card:hover { background: rgba(13, 25, 133, 0.1); transform: translateY(-1px); }
+    .course-card:active { transform: scale(0.98); }
+    .course-card-name { font-size: 0.88rem; font-weight: 800; line-height: 1.3; }
+    .course-card-arrow { font-size: 0.9rem; opacity: 0.5; flex-shrink: 0; }
+
   </style>
   <!-- Firebase (optional) — loaded before main script so initFirebaseTags() can use it -->
   <script src="firebase-config.js"></script>
@@ -930,6 +1002,10 @@
             <button class="btn btn-primary" data-language="en" type="button">English</button>
             <button class="btn btn-primary" data-language="vi" type="button">Vietnamese</button>
           </div>
+        </div>
+
+        <div class="student-counter-box" id="studentCounterBox" style="display:none">
+          <p class="student-counter-text">Join <span class="student-counter-num" id="counterNum">1,000</span> students who've found their RMIT persona!</p>
         </div>
       </div>
     </section>
@@ -1037,6 +1113,11 @@
         </div>
 
         <div class="result-actions">
+          <div class="course-cards-wrap" id="courseCardsWrap" style="display:none">
+            <span class="course-cards-eyebrow">Programs for you</span>
+            <div class="course-cards-list" id="courseCardsList"></div>
+          </div>
+
           <div class="btn-row" style="grid-template-columns:1fr;">
             <button class="btn btn-primary btn-full" id="downloadBtn" type="button">Download Persona Card</button>
             <div class="story-share-row">
@@ -1055,6 +1136,17 @@
       </div>
     </section>
   </main>
+
+  <!-- Slot Machine Overlay -->
+  <div class="slot-overlay" id="slotOverlay">
+    <p class="slot-label" id="slotLabel">Finding your RMIT persona...</p>
+    <div class="slot-card-frame" id="slotCardFrame">
+      <img class="slot-card-img" id="slotCardImg" src="tbs.png" alt="" />
+    </div>
+    <div class="slot-dots"><span></span><span></span><span></span></div>
+  </div>
+
+  <audio id="clappingAudio" src="clapping.mp3" preload="none"></audio>
 
   <div class="img-overlay" id="imgOverlay" role="dialog" aria-modal="true" aria-label="Save your Persona Card">
     <button class="img-overlay-close" id="imgOverlayClose" type="button" aria-label="Close">✕</button>
@@ -1402,6 +1494,8 @@
     }
 
     function chooseAnswer(letter, buttonEl) {
+      hapticFeedback();
+      playPop();
       // Immediately show selected state, then advance after a brief moment
       document.querySelectorAll(".option").forEach(b => b.classList.remove("selected"));
       buttonEl.classList.add("selected");
@@ -1525,6 +1619,7 @@
       currentQuestion = 0;
       answers = [];
       uploadedImageData = "";
+      _hasCountedThisSession = false;
       document.getElementById("progressFill").style.width = "0%";
 
       photoInput.value = "";
@@ -1958,6 +2053,137 @@
       })();
     }
 
+    // ── Haptic + Sound Feedback ──────────────────────────────────────────
+    let _audioCtx = null;
+    function getAudioCtx() {
+      if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return _audioCtx;
+    }
+    function playPop() {
+      try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(280, ctx.currentTime + 0.07);
+        gain.gain.setValueAtTime(0.22, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.12);
+      } catch (_) {}
+    }
+    function hapticFeedback() {
+      try { if (navigator.vibrate) navigator.vibrate(9); } catch (_) {}
+    }
+    function playClapping() {
+      try {
+        const audio = document.getElementById("clappingAudio");
+        if (audio) { audio.currentTime = 0; audio.volume = 0.75; audio.play().catch(() => {}); }
+      } catch (_) {}
+    }
+
+    // ── Slot Machine ─────────────────────────────────────────────────────
+    function runSlotMachine(targetIndex, onComplete) {
+      const bgSrcs = ["tbs.png", "scd.png", "sset.png"];
+      const img   = document.getElementById("slotCardImg");
+      const frame = document.getElementById("slotCardFrame");
+      const overlay = document.getElementById("slotOverlay");
+
+      overlay.classList.add("active");
+      // Preload all 3 backgrounds so swaps are instant
+      bgSrcs.forEach(s => { const i = new Image(); i.src = s; });
+
+      const steps = [];
+      let pos = 0;
+      function addSteps(count, delay) {
+        for (let k = 0; k < count; k++) { steps.push({ idx: pos % 3, delay }); pos++; }
+      }
+
+      addSteps(22, 65);    // fast  ~1430ms
+      addSteps(10, 130);   // medium ~1300ms
+      [200, 280, 370, 470].forEach(d => { steps.push({ idx: pos % 3, delay: d }); pos++; });
+      // pos = 36 after above; last pushed idx = 35%3 = 2 (SSET)
+
+      // extraCount so last step shows targetIndex:
+      // need: (35 + extraCount) % 3 === targetIndex  →  extraCount = (targetIndex + 1) % 3
+      let extraCount = (targetIndex + 1) % 3;
+      if (extraCount === 0) extraCount = 3;
+      for (let e = 0; e < extraCount; e++) { steps.push({ idx: pos % 3, delay: 500 }); pos++; }
+
+      let i = 0;
+      function tick() {
+        img.src = bgSrcs[steps[i].idx];
+        if (i < steps.length - 1) {
+          const d = steps[i].delay;
+          i++;
+          setTimeout(tick, d);
+        } else {
+          // Landing
+          frame.classList.add("slot-land");
+          frame.addEventListener("animationend", () => {
+            frame.classList.remove("slot-land");
+            playClapping();
+            overlay.style.transition = "opacity 0.4s";
+            overlay.style.opacity = "0";
+            setTimeout(() => {
+              overlay.classList.remove("active");
+              overlay.style.opacity = "";
+              overlay.style.transition = "";
+              onComplete();
+            }, 400);
+          }, { once: true });
+        }
+      }
+      tick();
+    }
+
+    // ── Student Counter ───────────────────────────────────────────────────
+    let _counterBase = 0;
+    let _counterCount = 0;
+    function updateCounterDisplay() {
+      const total = _counterBase + _counterCount;
+      const box = document.getElementById("studentCounterBox");
+      const numEl = document.getElementById("counterNum");
+      if (!box || !numEl) return;
+      numEl.textContent = total.toLocaleString();
+      box.style.display = total > 0 ? "" : "none";
+    }
+    function incrementStudentCounter() {
+      try {
+        if (typeof firebase === "undefined" || !firebase.apps || !firebase.apps.length) return;
+        firebase.database().ref("studentCounter/count").transaction(cur => (cur || 0) + 1);
+      } catch (_) {}
+    }
+
+    // ── Course Match Cards ────────────────────────────────────────────────
+    let coursesData = { tbs: [], scd: [], sset: [] };
+    function renderCourseCards(letter) {
+      const wrap = document.getElementById("courseCardsWrap");
+      const list = document.getElementById("courseCardsList");
+      if (!wrap || !list) return;
+      const schoolKey = { A: "tbs", B: "scd", C: "sset" }[letter];
+      const pool = coursesData[schoolKey] || [];
+      if (!pool.length) { wrap.style.display = "none"; return; }
+      const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, 3);
+      list.innerHTML = "";
+      shuffled.forEach(course => {
+        const a = document.createElement("a");
+        a.className = "course-card";
+        a.href = course.url || "#";
+        if (course.url) { a.target = "_blank"; a.rel = "noopener"; }
+        const nameEl = document.createElement("span");
+        nameEl.className = "course-card-name";
+        nameEl.textContent = course.name;
+        const arrow = document.createElement("span");
+        arrow.className = "course-card-arrow";
+        arrow.textContent = "→";
+        a.appendChild(nameEl); a.appendChild(arrow);
+        list.appendChild(a);
+      });
+      wrap.style.display = "";
+    }
+
     document.querySelectorAll("[data-language]").forEach(button => {
       button.addEventListener("click", () => setLanguage(button.dataset.language));
     });
@@ -1983,31 +2209,42 @@
     document.getElementById("quizBackBtn").addEventListener("click", goBackQuestion);
     document.getElementById("quizNextBtn").addEventListener("click", goNextQuestion);
 
+    let _hasCountedThisSession = false;
+
     showResultBtn.addEventListener("click", () => {
       if (answers.length === 0) {
         alert("Please complete the quiz first.");
         showScreen("quiz");
         return;
       }
-      renderResult();
-      showScreen("result");
-      requestAnimationFrame(() => {
-        // Scale font to actual card height once visible
-        const personaCard = document.getElementById("personaCard");
-        const config = PERSONA_CARD_CONFIG[getResultLetter()];
-        const cardH = personaCard.getBoundingClientRect().height;
-        if (cardH > 0) {
-          const cssFontPx = config.layout.nameFontPx * (cardH / 1920);
-          personaCard.style.setProperty("--name-font-size", `${Math.round(cssFontPx * 10) / 10}px`);
+      const resultLetter = getResultLetter();
+      const targetIndex = { A: 0, B: 1, C: 2 }[resultLetter];
+
+      runSlotMachine(targetIndex, () => {
+        renderResult();
+        showScreen("result");
+        renderCourseCards(resultLetter);
+
+        if (!_hasCountedThisSession) {
+          incrementStudentCounter();
+          _hasCountedThisSession = true;
         }
-        // Card reveal animation
-        const storyWrap = document.querySelector(".story-wrap");
-        storyWrap.classList.remove("reveal-anim");
-        void storyWrap.offsetWidth; // force reflow to restart animation
-        storyWrap.classList.add("reveal-anim");
-        storyWrap.addEventListener("animationend", () => storyWrap.classList.remove("reveal-anim"), { once: true });
-        // Confetti burst
-        launchConfetti();
+
+        requestAnimationFrame(() => {
+          const personaCard = document.getElementById("personaCard");
+          const config = PERSONA_CARD_CONFIG[resultLetter];
+          const cardH = personaCard.getBoundingClientRect().height;
+          if (cardH > 0) {
+            const cssFontPx = config.layout.nameFontPx * (cardH / 1920);
+            personaCard.style.setProperty("--name-font-size", `${Math.round(cssFontPx * 10) / 10}px`);
+          }
+          const storyWrap = document.querySelector(".story-wrap");
+          storyWrap.classList.remove("reveal-anim");
+          void storyWrap.offsetWidth;
+          storyWrap.classList.add("reveal-anim");
+          storyWrap.addEventListener("animationend", () => storyWrap.classList.remove("reveal-anim"), { once: true });
+          launchConfetti();
+        });
       });
     });
 
@@ -2045,32 +2282,30 @@
 
     updateWelcomeTitle();
 
-    // ── Firebase real-time campaign tag sync ──────────────────────────────────
-    // If firebase-config.js is filled in, tags are pulled from Firebase and
-    // update live across all devices. Falls back to local CAMPAIGN_TAGS silently.
-    (function initFirebaseTags() {
+    // ── Firebase: tags · student counter · courses ────────────────────────────
+    (function initFirebase() {
       try {
         if (
           typeof FIREBASE_CONFIG === "undefined" ||
           !FIREBASE_CONFIG.apiKey ||
           FIREBASE_CONFIG.apiKey === "PASTE_YOUR_API_KEY_HERE"
-        ) return; // not configured — use local CAMPAIGN_TAGS
+        ) return;
 
         if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+        const db = firebase.database();
 
-        firebase.database().ref("campaignTags").on("value", snapshot => {
+        // Campaign tags
+        db.ref("campaignTags").on("value", snapshot => {
           const data = snapshot.val();
           if (!data) return;
           if (typeof data.ig === "string") CAMPAIGN_TAGS.ig = data.ig;
           if (typeof data.fb === "string") CAMPAIGN_TAGS.fb = data.fb;
-          // Refresh tag chips if result screen is currently visible
           const resultScreen = document.getElementById("resultScreen");
           if (resultScreen && resultScreen.classList.contains("active")) {
             const allTags = [
               ...(CAMPAIGN_TAGS.ig || "").split(/\s+/),
               ...(CAMPAIGN_TAGS.fb || "").split(/\s+/)
             ].filter(t => t).filter((t, i, a) => a.indexOf(t) === i);
-
             const chipsWrap = document.getElementById("campaignTagsChips");
             const bar = document.getElementById("campaignTagsBar");
             if (!chipsWrap || !bar) return;
@@ -2088,8 +2323,32 @@
             }
           }
         });
+
+        // Student counter — readable by all, writable by all (unauthenticated quiz app)
+        db.ref("studentCounter").on("value", snapshot => {
+          const data = snapshot.val() || {};
+          _counterBase  = typeof data.base  === "number" ? data.base  : 0;
+          _counterCount = typeof data.count === "number" ? data.count : 0;
+          updateCounterDisplay();
+        });
+
+        // Courses pool
+        db.ref("courses").on("value", snapshot => {
+          const data = snapshot.val() || {};
+          ["tbs", "scd", "sset"].forEach(school => {
+            const raw = data[school];
+            coursesData[school] = raw && typeof raw === "object"
+              ? Object.entries(raw).map(([key, v]) => ({ key, name: v.name || "", url: v.url || "" })).filter(c => c.name)
+              : [];
+          });
+          const resultScreen = document.getElementById("resultScreen");
+          if (resultScreen && resultScreen.classList.contains("active")) {
+            renderCourseCards(getResultLetter());
+          }
+        });
+
       } catch (e) {
-        console.warn("Firebase tag sync unavailable:", e.message);
+        console.warn("Firebase unavailable:", e.message);
       }
     })();
   </script>

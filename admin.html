@@ -250,6 +250,63 @@
       .card { padding: 28px 20px; border-radius: 20px; }
       .card-title { font-size: 1.15rem; }
     }
+
+    /* ── Counter & Courses ── */
+    input[type="number"] {
+      width: 100%; padding: 12px 16px;
+      font-family: var(--font); font-size: 0.95rem; font-weight: 700;
+      color: #1a1a2e; background: #f5f6fa;
+      border: 2px solid rgba(13,25,133,0.1); border-radius: 14px;
+      outline: none; transition: border-color 0.18s;
+    }
+    input[type="number"]:focus { border-color: var(--navy); background: #fff; }
+
+    .section-title { font-size: 1.1rem; font-weight: 900; color: var(--navy); margin-bottom: 4px; }
+    .section-sub   { font-size: 0.85rem; color: #666; margin-bottom: 20px; line-height: 1.5; }
+
+    .save-row { display: flex; gap: 10px; align-items: flex-end; margin-top: 8px; }
+    .save-row input { flex: 1; margin-top: 0; }
+    .btn-inline {
+      font-family: var(--font); font-size: 0.88rem; font-weight: 900;
+      padding: 12px 20px; background: var(--navy); color: #fff;
+      border: none; border-radius: 14px; cursor: pointer;
+      transition: opacity 0.18s; white-space: nowrap; flex-shrink: 0;
+    }
+    .btn-inline:hover { opacity: 0.88; }
+    .btn-inline.btn-danger { background: var(--red); }
+
+    .school-section { margin-bottom: 24px; }
+    .school-title {
+      font-size: 0.78rem; font-weight: 900; color: var(--navy);
+      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;
+    }
+    .course-add-form { display: grid; gap: 6px; margin-bottom: 10px; }
+    .course-add-form input { margin-top: 0; }
+    .btn-add-course {
+      font-family: var(--font); font-size: 0.88rem; font-weight: 900;
+      padding: 10px 16px; background: var(--navy); color: #fff;
+      border: none; border-radius: 12px; cursor: pointer; transition: opacity 0.18s;
+    }
+    .btn-add-course:hover { opacity: 0.88; }
+    .course-list { display: grid; gap: 6px; }
+    .course-item {
+      display: flex; align-items: center; gap: 10px;
+      background: #f5f6fa; border-radius: 12px; padding: 10px 12px;
+    }
+    .course-item-info { flex: 1; min-width: 0; }
+    .course-item-name { font-size: 0.88rem; font-weight: 700; color: #1a1a2e; }
+    .course-item-url {
+      font-size: 0.75rem; color: #888;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 240px;
+    }
+    .btn-delete-course {
+      font-size: 0.8rem; color: var(--red);
+      background: rgba(230,0,40,0.08); border: 1px solid rgba(230,0,40,0.18);
+      border-radius: 8px; padding: 4px 10px; cursor: pointer;
+      font-family: var(--font); font-weight: 800; flex-shrink: 0; transition: background 0.15s;
+    }
+    .btn-delete-course:hover { background: rgba(230,0,40,0.16); }
+    .course-empty { font-size: 0.82rem; color: #aaa; padding: 6px 0; }
   </style>
 </head>
 <body>
@@ -292,6 +349,14 @@
             <code class="code-block">{
   "rules": {
     "campaignTags": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "studentCounter": {
+      ".read": true,
+      ".write": true
+    },
+    "courses": {
       ".read": true,
       ".write": "auth != null"
     }
@@ -371,6 +436,60 @@
       </div>
 
       <div class="meta-info" id="metaInfo"></div>
+
+      <!-- ── Student Counter ── -->
+      <div class="divider"></div>
+      <h2 class="section-title">Student Counter</h2>
+      <p class="section-sub">Set the base number shown on the welcome screen. The quiz app auto-adds +1 per result view. Total displayed = Base + live completions.</p>
+
+      <label for="counterBaseInput">Base number</label>
+      <div class="save-row">
+        <input type="number" id="counterBaseInput" placeholder="e.g. 1000" min="0" />
+        <button class="btn-inline" id="saveCounterBtn" type="button">Save</button>
+        <button class="btn-inline btn-danger" id="resetCountBtn" type="button">Reset count</button>
+      </div>
+      <p class="input-hint" id="counterLiveHint" style="margin-top:8px">Live completions: loading…</p>
+      <div class="msg" id="counterMsg"></div>
+
+      <!-- ── Course Match Cards ── -->
+      <div class="divider"></div>
+      <h2 class="section-title">Course Match Cards</h2>
+      <p class="section-sub">Add RMIT programs for each school. Students see 3 randomly chosen from their persona's pool after the quiz. Add as many as you like.</p>
+
+      <!-- TBS -->
+      <div class="school-section">
+        <div class="school-title">The Business School (TBS — Persona A)</div>
+        <div class="course-add-form">
+          <input type="text" id="tbs-name-input" placeholder="Program name, e.g. Bachelor of Business" />
+          <input type="text" id="tbs-url-input" placeholder="URL (optional)" />
+          <button class="btn-add-course" type="button" onclick="addCourse('tbs')">+ Add course</button>
+        </div>
+        <div class="course-list" id="tbs-course-list"><span class="course-empty">No courses added yet</span></div>
+      </div>
+
+      <!-- SCD -->
+      <div class="school-section">
+        <div class="school-title">School of Communication &amp; Design (SCD — Persona B)</div>
+        <div class="course-add-form">
+          <input type="text" id="scd-name-input" placeholder="Program name, e.g. Bachelor of Communication" />
+          <input type="text" id="scd-url-input" placeholder="URL (optional)" />
+          <button class="btn-add-course" type="button" onclick="addCourse('scd')">+ Add course</button>
+        </div>
+        <div class="course-list" id="scd-course-list"><span class="course-empty">No courses added yet</span></div>
+      </div>
+
+      <!-- SSET -->
+      <div class="school-section">
+        <div class="school-title">School of Science, Engineering &amp; Technology (SSET — Persona C)</div>
+        <div class="course-add-form">
+          <input type="text" id="sset-name-input" placeholder="Program name, e.g. Bachelor of Engineering" />
+          <input type="text" id="sset-url-input" placeholder="URL (optional)" />
+          <button class="btn-add-course" type="button" onclick="addCourse('sset')">+ Add course</button>
+        </div>
+        <div class="course-list" id="sset-course-list"><span class="course-empty">No courses added yet</span></div>
+      </div>
+      <div class="msg" id="coursesMsg"></div>
+
     </div>
   </main>
 
@@ -406,6 +525,8 @@
           showPanel("dashPanel");
           document.getElementById("logoutBtn").style.display = "block";
           loadTags();
+          loadCounter();
+          loadCourses();
         } else {
           showPanel("loginPanel");
           document.getElementById("logoutBtn").style.display = "none";
@@ -541,6 +662,124 @@ by: <strong>${escHtml(data.updatedBy || "—")}</strong>`;
         );
       });
     });
+
+    // ── Student Counter ──────────────────────────────────────
+    function loadCounter() {
+      db.ref("studentCounter").on("value", snapshot => {
+        const data = snapshot.val() || {};
+        const base  = typeof data.base  === "number" ? data.base  : 0;
+        const count = typeof data.count === "number" ? data.count : 0;
+        const input = document.getElementById("counterBaseInput");
+        if (input && document.activeElement !== input) input.value = base;
+        document.getElementById("counterLiveHint").textContent =
+          `Live completions: ${count.toLocaleString()} | Total displayed to students: ${(base + count).toLocaleString()}`;
+      });
+    }
+
+    document.getElementById("saveCounterBtn").addEventListener("click", async () => {
+      const btn    = document.getElementById("saveCounterBtn");
+      const msgEl  = document.getElementById("counterMsg");
+      const rawVal = document.getElementById("counterBaseInput").value;
+      const base   = parseInt(rawVal, 10);
+
+      if (isNaN(base) || base < 0) {
+        msgEl.textContent = "Enter a valid number (0 or higher).";
+        msgEl.className = "msg error"; return;
+      }
+      btn.disabled = true; btn.textContent = "Saving…"; msgEl.className = "msg";
+      try {
+        await db.ref("studentCounter/base").set(base);
+        msgEl.textContent = "✓ Base number saved!";
+        msgEl.className = "msg success";
+        setTimeout(() => { msgEl.className = "msg"; }, 3000);
+      } catch (e) {
+        msgEl.textContent = "Save failed: " + e.message; msgEl.className = "msg error";
+      } finally { btn.disabled = false; btn.textContent = "Save"; }
+    });
+
+    document.getElementById("resetCountBtn").addEventListener("click", async () => {
+      if (!confirm("Reset the live completion count back to 0?")) return;
+      const msgEl = document.getElementById("counterMsg");
+      msgEl.className = "msg";
+      try {
+        await db.ref("studentCounter/count").set(0);
+        msgEl.textContent = "✓ Live count reset to 0.";
+        msgEl.className = "msg success";
+        setTimeout(() => { msgEl.className = "msg"; }, 3000);
+      } catch (e) {
+        msgEl.textContent = "Reset failed: " + e.message; msgEl.className = "msg error";
+      }
+    });
+
+    // ── Courses ──────────────────────────────────────────────
+    function loadCourses() {
+      ["tbs", "scd", "sset"].forEach(school => {
+        db.ref(`courses/${school}`).on("value", snapshot => {
+          renderCourseList(school, snapshot.val());
+        });
+      });
+    }
+
+    function renderCourseList(school, data) {
+      const list = document.getElementById(`${school}-course-list`);
+      if (!list) return;
+      const entries = data && typeof data === "object"
+        ? Object.entries(data).filter(([, v]) => v && v.name)
+        : [];
+      if (!entries.length) {
+        list.innerHTML = '<span class="course-empty">No courses added yet</span>'; return;
+      }
+      list.innerHTML = entries.map(([key, val]) => `
+        <div class="course-item">
+          <div class="course-item-info">
+            <div class="course-item-name">${escHtml(val.name || "")}</div>
+            ${val.url ? `<div class="course-item-url">${escHtml(val.url)}</div>` : ""}
+          </div>
+          <button class="btn-delete-course" type="button"
+            data-school="${escHtml(school)}" data-key="${escHtml(key)}">Delete</button>
+        </div>
+      `).join("");
+
+      list.querySelectorAll(".btn-delete-course").forEach(btn => {
+        btn.addEventListener("click", () => deleteCourse(btn.dataset.school, btn.dataset.key));
+      });
+    }
+
+    async function addCourse(school) {
+      const nameEl  = document.getElementById(`${school}-name-input`);
+      const urlEl   = document.getElementById(`${school}-url-input`);
+      const msgEl   = document.getElementById("coursesMsg");
+      const name    = nameEl.value.trim();
+      const url     = urlEl.value.trim();
+      if (!name) {
+        msgEl.textContent = "Enter a program name first.";
+        msgEl.className = "msg error";
+        setTimeout(() => { msgEl.className = "msg"; }, 2500); return;
+      }
+      msgEl.className = "msg";
+      try {
+        await db.ref(`courses/${school}`).push({ name, url });
+        nameEl.value = ""; urlEl.value = "";
+        msgEl.textContent = "✓ Course added!";
+        msgEl.className = "msg success";
+        setTimeout(() => { msgEl.className = "msg"; }, 2000);
+      } catch (e) {
+        msgEl.textContent = "Add failed: " + e.message; msgEl.className = "msg error";
+      }
+    }
+
+    async function deleteCourse(school, key) {
+      const msgEl = document.getElementById("coursesMsg");
+      msgEl.className = "msg";
+      try {
+        await db.ref(`courses/${school}/${key}`).remove();
+        msgEl.textContent = "✓ Course removed.";
+        msgEl.className = "msg success";
+        setTimeout(() => { msgEl.className = "msg"; }, 2000);
+      } catch (e) {
+        msgEl.textContent = "Delete failed: " + e.message; msgEl.className = "msg error";
+      }
+    }
   </script>
 
 </body>
