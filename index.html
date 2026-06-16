@@ -462,10 +462,10 @@
 
     .avatar-frame {
       position: absolute;
-      left: var(--avatar-left, 21%);
-      top: var(--avatar-top, 23%);
-      width: var(--avatar-width, 58%);
-      height: var(--avatar-height, 31%);
+      left: calc(var(--avatar-left, 21%) + 2px);
+      top: calc(var(--avatar-top, 23%) + 2px);
+      width: calc(var(--avatar-width, 58%) - 4px);
+      height: calc(var(--avatar-height, 31%) - 4px);
       margin: 0;
       padding: 0;
       background: transparent;
@@ -493,12 +493,15 @@
     }
     .card-live-info {
       position: absolute;
-      left: var(--name-left, 46%);
-      top: var(--name-top, 18.8%);
-      width: var(--name-width, 37%);
+      left: var(--name-left, 22%);
+      top: var(--name-top, 18%);
+      width: var(--name-width, 54%);
+      height: var(--name-height, 5.16%);
       z-index: 4;
-      display: block;
-      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
       pointer-events: none;
     }
 
@@ -511,6 +514,7 @@
       white-space: normal;
       word-break: break-word;
       overflow: hidden;
+      text-align: center;
     }
 
     .card-high-school {
@@ -1005,7 +1009,7 @@
         bgId: "personaBgTBS", textColor: "#a0001b", bodyColor: "#0d1985", canvasBgSrc: "",
         layout: {
           avatarLeftPct: 20.57, avatarTopPct: 20.56, avatarWidthPct: 58.44, avatarHeightPct: 31.22,
-          nameLeftPct: 22.90, nameTopPct: 15.21, nameWidthPct: 53.79,
+          nameLeftPct: 22.90, nameTopPct: 15.21, nameWidthPct: 53.79, nameHeightPct: 5.16,
           nameFontPx: 38, nameLineHeight: 1.15
         }
       },
@@ -1013,7 +1017,7 @@
         bgId: "personaBgSCD", textColor: "#0d1985", bodyColor: "#a0001b", canvasBgSrc: "",
         layout: {
           avatarLeftPct: 20.83, avatarTopPct: 23.42, avatarWidthPct: 58.07, avatarHeightPct: 30.53,
-          nameLeftPct: 22.84, nameTopPct: 17.80, nameWidthPct: 54.30,
+          nameLeftPct: 22.84, nameTopPct: 17.80, nameWidthPct: 54.30, nameHeightPct: 5.16,
           nameFontPx: 38, nameLineHeight: 1.15
         }
       },
@@ -1021,7 +1025,7 @@
         bgId: "personaBgSSET", textColor: "#123c69", bodyColor: "#0d1985", canvasBgSrc: "",
         layout: {
           avatarLeftPct: 21.05, avatarTopPct: 23.52, avatarWidthPct: 58.44, avatarHeightPct: 30.91,
-          nameLeftPct: 22.88, nameTopPct: 18.31, nameWidthPct: 54.79,
+          nameLeftPct: 22.88, nameTopPct: 18.31, nameWidthPct: 54.79, nameHeightPct: 5.16,
           nameFontPx: 38, nameLineHeight: 1.15
         }
       }
@@ -1200,6 +1204,7 @@
       personaCard.style.setProperty("--name-left",   `${layout.nameLeftPct}%`);
       personaCard.style.setProperty("--name-top",    `${layout.nameTopPct}%`);
       personaCard.style.setProperty("--name-width",  `${layout.nameWidthPct}%`);
+      personaCard.style.setProperty("--name-height", `${layout.nameHeightPct}%`);
       personaCard.style.setProperty("--avatar-left",   `${layout.avatarLeftPct}%`);
       personaCard.style.setProperty("--avatar-top",    `${layout.avatarTopPct}%`);
       personaCard.style.setProperty("--avatar-width",  `${layout.avatarWidthPct}%`);
@@ -1265,6 +1270,25 @@
       ctx.lineTo(x, y + r);
       ctx.quadraticCurveTo(x, y, x + r, y);
       ctx.closePath();
+    }
+
+    // Returns an array of line strings without drawing anything
+    function getWrappedLines(ctx, text, maxWidth, maxLines) {
+      const words = text.split(" ");
+      const lines = [];
+      let current = "";
+      for (const word of words) {
+        const test = current ? current + " " + word : word;
+        if (ctx.measureText(test).width > maxWidth && current) {
+          lines.push(current);
+          current = word;
+          if (lines.length >= maxLines) break;
+        } else {
+          current = test;
+        }
+      }
+      if (current && lines.length < maxLines) lines.push(current);
+      return lines.slice(0, maxLines);
     }
 
     function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 4) {
@@ -1358,18 +1382,31 @@
 
     function drawPersonaLiveText(ctx, W, H, config) {
       const layout = config.layout;
-      const x = W * (layout.nameLeftPct / 100);
-      const y = H * (layout.nameTopPct / 100);
-      const maxWidth = W * (layout.nameWidthPct / 100);
-      const fontSize = layout.nameFontPx * (H / 1920);
+      const boxLeft   = W * (layout.nameLeftPct   / 100);
+      const boxTop    = H * (layout.nameTopPct    / 100);
+      const boxWidth  = W * (layout.nameWidthPct  / 100);
+      const boxHeight = H * (layout.nameHeightPct / 100);
+      const centerX   = boxLeft + boxWidth / 2;
+      const fontSize  = layout.nameFontPx * (H / 1920);
+      const lineH     = fontSize * layout.nameLineHeight;
 
-      ctx.textAlign = "left";
-      ctx.textBaseline = "top";
-      ctx.fillStyle = "#ffffff";
       ctx.font = canvasFont(900, Math.round(fontSize));
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
       const nameText = getStudentName() ? `I'm ${getStudentName()}` : "I'm Your Name";
-      wrapText(ctx, nameText, x, y, maxWidth, fontSize * layout.nameLineHeight, 2);
+      const lines = getWrappedLines(ctx, nameText, boxWidth, 2);
+      const totalH = lines.length * lineH;
+      // Start Y so the block of lines is vertically centered in the box
+      const startY = boxTop + (boxHeight - totalH) / 2 + lineH / 2;
+
+      lines.forEach((line, i) => {
+        ctx.fillText(line, centerX, startY + i * lineH);
+      });
+
       ctx.textBaseline = "alphabetic";
+      ctx.textAlign = "left";
     }
 
     function drawCoverImage(ctx, image, x, y, w, h) {
@@ -1469,10 +1506,12 @@
         }
 
         const layout = config.layout;
-        const avatarX = W * (layout.avatarLeftPct / 100);
-        const avatarY = H * (layout.avatarTopPct / 100);
-        const avatarW = W * (layout.avatarWidthPct / 100);
-        const avatarH = H * (layout.avatarHeightPct / 100);
+        // 7px inset at 1080 canvas ref ≈ 2px on a 320px preview card (same visual result)
+        const AVATAR_INSET = 7;
+        const avatarX = W * (layout.avatarLeftPct / 100) + AVATAR_INSET;
+        const avatarY = H * (layout.avatarTopPct / 100) + AVATAR_INSET;
+        const avatarW = W * (layout.avatarWidthPct / 100) - AVATAR_INSET * 2;
+        const avatarH = H * (layout.avatarHeightPct / 100) - AVATAR_INSET * 2;
 
         const avatarSrc = getCurrentAvatarSource();
         const avatar = await loadCanvasSafeImage(avatarSrc);
