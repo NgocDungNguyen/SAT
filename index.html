@@ -705,6 +705,58 @@
     }
     .share-toast.visible { opacity: 1; }
 
+    /* Campaign tags bar */
+    .campaign-tags-bar {
+      background: rgba(13, 25, 133, 0.05);
+      border: 1.5px dashed rgba(13, 25, 133, 0.2);
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .campaign-tags-label {
+      font-size: 0.7rem;
+      font-weight: 900;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 0;
+    }
+    .campaign-tags-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .campaign-tag-chip {
+      background: rgba(160, 0, 27, 0.09);
+      color: var(--red);
+      font-weight: 800;
+      font-size: 0.8rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-family: var(--font-main);
+    }
+    .btn-copy-tags {
+      align-self: flex-start;
+      font-family: var(--font-main);
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--navy);
+      background: rgba(13, 25, 133, 0.09);
+      border: 1px solid rgba(13, 25, 133, 0.15);
+      border-radius: 10px;
+      padding: 5px 14px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .btn-copy-tags:hover { background: rgba(13, 25, 133, 0.17); }
+    .btn-copy-tags.copied {
+      color: #1a7f3c;
+      border-color: #1a7f3c;
+      background: rgba(26, 127, 60, 0.08);
+    }
+
     /* Download loading state */
     .btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
 
@@ -987,6 +1039,11 @@
               <button class="btn btn-full btn-share-ig" id="igStoryBtn" type="button">📸 IG Story</button>
               <button class="btn btn-full btn-share-fb" id="fbStoryBtn" type="button">📘 FB Story</button>
             </div>
+            <div class="campaign-tags-bar" id="campaignTagsBar">
+              <p class="campaign-tags-label">Add to your Story caption:</p>
+              <div class="campaign-tags-chips" id="campaignTagsChips"></div>
+              <button class="btn-copy-tags" id="copyTagsBtn" type="button">Copy all tags</button>
+            </div>
             <button class="btn btn-secondary btn-full" id="backToUploadBtn" type="button">Upload / change photo</button>
             <button class="btn btn-ghost btn-full" id="restartBtn" type="button">Restart Quiz</button>
           </div>
@@ -1150,6 +1207,16 @@
         }
       }
     };
+
+    // ─── Campaign Tags ────────────────────────────────────────────────────────
+    // Edit the strings below to set the hashtags / @mentions that are
+    // automatically included when students tap IG Story or FB Story.
+    // Use spaces to separate multiple tags.  Set to "" to disable for a platform.
+    const CAMPAIGN_TAGS = {
+      ig: "#RMITVietnam @rmitsathanoi",   // shown + copied when sharing to Instagram
+      fb: "#RMITVietnam @RMITVietnam",    // shown + copied when sharing to Facebook
+    };
+    // ─────────────────────────────────────────────────────────────────────────
 
     // All coordinates are percentages of the 1080×1920 reference canvas.
     const PERSONA_CARD_CONFIG = {
@@ -1426,6 +1493,27 @@
       } else {
         cardAvatar.style.display = "none";
         avatarEmpty.style.display = "grid";
+      }
+
+      // Render campaign tag chips (merge ig + fb tags, deduplicate)
+      const allTags = [
+        ...(CAMPAIGN_TAGS.ig || "").split(/\s+/),
+        ...(CAMPAIGN_TAGS.fb || "").split(/\s+/)
+      ].filter(t => t).filter((t, i, a) => a.indexOf(t) === i);
+
+      const chipsWrap = document.getElementById("campaignTagsChips");
+      const bar = document.getElementById("campaignTagsBar");
+      chipsWrap.innerHTML = "";
+      if (allTags.length) {
+        allTags.forEach(tag => {
+          const chip = document.createElement("span");
+          chip.className = "campaign-tag-chip";
+          chip.textContent = tag;
+          chipsWrap.appendChild(chip);
+        });
+        bar.style.display = "";
+      } else {
+        bar.style.display = "none";
       }
     }
 
@@ -1772,35 +1860,47 @@
         });
         const file = new File([blob], fileName, { type: "image/png" });
 
-        // Path 1: Web Share API — native OS share sheet, user taps app then "Your Story"
+        const tags = (CAMPAIGN_TAGS[platform] || "").trim();
+
+        // Path 1: Web Share API — native OS share sheet; text field carries the tags
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          // Also copy tags to clipboard so user can paste them as a Story sticker/caption
+          if (tags) {
+            try { await navigator.clipboard.writeText(tags); } catch (_) {}
+          }
           showShareToast(platform === "ig"
-            ? "Tap Instagram → Your Story 📸"
-            : "Tap Facebook → Your Story 📘");
-          await navigator.share({ files: [file], title: "My RMIT Persona Card" });
+            ? "Tap Instagram → Your Story 📸  (tags copied!)"
+            : "Tap Facebook → Your Story 📘  (tags copied!)");
+          await navigator.share({
+            files: [file],
+            title: "My RMIT Persona Card",
+            text: tags   // handed to the app's share/caption field
+          });
           return;
         }
 
-        // Path 2: Copy image to clipboard + open app deep link
-        let copied = false;
-        try {
-          await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-          copied = true;
-        } catch (_) { /* clipboard not available */ }
+        // Path 2: Copy tags to clipboard + open app deep link
+        // (image already downloadable; tags are the more useful clipboard payload here)
+        let tagsCopied = false;
+        if (tags) {
+          try {
+            await navigator.clipboard.writeText(tags);
+            tagsCopied = true;
+          } catch (_) {}
+        }
 
         if (platform === "ig") {
           window.open("instagram://story-camera", "_blank");
         } else {
-          // Try app URL scheme first, fall back to web
           const fbOpened = window.open("fb://stories", "_blank");
           if (!fbOpened) window.open("https://www.facebook.com/stories/create", "_blank");
         }
 
-        showShareToast(copied
-          ? "Image copied! Open the app and paste into your Story 🎉"
-          : "Opening app — download the card first if needed");
+        showShareToast(tagsCopied
+          ? `Tags copied! Paste them in your Story caption 📋`
+          : "Opening app — add your downloaded card and the tags from below");
 
-        if (!copied) await downloadPersonaCard();
+        if (!tagsCopied) await downloadPersonaCard();
 
       } catch (e) {
         if (e.name !== "AbortError") {
@@ -1912,6 +2012,25 @@
     downloadBtn.addEventListener("click", downloadPersonaCard);
     document.getElementById("igStoryBtn").addEventListener("click", () => shareToStory("ig"));
     document.getElementById("fbStoryBtn").addEventListener("click", () => shareToStory("fb"));
+
+    document.getElementById("copyTagsBtn").addEventListener("click", async () => {
+      const btn = document.getElementById("copyTagsBtn");
+      const allTags = [
+        ...(CAMPAIGN_TAGS.ig || "").split(/\s+/),
+        ...(CAMPAIGN_TAGS.fb || "").split(/\s+/)
+      ].filter(t => t).filter((t, i, a) => a.indexOf(t) === i).join(" ");
+      try {
+        await navigator.clipboard.writeText(allTags);
+        btn.textContent = "✓ Copied!";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.textContent = "Copy all tags";
+          btn.classList.remove("copied");
+        }, 2000);
+      } catch (_) {
+        showShareToast("Could not copy — please copy the tags manually");
+      }
+    });
 
     document.getElementById("imgOverlayClose").addEventListener("click", () => {
       const overlay = document.getElementById("imgOverlay");
