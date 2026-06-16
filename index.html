@@ -664,12 +664,46 @@
     }
     .btn-photo:active { transform: scale(0.96); }
 
-    /* Share button */
-    .btn-share {
-      background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%);
-      color: #fff;
+    /* Story share buttons */
+    .story-share-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
     }
-    .btn-share:hover { opacity: 0.92; }
+    .btn-share-ig {
+      background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 52%, #fcb045 100%);
+      color: #fff;
+      font-size: 0.82rem;
+    }
+    .btn-share-fb {
+      background: #1877f2;
+      color: #fff;
+      font-size: 0.82rem;
+    }
+    .btn-share-ig:hover, .btn-share-fb:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* Share toast hint */
+    .share-toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(13, 25, 133, 0.95);
+      color: #fff;
+      font-family: var(--font-main);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 11px 22px;
+      border-radius: 999px;
+      z-index: 9100;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.22s;
+      max-width: 88vw;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .share-toast.visible { opacity: 1; }
 
     /* Download loading state */
     .btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
@@ -949,7 +983,10 @@
         <div class="result-actions">
           <div class="btn-row" style="grid-template-columns:1fr;">
             <button class="btn btn-primary btn-full" id="downloadBtn" type="button">Download Persona Card</button>
-            <button class="btn btn-full btn-share" id="shareBtn" type="button">Share to Instagram</button>
+            <div class="story-share-row">
+              <button class="btn btn-full btn-share-ig" id="igStoryBtn" type="button">📸 IG Story</button>
+              <button class="btn btn-full btn-share-fb" id="fbStoryBtn" type="button">📘 FB Story</button>
+            </div>
             <button class="btn btn-secondary btn-full" id="backToUploadBtn" type="button">Upload / change photo</button>
             <button class="btn btn-ghost btn-full" id="restartBtn" type="button">Restart Quiz</button>
           </div>
@@ -963,6 +1000,8 @@
     <img class="img-overlay-img" id="imgOverlayImg" src="" alt="Your RMIT Persona Card" />
     <p class="img-overlay-hint"><strong>Press and hold the image</strong><br>then tap "Save to Photos" to keep it.</p>
   </div>
+
+  <div class="share-toast" id="shareToast" role="status" aria-live="polite"></div>
 
   <script>
     const content = {
@@ -1707,44 +1746,70 @@
       }
     }
 
-    async function sharePersonaCard() {
-      const shareBtn = document.getElementById("shareBtn");
-      if (shareBtn.disabled) return;
-      const originalLabel = shareBtn.textContent;
-      shareBtn.disabled = true;
-      shareBtn.textContent = "Preparing…";
+    function showShareToast(msg) {
+      const toast = document.getElementById("shareToast");
+      toast.textContent = msg;
+      toast.classList.add("visible");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => toast.classList.remove("visible"), 3000);
+    }
+
+    // platform: "ig" | "fb"
+    async function shareToStory(platform) {
+      const btnId = platform === "ig" ? "igStoryBtn" : "fbStoryBtn";
+      const btn = document.getElementById(btnId);
+      if (btn.disabled) return;
+      const originalHTML = btn.innerHTML;
+      btn.disabled = true;
+      btn.textContent = "Preparing…";
 
       try {
-        // Build canvas first, then convert to blob+File, then share — all in one
-        // microtask chain so iOS Safari preserves the user-gesture context
         const canvas = await buildPersonaCanvas();
         const studentPart = getStudentName() ? safeFilename(getStudentName()) + "-" : "";
         const fileName = `${studentPart}rmit-persona.png`;
-
         const blob = await new Promise((resolve, reject) => {
-          canvas.toBlob(b => b ? resolve(b) : reject(new Error("toBlob returned null")), "image/png");
+          canvas.toBlob(b => b ? resolve(b) : reject(new Error("toBlob null")), "image/png");
         });
         const file = new File([blob], fileName, { type: "image/png" });
 
+        // Path 1: Web Share API — native OS share sheet, user taps app then "Your Story"
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          // Native share sheet with image file — works on iOS 15+ and Android Chrome 75+
-          await navigator.share({ files: [file], title: "My RMIT Persona Card", text: "#RMITVietnam" });
-        } else if (navigator.share) {
-          // Older browsers that support share but not file sharing
-          await navigator.share({ title: "My RMIT Persona Card", text: "Check out my RMIT Instagram persona! #RMITVietnam" });
-        } else {
-          // Desktop or unsupported — fall back to download
-          await downloadPersonaCard();
+          showShareToast(platform === "ig"
+            ? "Tap Instagram → Your Story 📸"
+            : "Tap Facebook → Your Story 📘");
+          await navigator.share({ files: [file], title: "My RMIT Persona Card" });
+          return;
         }
+
+        // Path 2: Copy image to clipboard + open app deep link
+        let copied = false;
+        try {
+          await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+          copied = true;
+        } catch (_) { /* clipboard not available */ }
+
+        if (platform === "ig") {
+          window.open("instagram://story-camera", "_blank");
+        } else {
+          // Try app URL scheme first, fall back to web
+          const fbOpened = window.open("fb://stories", "_blank");
+          if (!fbOpened) window.open("https://www.facebook.com/stories/create", "_blank");
+        }
+
+        showShareToast(copied
+          ? "Image copied! Open the app and paste into your Story 🎉"
+          : "Opening app — download the card first if needed");
+
+        if (!copied) await downloadPersonaCard();
+
       } catch (e) {
         if (e.name !== "AbortError") {
-          // NotAllowedError = user gesture expired on some browsers → fall back to download
-          console.warn("Share failed, falling back to download:", e.name, e.message);
+          console.warn("Story share failed:", e.name, e.message);
           await downloadPersonaCard();
         }
       } finally {
-        shareBtn.disabled = false;
-        shareBtn.textContent = originalLabel;
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
       }
     }
 
@@ -1845,7 +1910,8 @@
     backToUploadBtn.addEventListener("click", () => showScreen("upload"));
     restartBtn.addEventListener("click", resetQuiz);
     downloadBtn.addEventListener("click", downloadPersonaCard);
-    document.getElementById("shareBtn").addEventListener("click", sharePersonaCard);
+    document.getElementById("igStoryBtn").addEventListener("click", () => shareToStory("ig"));
+    document.getElementById("fbStoryBtn").addEventListener("click", () => shareToStory("fb"));
 
     document.getElementById("imgOverlayClose").addEventListener("click", () => {
       const overlay = document.getElementById("imgOverlay");
