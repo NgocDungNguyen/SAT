@@ -307,6 +307,96 @@
     }
     .btn-delete-course:hover { background: rgba(230,0,40,0.16); }
     .course-empty { font-size: 0.82rem; color: #aaa; padding: 6px 0; }
+
+    /* ── Share Analytics ── */
+    .analytics-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .analytics-stat {
+      background: rgba(13,25,133,0.05);
+      border-radius: 14px;
+      padding: 14px 10px;
+      text-align: center;
+    }
+    .analytics-num {
+      display: block;
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: var(--navy);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .analytics-num.ig { color: #833ab4; }
+    .analytics-num.fb { color: #1877f2; }
+    .analytics-lbl {
+      font-size: 0.69rem;
+      font-weight: 900;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .analytics-filter {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .analytics-filter-group { display: flex; flex-direction: column; gap: 4px; }
+    .analytics-filter-group label { margin: 0; font-size: 0.72rem; }
+    .analytics-filter-group input[type="date"] {
+      width: auto; padding: 8px 12px; font-size: 0.85rem; border-radius: 10px;
+    }
+    .analytics-table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1.5px solid rgba(13,25,133,0.1);
+    }
+    .analytics-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font);
+    }
+    .analytics-table th {
+      background: rgba(13,25,133,0.06);
+      color: var(--navy);
+      font-size: 0.72rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .analytics-table td {
+      padding: 9px 14px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      border-top: 1px solid rgba(13,25,133,0.07);
+      color: #1a1a2e;
+    }
+    .analytics-table tr:hover td { background: rgba(13,25,133,0.03); }
+    .analytics-table .col-ig { color: #833ab4; }
+    .analytics-table .col-fb { color: #1877f2; }
+    .analytics-table .col-total { color: var(--navy); }
+    .analytics-empty {
+      text-align: center;
+      color: #aaa;
+      padding: 24px;
+      font-size: 0.85rem;
+    }
+    .analytics-range-total {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: #555;
+      padding: 10px 14px;
+      background: rgba(13,25,133,0.04);
+      border-radius: 10px;
+      display: none;
+    }
+    .analytics-range-total strong { color: var(--navy); }
   </style>
 </head>
 <body>
@@ -359,6 +449,13 @@
     "courses": {
       ".read": true,
       ".write": "auth != null"
+    },
+    "analytics": {
+      ".read": "auth != null",
+      "shareClicks": {
+        "ig": { ".write": true },
+        "fb": { ".write": true }
+      }
     }
   }
 }</code>
@@ -451,6 +548,60 @@
       <p class="input-hint" id="counterLiveHint" style="margin-top:8px">Live completions: loading…</p>
       <div class="msg" id="counterMsg"></div>
 
+      <!-- ── Share Click Analytics ── -->
+      <div class="divider"></div>
+      <h2 class="section-title">Share Click Analytics</h2>
+      <p class="section-sub">Real-time count of how many students clicked each share button. Updates live as clicks come in.</p>
+
+      <div class="analytics-summary">
+        <div class="analytics-stat">
+          <span class="analytics-num ig" id="totalIgAll">—</span>
+          <span class="analytics-lbl">IG clicks</span>
+        </div>
+        <div class="analytics-stat">
+          <span class="analytics-num fb" id="totalFbAll">—</span>
+          <span class="analytics-lbl">FB clicks</span>
+        </div>
+        <div class="analytics-stat">
+          <span class="analytics-num" id="totalAllAll">—</span>
+          <span class="analytics-lbl">Total shares</span>
+        </div>
+      </div>
+
+      <div class="analytics-filter">
+        <div class="analytics-filter-group">
+          <label for="filterFrom">From date</label>
+          <input type="date" id="filterFrom" />
+        </div>
+        <div class="analytics-filter-group">
+          <label for="filterTo">To date</label>
+          <input type="date" id="filterTo" />
+        </div>
+        <button class="btn-inline" id="applyFilterBtn" type="button">Filter</button>
+        <button class="btn-inline btn-danger" id="clearFilterBtn" type="button">Clear</button>
+      </div>
+
+      <div class="analytics-table-wrap">
+        <table class="analytics-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>📸 IG Clicks</th>
+              <th>📘 FB Clicks</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody id="analyticsTableBody">
+            <tr><td colspan="4" class="analytics-empty">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="analytics-range-total" id="analyticsRangeTotal">
+        In selected range: <strong id="rangeIg">0</strong> IG &nbsp;·&nbsp;
+        <strong id="rangeFb">0</strong> FB &nbsp;·&nbsp;
+        <strong id="rangeTotal">0</strong> total
+      </div>
+
       <!-- ── Course Match Cards ── -->
       <div class="divider"></div>
       <h2 class="section-title">Course Match Cards</h2>
@@ -527,6 +678,7 @@
           loadTags();
           loadCounter();
           loadCourses();
+          loadAnalytics();
         } else {
           showPanel("loginPanel");
           document.getElementById("logoutBtn").style.display = "none";
@@ -709,6 +861,85 @@ by: <strong>${escHtml(data.updatedBy || "—")}</strong>`;
       } catch (e) {
         msgEl.textContent = "Reset failed: " + e.message; msgEl.className = "msg error";
       }
+    });
+
+    // ── Share Click Analytics ────────────────────────────────
+    let _igClicks = [];
+    let _fbClicks = [];
+
+    function loadAnalytics() {
+      db.ref("analytics/shareClicks/ig").on("value", snapshot => {
+        _igClicks = [];
+        snapshot.forEach(child => { const v = child.val(); if (v && v.t) _igClicks.push(v.t); });
+        renderAnalytics();
+      });
+      db.ref("analytics/shareClicks/fb").on("value", snapshot => {
+        _fbClicks = [];
+        snapshot.forEach(child => { const v = child.val(); if (v && v.t) _fbClicks.push(v.t); });
+        renderAnalytics();
+      });
+    }
+
+    function renderAnalytics() {
+      document.getElementById("totalIgAll").textContent  = _igClicks.length.toLocaleString();
+      document.getElementById("totalFbAll").textContent  = _fbClicks.length.toLocaleString();
+      document.getElementById("totalAllAll").textContent = (_igClicks.length + _fbClicks.length).toLocaleString();
+
+      const from = document.getElementById("filterFrom").value;  // "YYYY-MM-DD" or ""
+      const to   = document.getElementById("filterTo").value;
+
+      // Build date → {ig, fb} map (YYYY-MM-DD keys)
+      const dateMap = {};
+      [{ arr: _igClicks, key: "ig" }, { arr: _fbClicks, key: "fb" }].forEach(({ arr, key }) => {
+        arr.forEach(ts => {
+          const date = new Date(ts).toLocaleDateString("en-CA"); // "YYYY-MM-DD"
+          if (!dateMap[date]) dateMap[date] = { ig: 0, fb: 0 };
+          dateMap[date][key]++;
+        });
+      });
+
+      let dates = Object.keys(dateMap).sort().reverse(); // newest first
+      if (from) dates = dates.filter(d => d >= from);
+      if (to)   dates = dates.filter(d => d <= to);
+
+      const tbody = document.getElementById("analyticsTableBody");
+      if (!dates.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="analytics-empty">No data' +
+          (from || to ? ' for selected range' : ' yet') + '</td></tr>';
+        document.getElementById("analyticsRangeTotal").style.display = "none";
+        return;
+      }
+
+      let rIg = 0, rFb = 0;
+      tbody.innerHTML = dates.map(date => {
+        const ig = dateMap[date].ig || 0;
+        const fb = dateMap[date].fb || 0;
+        rIg += ig; rFb += fb;
+        return `<tr>
+          <td>${date}</td>
+          <td class="col-ig">${ig}</td>
+          <td class="col-fb">${fb}</td>
+          <td class="col-total">${ig + fb}</td>
+        </tr>`;
+      }).join("");
+
+      // Show range totals only when a filter is active
+      const rangeTotalEl = document.getElementById("analyticsRangeTotal");
+      if (from || to) {
+        document.getElementById("rangeIg").textContent    = rIg.toLocaleString();
+        document.getElementById("rangeFb").textContent    = rFb.toLocaleString();
+        document.getElementById("rangeTotal").textContent = (rIg + rFb).toLocaleString();
+        rangeTotalEl.style.display = "";
+      } else {
+        rangeTotalEl.style.display = "none";
+      }
+    }
+
+    document.getElementById("applyFilterBtn").addEventListener("click", renderAnalytics);
+    document.getElementById("clearFilterBtn").addEventListener("click", () => {
+      document.getElementById("filterFrom").value = "";
+      document.getElementById("filterTo").value   = "";
+      renderAnalytics();
     });
 
     // ── Courses ──────────────────────────────────────────────

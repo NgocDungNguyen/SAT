@@ -733,28 +733,23 @@
       color: var(--red);
       font-weight: 800;
       font-size: 0.8rem;
-      padding: 3px 10px;
+      padding: 5px 12px;
       border-radius: 999px;
       font-family: var(--font-main);
-    }
-    .btn-copy-tags {
-      align-self: flex-start;
-      font-family: var(--font-main);
-      font-size: 0.75rem;
-      font-weight: 800;
-      color: var(--navy);
-      background: rgba(13, 25, 133, 0.09);
-      border: 1px solid rgba(13, 25, 133, 0.15);
-      border-radius: 10px;
-      padding: 5px 14px;
+      border: none;
       cursor: pointer;
-      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      transition: background 0.15s, transform 0.1s;
     }
-    .btn-copy-tags:hover { background: rgba(13, 25, 133, 0.17); }
-    .btn-copy-tags.copied {
-      color: #1a7f3c;
-      border-color: #1a7f3c;
-      background: rgba(26, 127, 60, 0.08);
+    .campaign-tag-chip:hover { background: rgba(160, 0, 27, 0.16); transform: translateY(-1px); }
+    .campaign-tag-chip:active { transform: scale(0.94); }
+    .campaign-tag-chip.copied { background: rgba(26, 127, 60, 0.12); color: #1a7f3c; }
+    .campaign-tags-hint {
+      font-size: 0.69rem;
+      font-family: var(--font-main);
+      font-weight: 600;
+      color: var(--muted);
+      margin: 0;
+      opacity: 0.8;
     }
 
     /* Download loading state */
@@ -1089,30 +1084,32 @@
         </div>
 
         <div class="result-actions">
-          <div class="course-cards-wrap" id="courseCardsWrap" style="display:none">
-            <span class="course-cards-eyebrow">Courses recommended for you</span>
-            <div class="course-cards-list" id="courseCardsList"></div>
+          <div class="campaign-tags-bar" id="campaignTagsBar">
+            <p class="campaign-tags-label" id="campaignTagsLabel">Story caption</p>
+            <div class="campaign-tags-chips" id="campaignTagsChips"></div>
+            <p class="campaign-tags-hint" id="campaignTagsHint">👆 Click tag/hashtag to copy</p>
           </div>
 
           <div class="btn-row" style="grid-template-columns:1fr;">
             <button class="btn btn-primary btn-full" id="downloadBtn" type="button">Download Persona Card</button>
             <div class="story-share-row">
-              <button class="btn btn-full btn-share-ig" id="igStoryBtn" type="button">📸 IG Story</button>
+              <button class="btn btn-full btn-share-ig" id="igStoryBtn" type="button">📸 Share to IG Story</button>
               <button class="btn btn-full btn-share-fb" id="fbStoryBtn" type="button">📘 FB Story</button>
-            </div>
-            <div class="campaign-tags-bar" id="campaignTagsBar">
-              <p class="campaign-tags-label">Add to your Story caption:</p>
-              <div class="campaign-tags-chips" id="campaignTagsChips"></div>
-              <button class="btn-copy-tags" id="copyTagsBtn" type="button">Copy all tags</button>
             </div>
             <button class="btn btn-secondary btn-full" id="backToUploadBtn" type="button">Upload / change photo</button>
             <button class="btn btn-ghost btn-full" id="restartBtn" type="button">Restart Quiz</button>
+          </div>
+
+          <div class="course-cards-wrap" id="courseCardsWrap" style="display:none">
+            <span class="course-cards-eyebrow" id="courseCardsEyebrow">Courses recommended for you</span>
+            <div class="course-cards-list" id="courseCardsList"></div>
           </div>
         </div>
       </div>
     </section>
   </main>
 
+  <audio id="slotAudio"     src="slot.mp3"     preload="auto"></audio>
   <audio id="clappingAudio" src="clapping.mp3" preload="none"></audio>
 
   <div class="img-overlay" id="imgOverlay" role="dialog" aria-modal="true" aria-label="Save your Persona Card">
@@ -1142,8 +1139,13 @@
         resultTitle: "Your Instagram Story card is ready.",
         resultText: "Download it and share to your story. Don’t forget to tag @rmitsathanoi.",
         downloadBtn: "Download Persona Card",
+        igStoryBtn: "📸 Share to IG Story",
+        fbStoryBtn: "📘 FB Story",
         backToUploadBtn: "Upload / change photo",
         restartBtn: "Restart Quiz",
+        campaignTagsLabel: "Story caption",
+        campaignTagsHint: "👆 Click tag/hashtag to copy",
+        courseCardsEyebrow: "Courses recommended for you",
         storyKicker: "RMIT High School Tour",
         storyTitle: "Instagram Challenge",
         avatarEmpty: "Upload photo to show avatar",
@@ -1214,8 +1216,13 @@
         resultTitle: "Instagram Story của bạn đã sẵn sàng.",
         resultText: "Tải về và chia sẻ lên story. Đừng quên tag @rmitsathanoi nhé.",
         downloadBtn: "Tải về Persona Card",
-        backToUploadBtn: "Tải lên ảnh mới/ đổi ảnh",
+        igStoryBtn: "📸 Chia sẻ lên IG Story",
+        fbStoryBtn: "📘 FB Story",
+        backToUploadBtn: "Tải lên / đổi ảnh",
         restartBtn: "Làm lại Quiz",
+        campaignTagsLabel: "Caption cho Story",
+        campaignTagsHint: "👆 Nhấn tag/hashtag để sao chép",
+        courseCardsEyebrow: "Môn học dành cho bạn",
         storyKicker: "RMIT High School Tour",
         storyTitle: "Instagram Challenge",
         avatarEmpty: "Tải ảnh để hiện avatar",
@@ -1385,9 +1392,14 @@
       setText("resultEyebrow", t().resultEyebrow);
       setText("resultTitle", t().resultTitle);
       setText("resultText", t().resultText);
-      setText("downloadBtn", t().downloadBtn);
-      setText("backToUploadBtn", t().backToUploadBtn);
-      setText("restartBtn", t().restartBtn);
+      setText("downloadBtn",       t().downloadBtn);
+      setText("igStoryBtn",        t().igStoryBtn);
+      setText("fbStoryBtn",        t().fbStoryBtn);
+      setText("backToUploadBtn",   t().backToUploadBtn);
+      setText("restartBtn",        t().restartBtn);
+      setText("campaignTagsLabel", t().campaignTagsLabel);
+      setText("campaignTagsHint",  t().campaignTagsHint);
+      setText("courseCardsEyebrow", t().courseCardsEyebrow);
       setText("storyKicker", t().storyKicker);
       setText("storyTitle", t().storyTitle);
       setText("avatarEmpty", t().avatarEmpty);
@@ -1571,9 +1583,21 @@
       chipsWrap.innerHTML = "";
       if (allTags.length) {
         allTags.forEach(tag => {
-          const chip = document.createElement("span");
+          const chip = document.createElement("button");
           chip.className = "campaign-tag-chip";
+          chip.type = "button";
           chip.textContent = tag;
+          chip.addEventListener("click", async () => {
+            try {
+              await navigator.clipboard.writeText(tag);
+              const orig = chip.textContent;
+              chip.textContent = "✓";
+              chip.classList.add("copied");
+              setTimeout(() => { chip.textContent = orig; chip.classList.remove("copied"); }, 1500);
+            } catch (_) {
+              showShareToast("Could not copy — please copy manually");
+            }
+          });
           chipsWrap.appendChild(chip);
         });
         bar.style.display = "";
@@ -1913,6 +1937,7 @@
       const btnId = platform === "ig" ? "igStoryBtn" : "fbStoryBtn";
       const btn = document.getElementById(btnId);
       if (btn.disabled) return;
+      logShareClick(platform); // log before async work so even aborted shares are counted
       const originalHTML = btn.innerHTML;
       btn.disabled = true;
       btn.textContent = "Preparing…";
@@ -2049,6 +2074,23 @@
         if (audio) { audio.currentTime = 0; audio.volume = 0.75; audio.play().catch(() => {}); }
       } catch (_) {}
     }
+    function playSlotSound() {
+      try {
+        const audio = document.getElementById("slotAudio");
+        if (audio) { audio.currentTime = 0; audio.volume = 0.7; audio.loop = true; audio.play().catch(() => {}); }
+      } catch (_) {}
+    }
+    function stopSlotSound() {
+      try {
+        const audio = document.getElementById("slotAudio");
+        if (!audio) return;
+        audio.loop = false;
+        const fade = setInterval(() => {
+          if (audio.volume > 0.06) audio.volume = Math.max(0, audio.volume - 0.07);
+          else { audio.pause(); audio.currentTime = 0; audio.volume = 0.7; clearInterval(fade); }
+        }, 50);
+      } catch (_) {}
+    }
 
     // ── In-card Slot Machine ─────────────────────────────────────────────
     function runSlotMachine(targetIndex, onComplete) {
@@ -2061,38 +2103,46 @@
         for (let k = 0; k < count; k++) { steps.push({ idx: pos % 3, delay }); pos++; }
       }
 
-      addSteps(22, 65);    // fast  ~1430ms
-      addSteps(10, 130);   // medium ~1300ms
-      [200, 280, 370, 470].forEach(d => { steps.push({ idx: pos % 3, delay: d }); pos++; });
-      // pos = 36; last pushed idx = 35%3 = 2 (SSET)
-      // extraCount so last step shows targetIndex: (targetIndex + 1) % 3
-      let extraCount = (targetIndex + 1) % 3;
+      // ~10 seconds of spinning (all main delays are consumed because extras follow)
+      addSteps(50, 60);   // fast  : 50 × 60ms  = 3000ms
+      addSteps(15, 120);  // medium: 15 × 120ms = 1800ms
+      addSteps(8,  250);  // slow-m: 8  × 250ms = 2000ms
+      [350, 450, 550, 650, 750].forEach(d => { steps.push({ idx: pos % 3, delay: d }); pos++; });
+      // deceleration: 350+450+550+650+750 = 2750ms → cumulative ≈ 9550ms
+      // pos = 78; nextIdx = 78 % 3 = 0 (TBS)
+
+      // General formula: last extra step must land on targetIndex
+      const nextIdx = pos % 3;
+      let extraCount = ((targetIndex - nextIdx + 1) % 3 + 3) % 3;
       if (extraCount === 0) extraCount = 3;
-      for (let e = 0; e < extraCount; e++) { steps.push({ idx: pos % 3, delay: 500 }); pos++; }
+      for (let e = 0; e < extraCount; e++) { steps.push({ idx: pos % 3, delay: 650 }); pos++; }
+      // TBS → 1 extra (0 extra delays)  ≈  9550ms total
+      // SCD → 2 extras (1 extra delay)  ≈ 10200ms total
+      // SSET→ 3 extras (2 extra delays) ≈ 10850ms total
 
       let i = 0;
       function tick() {
         const { idx, delay } = steps[i];
 
-        // Switch the active background inside the card
         document.querySelectorAll(".story-bg").forEach(bg => {
           bg.classList.remove("active", "slot-slide-in");
         });
         const newBg = document.getElementById(bgIds[idx]);
         newBg.classList.add("active");
-        if (delay >= 200) newBg.classList.add("slot-slide-in"); // slide only on slow steps
+        if (delay >= 200) newBg.classList.add("slot-slide-in");
 
         if (i < steps.length - 1) {
           i++;
           setTimeout(tick, delay);
         } else {
-          // Landing — bounce the card itself
+          // Landing — bounce the card
           card.classList.add("slot-land");
           card.addEventListener("animationend", () => {
             card.classList.remove("slot-land");
-            playClapping();
-            onComplete();
+            onComplete(); // avatar + name appear, confetti
           }, { once: true });
+          // 1 second after slot stops: fade out slot sound, fire clapping
+          setTimeout(() => { stopSlotSound(); playClapping(); }, 1000);
         }
       }
       tick();
@@ -2113,6 +2163,12 @@
       try {
         if (typeof firebase === "undefined" || !firebase.apps || !firebase.apps.length) return;
         firebase.database().ref("studentCounter/count").transaction(cur => (cur || 0) + 1);
+      } catch (_) {}
+    }
+    function logShareClick(platform) {
+      try {
+        if (typeof firebase === "undefined" || !firebase.apps || !firebase.apps.length) return;
+        firebase.database().ref(`analytics/shareClicks/${platform}`).push({ t: Date.now() });
       } catch (_) {}
     }
 
@@ -2180,13 +2236,16 @@
       const resultLetter = getResultLetter();
       const targetIndex = { A: 0, B: 1, C: 2 }[resultLetter];
 
-      // Set up result screen (avatar + name hidden so slot machine runs first)
+      // Set up result screen (avatar + name hidden until slot machine finishes)
       renderResult();
       document.querySelector(".avatar-frame").style.visibility = "hidden";
       document.querySelector(".card-live-info").style.visibility = "hidden";
       showScreen("result");
 
-      // Fix font size once the card is visible, then start the in-card slot machine
+      // t = 0s — play slot.mp3 the instant the result screen appears
+      playSlotSound();
+
+      // Fix font size once the card is visible
       requestAnimationFrame(() => {
         const personaCard = document.getElementById("personaCard");
         const config = PERSONA_CARD_CONFIG[resultLetter];
@@ -2196,26 +2255,29 @@
           personaCard.style.setProperty("--name-font-size", `${Math.round(cssFontPx * 10) / 10}px`);
         }
 
-        runSlotMachine(targetIndex, () => {
-          // Reveal avatar and name after landing
-          document.querySelector(".avatar-frame").style.visibility = "";
-          document.querySelector(".card-live-info").style.visibility = "";
+        // t = 6s — slot machine cycling begins
+        setTimeout(() => {
+          runSlotMachine(targetIndex, () => {
+            // Reveal avatar and name after landing (~t=16s)
+            document.querySelector(".avatar-frame").style.visibility = "";
+            document.querySelector(".card-live-info").style.visibility = "";
 
-          renderCourseCards(resultLetter);
+            renderCourseCards(resultLetter);
 
-          if (!_hasCountedThisSession) {
-            incrementStudentCounter();
-            _hasCountedThisSession = true;
-          }
+            if (!_hasCountedThisSession) {
+              incrementStudentCounter();
+              _hasCountedThisSession = true;
+            }
 
-          // Card pop-in animation + confetti
-          const storyWrap = document.querySelector(".story-wrap");
-          storyWrap.classList.remove("reveal-anim");
-          void storyWrap.offsetWidth;
-          storyWrap.classList.add("reveal-anim");
-          storyWrap.addEventListener("animationend", () => storyWrap.classList.remove("reveal-anim"), { once: true });
-          launchConfetti();
-        });
+            // Card pop-in animation + confetti
+            const storyWrap = document.querySelector(".story-wrap");
+            storyWrap.classList.remove("reveal-anim");
+            void storyWrap.offsetWidth;
+            storyWrap.classList.add("reveal-anim");
+            storyWrap.addEventListener("animationend", () => storyWrap.classList.remove("reveal-anim"), { once: true });
+            launchConfetti();
+          });
+        }, 6000);
       });
     });
 
@@ -2224,25 +2286,6 @@
     downloadBtn.addEventListener("click", downloadPersonaCard);
     document.getElementById("igStoryBtn").addEventListener("click", () => shareToStory("ig"));
     document.getElementById("fbStoryBtn").addEventListener("click", () => shareToStory("fb"));
-
-    document.getElementById("copyTagsBtn").addEventListener("click", async () => {
-      const btn = document.getElementById("copyTagsBtn");
-      const allTags = [
-        ...(CAMPAIGN_TAGS.ig || "").split(/\s+/),
-        ...(CAMPAIGN_TAGS.fb || "").split(/\s+/)
-      ].filter(t => t).filter((t, i, a) => a.indexOf(t) === i).join(" ");
-      try {
-        await navigator.clipboard.writeText(allTags);
-        btn.textContent = "✓ Copied!";
-        btn.classList.add("copied");
-        setTimeout(() => {
-          btn.textContent = "Copy all tags";
-          btn.classList.remove("copied");
-        }, 2000);
-      } catch (_) {
-        showShareToast("Could not copy — please copy the tags manually");
-      }
-    });
 
     document.getElementById("imgOverlayClose").addEventListener("click", () => {
       const overlay = document.getElementById("imgOverlay");
