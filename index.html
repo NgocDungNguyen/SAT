@@ -897,46 +897,22 @@
       .result-intro .eyebrow { margin-top: 0; }
     }
 
-    /* ── Slot Machine Overlay ────────────────────────────────────────── */
-    .slot-overlay {
-      position: fixed; inset: 0; z-index: 9500;
-      background: rgba(8, 14, 80, 0.97);
-      display: none; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 24px;
+    /* ── In-card Slot Machine ────────────────────────────────────────── */
+    @keyframes slotSlideIn {
+      from { transform: translateY(-100%); }
+      to   { transform: translateY(0); }
     }
-    .slot-overlay.active { display: flex; }
-    .slot-label {
-      color: rgba(255, 255, 255, 0.92);
-      font-family: var(--font-main); font-size: 1.05rem;
-      font-weight: 800; text-align: center;
-      margin-bottom: 22px; letter-spacing: -0.02em;
+    .story-bg.slot-slide-in {
+      animation: slotSlideIn 0.14s cubic-bezier(0.25, 1, 0.5, 1);
     }
-    .slot-card-frame {
-      height: clamp(300px, 62vh, 520px);
-      aspect-ratio: 9 / 16;
-      border-radius: 22px; overflow: hidden;
-      box-shadow: 0 24px 60px rgba(0,0,0,0.65), 0 0 0 2px rgba(255,255,255,0.1);
-    }
-    .slot-card-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    @keyframes slotLand {
-      0%   { transform: scale(1.06); }
+    @keyframes slotCardLand {
+      0%   { transform: scale(1.05); }
       55%  { transform: scale(0.97); }
       75%  { transform: scale(1.02); }
       100% { transform: scale(1); }
     }
-    .slot-card-frame.slot-land { animation: slotLand 0.55s cubic-bezier(0.34, 1.56, 0.64, 1); }
-    .slot-dots { display: flex; gap: 8px; margin-top: 22px; }
-    .slot-dots span {
-      width: 9px; height: 9px; border-radius: 50%;
-      background: rgba(255, 255, 255, 0.5);
-      animation: dotBounce 0.9s ease-in-out infinite;
-    }
-    .slot-dots span:nth-child(2) { animation-delay: 0.18s; }
-    .slot-dots span:nth-child(3) { animation-delay: 0.36s; }
-    @keyframes dotBounce {
-      0%, 100% { transform: translateY(0); opacity: 0.5; }
-      50%       { transform: translateY(-6px); opacity: 1; }
+    .story-card.slot-land {
+      animation: slotCardLand 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     /* ── Student Counter ─────────────────────────────────────────────── */
@@ -1136,15 +1112,6 @@
       </div>
     </section>
   </main>
-
-  <!-- Slot Machine Overlay -->
-  <div class="slot-overlay" id="slotOverlay">
-    <p class="slot-label" id="slotLabel">Finding your RMIT persona...</p>
-    <div class="slot-card-frame" id="slotCardFrame">
-      <img class="slot-card-img" id="slotCardImg" src="tbs.png" alt="" />
-    </div>
-    <div class="slot-dots"><span></span><span></span><span></span></div>
-  </div>
 
   <audio id="clappingAudio" src="clapping.mp3" preload="none"></audio>
 
@@ -2083,16 +2050,10 @@
       } catch (_) {}
     }
 
-    // ── Slot Machine ─────────────────────────────────────────────────────
+    // ── In-card Slot Machine ─────────────────────────────────────────────
     function runSlotMachine(targetIndex, onComplete) {
-      const bgSrcs = ["tbs.png", "scd.png", "sset.png"];
-      const img   = document.getElementById("slotCardImg");
-      const frame = document.getElementById("slotCardFrame");
-      const overlay = document.getElementById("slotOverlay");
-
-      overlay.classList.add("active");
-      // Preload all 3 backgrounds so swaps are instant
-      bgSrcs.forEach(s => { const i = new Image(); i.src = s; });
+      const bgIds = ["personaBgTBS", "personaBgSCD", "personaBgSSET"];
+      const card  = document.getElementById("personaCard");
 
       const steps = [];
       let pos = 0;
@@ -2103,35 +2064,34 @@
       addSteps(22, 65);    // fast  ~1430ms
       addSteps(10, 130);   // medium ~1300ms
       [200, 280, 370, 470].forEach(d => { steps.push({ idx: pos % 3, delay: d }); pos++; });
-      // pos = 36 after above; last pushed idx = 35%3 = 2 (SSET)
-
-      // extraCount so last step shows targetIndex:
-      // need: (35 + extraCount) % 3 === targetIndex  →  extraCount = (targetIndex + 1) % 3
+      // pos = 36; last pushed idx = 35%3 = 2 (SSET)
+      // extraCount so last step shows targetIndex: (targetIndex + 1) % 3
       let extraCount = (targetIndex + 1) % 3;
       if (extraCount === 0) extraCount = 3;
       for (let e = 0; e < extraCount; e++) { steps.push({ idx: pos % 3, delay: 500 }); pos++; }
 
       let i = 0;
       function tick() {
-        img.src = bgSrcs[steps[i].idx];
+        const { idx, delay } = steps[i];
+
+        // Switch the active background inside the card
+        document.querySelectorAll(".story-bg").forEach(bg => {
+          bg.classList.remove("active", "slot-slide-in");
+        });
+        const newBg = document.getElementById(bgIds[idx]);
+        newBg.classList.add("active");
+        if (delay >= 200) newBg.classList.add("slot-slide-in"); // slide only on slow steps
+
         if (i < steps.length - 1) {
-          const d = steps[i].delay;
           i++;
-          setTimeout(tick, d);
+          setTimeout(tick, delay);
         } else {
-          // Landing
-          frame.classList.add("slot-land");
-          frame.addEventListener("animationend", () => {
-            frame.classList.remove("slot-land");
+          // Landing — bounce the card itself
+          card.classList.add("slot-land");
+          card.addEventListener("animationend", () => {
+            card.classList.remove("slot-land");
             playClapping();
-            overlay.style.transition = "opacity 0.4s";
-            overlay.style.opacity = "0";
-            setTimeout(() => {
-              overlay.classList.remove("active");
-              overlay.style.opacity = "";
-              overlay.style.transition = "";
-              onComplete();
-            }, 400);
+            onComplete();
           }, { once: true });
         }
       }
@@ -2220,24 +2180,35 @@
       const resultLetter = getResultLetter();
       const targetIndex = { A: 0, B: 1, C: 2 }[resultLetter];
 
-      runSlotMachine(targetIndex, () => {
-        renderResult();
-        showScreen("result");
-        renderCourseCards(resultLetter);
+      // Set up result screen (avatar + name hidden so slot machine runs first)
+      renderResult();
+      document.querySelector(".avatar-frame").style.visibility = "hidden";
+      document.querySelector(".card-live-info").style.visibility = "hidden";
+      showScreen("result");
 
-        if (!_hasCountedThisSession) {
-          incrementStudentCounter();
-          _hasCountedThisSession = true;
+      // Fix font size once the card is visible, then start the in-card slot machine
+      requestAnimationFrame(() => {
+        const personaCard = document.getElementById("personaCard");
+        const config = PERSONA_CARD_CONFIG[resultLetter];
+        const cardH = personaCard.getBoundingClientRect().height;
+        if (cardH > 0) {
+          const cssFontPx = config.layout.nameFontPx * (cardH / 1920);
+          personaCard.style.setProperty("--name-font-size", `${Math.round(cssFontPx * 10) / 10}px`);
         }
 
-        requestAnimationFrame(() => {
-          const personaCard = document.getElementById("personaCard");
-          const config = PERSONA_CARD_CONFIG[resultLetter];
-          const cardH = personaCard.getBoundingClientRect().height;
-          if (cardH > 0) {
-            const cssFontPx = config.layout.nameFontPx * (cardH / 1920);
-            personaCard.style.setProperty("--name-font-size", `${Math.round(cssFontPx * 10) / 10}px`);
+        runSlotMachine(targetIndex, () => {
+          // Reveal avatar and name after landing
+          document.querySelector(".avatar-frame").style.visibility = "";
+          document.querySelector(".card-live-info").style.visibility = "";
+
+          renderCourseCards(resultLetter);
+
+          if (!_hasCountedThisSession) {
+            incrementStudentCounter();
+            _hasCountedThisSession = true;
           }
+
+          // Card pop-in animation + confetti
           const storyWrap = document.querySelector(".story-wrap");
           storyWrap.classList.remove("reveal-anim");
           void storyWrap.offsetWidth;
