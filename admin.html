@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RMIT Campaign Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red:   #e60028;
+      --navy:  #0d1985;
+      --font:  'Be Vietnam Pro', Arial, sans-serif;
+    }
+
+    body {
+      font-family: var(--font);
+      background: #eef0f8;
+      color: #1a1a2e;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: var(--navy);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      gap: 12px;
+    }
+    .topbar-brand { font-weight: 900; font-size: 1rem; letter-spacing: -0.01em; }
+    .topbar-brand span { color: #ff6a83; }
+    .btn-logout {
+      font-family: var(--font);
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: rgba(255,255,255,0.85);
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      padding: 6px 16px;
+      cursor: pointer;
+      display: none;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,0.22); }
+
+    /* ── Shared panel ── */
+    .panel {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      padding: 32px 20px;
+    }
+    .panel.active { display: flex; }
+
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 8px 40px rgba(13,25,133,0.10);
+      padding: 36px 32px;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .card-title {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .card-sub {
+      font-size: 0.88rem;
+      color: #555;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    /* ── Form elements ── */
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--navy);
+      margin-bottom: 6px;
+      margin-top: 20px;
+    }
+    label:first-of-type { margin-top: 0; }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      font-family: var(--font);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      background: #f5f6fa;
+      border: 2px solid rgba(13,25,133,0.1);
+      border-radius: 14px;
+      outline: none;
+      transition: border-color 0.18s;
+    }
+    input:focus { border-color: var(--navy); background: #fff; }
+
+    .input-hint {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 5px;
+      line-height: 1.4;
+    }
+
+    .btn-primary {
+      display: block;
+      width: 100%;
+      margin-top: 28px;
+      padding: 14px;
+      font-family: var(--font);
+      font-size: 1rem;
+      font-weight: 900;
+      color: #fff;
+      background: var(--navy);
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: opacity 0.18s, transform 0.12s;
+    }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-save {
+      background: var(--red);
+    }
+
+    /* ── Error / status messages ── */
+    .msg {
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 10px 14px;
+      border-radius: 12px;
+      margin-top: 16px;
+      display: none;
+    }
+    .msg.error   { background: rgba(230,0,40,0.09); color: var(--red); display: block; }
+    .msg.success { background: rgba(26,127,60,0.09); color: #1a7f3c;  display: block; }
+    .msg.info    { background: rgba(13,25,133,0.07); color: var(--navy); display: block; }
+
+    /* ── Tag preview chips ── */
+    .preview-label {
+      font-size: 0.72rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #888;
+      margin-top: 28px;
+      margin-bottom: 10px;
+    }
+    .preview-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+    .chip {
+      font-family: var(--font);
+      font-size: 0.82rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(230,0,40,0.1);
+      color: var(--red);
+    }
+    .no-chips { font-size: 0.82rem; color: #aaa; }
+
+    /* ── Meta info ── */
+    .meta-info {
+      font-size: 0.77rem;
+      color: #aaa;
+      margin-top: 20px;
+      line-height: 1.6;
+    }
+    .meta-info strong { color: #666; }
+
+    /* ── Setup screen ── */
+    .setup-steps {
+      list-style: none;
+      counter-reset: step;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-top: 4px;
+    }
+    .setup-steps li {
+      counter-increment: step;
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 12px;
+      align-items: start;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: #333;
+    }
+    .setup-steps li::before {
+      content: counter(step);
+      width: 32px;
+      height: 32px;
+      background: var(--navy);
+      color: #fff;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    .setup-steps a { color: var(--navy); font-weight: 800; }
+    .code-block {
+      display: block;
+      background: #f0f2f8;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      line-height: 1.6;
+      margin-top: 8px;
+      white-space: pre;
+      overflow-x: auto;
+      color: var(--navy);
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: rgba(13,25,133,0.08);
+      margin: 28px 0;
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 28px 20px; border-radius: 20px; }
+      .card-title { font-size: 1.15rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-brand">RMIT <span>Campaign Admin</span></div>
+    <button class="btn-logout" id="logoutBtn" type="button">Sign out</button>
+  </header>
+
+  <!-- ── SETUP PANEL (Firebase not configured) ── -->
+  <main class="panel active" id="setupPanel">
+    <div class="card">
+      <h1 class="card-title">One-time setup required</h1>
+      <p class="card-sub">
+        This admin panel uses <strong>Firebase Realtime Database</strong> to sync
+        campaign tags across all devices instantly. Follow the steps below once,
+        then commit the config file — and you're done.
+      </p>
+
+      <ol class="setup-steps">
+        <li>
+          <span></span>
+          <div>
+            Go to <a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a>
+            and create a new project (or open an existing one).
+          </div>
+        </li>
+        <li>
+          <span></span>
+          <div>
+            Click <strong>"Add app" → Web (&lt;/&gt;)</strong>. Register the app,
+            copy the <code>firebaseConfig</code> object shown.
+          </div>
+        </li>
+        <li>
+          <span></span>
+          <div>
+            <strong>Build → Realtime Database → Create database.</strong>
+            Any region, start in test mode. Then go to <strong>Rules</strong> and paste:
+            <code class="code-block">{
+  "rules": {
+    "campaignTags": {
+      ".read": true,
+      ".write": "auth != null"
+    }
+  }
+}</code>
+          </div>
+        </li>
+        <li>
+          <span></span>
+          <div>
+            <strong>Build → Authentication → Sign-in method → Email/Password → Enable.</strong>
+          </div>
+        </li>
+        <li>
+          <span></span>
+          <div>
+            <strong>Build → Authentication → Users → Add user.</strong>
+            Create your admin email and password.
+          </div>
+        </li>
+        <li>
+          <span></span>
+          <div>
+            Open <strong>firebase-config.js</strong> (in this project folder) and
+            paste your Firebase config values into the <code>FIREBASE_CONFIG</code> object.
+            Commit and push to GitHub — all done!
+          </div>
+        </li>
+      </ol>
+    </div>
+  </main>
+
+  <!-- ── LOGIN PANEL ── -->
+  <main class="panel" id="loginPanel">
+    <div class="card">
+      <h1 class="card-title">Admin sign in</h1>
+      <p class="card-sub">Sign in with the admin account you created in Firebase Authentication.</p>
+
+      <label for="emailInput">Email</label>
+      <input type="email" id="emailInput" placeholder="admin@example.com" autocomplete="email" />
+
+      <label for="passwordInput">Password</label>
+      <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="current-password" />
+
+      <div class="msg" id="loginMsg"></div>
+
+      <button class="btn-primary" id="signInBtn" type="button">Sign in</button>
+    </div>
+  </main>
+
+  <!-- ── DASHBOARD PANEL ── -->
+  <main class="panel" id="dashPanel">
+    <div class="card">
+      <h1 class="card-title">Campaign Tags</h1>
+      <p class="card-sub">
+        Tags saved here appear automatically in the quiz app when students share to
+        Instagram or Facebook Stories — added to the share text and copied to their clipboard.
+      </p>
+
+      <label for="igTagsInput">Instagram Story tags</label>
+      <input type="text" id="igTagsInput" placeholder="#RMITVietnam @rmitsathanoi" />
+      <p class="input-hint">Hashtags and @mentions, separated by spaces. Leave blank to disable.</p>
+
+      <label for="fbTagsInput">Facebook Story tags</label>
+      <input type="text" id="fbTagsInput" placeholder="#RMITVietnam @RMITVietnam" />
+      <p class="input-hint">Hashtags and @mentions, separated by spaces. Leave blank to disable.</p>
+
+      <div class="msg" id="saveMsg"></div>
+
+      <button class="btn-primary btn-save" id="saveBtn" type="button">Save changes</button>
+
+      <div class="divider"></div>
+
+      <div class="preview-label">Preview — how tags appear to students</div>
+      <div class="preview-chips" id="previewChips">
+        <span class="no-chips">No tags set</span>
+      </div>
+
+      <div class="meta-info" id="metaInfo"></div>
+    </div>
+  </main>
+
+  <!-- Firebase SDKs -->
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <script>
+    const IS_CONFIGURED =
+      typeof FIREBASE_CONFIG !== "undefined" &&
+      FIREBASE_CONFIG.apiKey &&
+      FIREBASE_CONFIG.apiKey !== "PASTE_YOUR_API_KEY_HERE";
+
+    // ── Panel switching ──────────────────────────────────────
+    function showPanel(id) {
+      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    // ── Firebase init ────────────────────────────────────────
+    let db, auth;
+
+    if (IS_CONFIGURED) {
+      if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      db   = firebase.database();
+      auth = firebase.auth();
+
+      // Redirect to login or dashboard based on auth state
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          showPanel("dashPanel");
+          document.getElementById("logoutBtn").style.display = "block";
+          loadTags();
+        } else {
+          showPanel("loginPanel");
+          document.getElementById("logoutBtn").style.display = "none";
+        }
+      });
+    }
+    // else: setupPanel stays active (default)
+
+    // ── Login ────────────────────────────────────────────────
+    document.getElementById("signInBtn").addEventListener("click", async () => {
+      const btn   = document.getElementById("signInBtn");
+      const msgEl = document.getElementById("loginMsg");
+      const email = document.getElementById("emailInput").value.trim();
+      const pass  = document.getElementById("passwordInput").value;
+
+      msgEl.className = "msg";
+      if (!email || !pass) {
+        msgEl.textContent = "Please enter your email and password.";
+        msgEl.className = "msg error";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Signing in…";
+      try {
+        await auth.signInWithEmailAndPassword(email, pass);
+        // onAuthStateChanged handles navigation
+      } catch (e) {
+        msgEl.textContent = friendlyAuthError(e.code);
+        msgEl.className = "msg error";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Sign in";
+      }
+    });
+
+    // Allow Enter key to submit login
+    ["emailInput", "passwordInput"].forEach(id => {
+      document.getElementById(id).addEventListener("keydown", e => {
+        if (e.key === "Enter") document.getElementById("signInBtn").click();
+      });
+    });
+
+    function friendlyAuthError(code) {
+      if (code === "auth/user-not-found" || code === "auth/wrong-password" || code === "auth/invalid-credential")
+        return "Incorrect email or password.";
+      if (code === "auth/invalid-email")
+        return "Please enter a valid email address.";
+      if (code === "auth/too-many-requests")
+        return "Too many failed attempts. Please try again later.";
+      return "Sign in failed. Check your email and password.";
+    }
+
+    // ── Logout ───────────────────────────────────────────────
+    document.getElementById("logoutBtn").addEventListener("click", () => auth.signOut());
+
+    // ── Load tags from Firebase (real-time listener) ─────────
+    let tagsRef;
+
+    function loadTags() {
+      tagsRef = db.ref("campaignTags");
+      tagsRef.on("value", snapshot => {
+        const data = snapshot.val() || {};
+        document.getElementById("igTagsInput").value = data.ig || "";
+        document.getElementById("fbTagsInput").value = data.fb || "";
+        renderPreview(data.ig || "", data.fb || "");
+        renderMeta(data);
+      });
+    }
+
+    // ── Save tags ────────────────────────────────────────────
+    document.getElementById("saveBtn").addEventListener("click", async () => {
+      const btn   = document.getElementById("saveBtn");
+      const msgEl = document.getElementById("saveMsg");
+      const ig    = document.getElementById("igTagsInput").value.trim();
+      const fb    = document.getElementById("fbTagsInput").value.trim();
+
+      btn.disabled = true;
+      btn.textContent = "Saving…";
+      msgEl.className = "msg";
+
+      try {
+        const user = auth.currentUser;
+        await db.ref("campaignTags").set({
+          ig,
+          fb,
+          updatedAt:  Date.now(),
+          updatedBy:  user ? user.email : "admin"
+        });
+        msgEl.textContent = "✓ Tags saved! All devices will update within seconds.";
+        msgEl.className = "msg success";
+        setTimeout(() => { msgEl.className = "msg"; }, 4000);
+      } catch (e) {
+        msgEl.textContent = "Save failed: " + e.message;
+        msgEl.className = "msg error";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Save changes";
+      }
+    });
+
+    // ── Preview chips ────────────────────────────────────────
+    function renderPreview(ig, fb) {
+      const wrap = document.getElementById("previewChips");
+      const all = [...new Set([
+        ...(ig || "").split(/\s+/),
+        ...(fb || "").split(/\s+/)
+      ].filter(Boolean))];
+
+      wrap.innerHTML = all.length
+        ? all.map(t => `<span class="chip">${escHtml(t)}</span>`).join("")
+        : `<span class="no-chips">No tags set — students won't see any required tags.</span>`;
+    }
+
+    function renderMeta(data) {
+      const el = document.getElementById("metaInfo");
+      if (!data.updatedAt) { el.textContent = ""; return; }
+      const d = new Date(data.updatedAt);
+      el.innerHTML = `Last updated: <strong>${d.toLocaleDateString()} ${d.toLocaleTimeString()}</strong>
+by: <strong>${escHtml(data.updatedBy || "—")}</strong>`;
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    // ── Live preview as user types ────────────────────────────
+    ["igTagsInput", "fbTagsInput"].forEach(id => {
+      document.getElementById(id).addEventListener("input", () => {
+        renderPreview(
+          document.getElementById("igTagsInput").value,
+          document.getElementById("fbTagsInput").value
+        );
+      });
+    });
+  </script>
+
+</body>
+</html>

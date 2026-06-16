@@ -898,6 +898,10 @@
     }
 
   </style>
+  <!-- Firebase (optional) — loaded before main script so initFirebaseTags() can use it -->
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
 <body>
   <main class="app">
@@ -2040,6 +2044,54 @@
     });
 
     updateWelcomeTitle();
+
+    // ── Firebase real-time campaign tag sync ──────────────────────────────────
+    // If firebase-config.js is filled in, tags are pulled from Firebase and
+    // update live across all devices. Falls back to local CAMPAIGN_TAGS silently.
+    (function initFirebaseTags() {
+      try {
+        if (
+          typeof FIREBASE_CONFIG === "undefined" ||
+          !FIREBASE_CONFIG.apiKey ||
+          FIREBASE_CONFIG.apiKey === "PASTE_YOUR_API_KEY_HERE"
+        ) return; // not configured — use local CAMPAIGN_TAGS
+
+        if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+
+        firebase.database().ref("campaignTags").on("value", snapshot => {
+          const data = snapshot.val();
+          if (!data) return;
+          if (typeof data.ig === "string") CAMPAIGN_TAGS.ig = data.ig;
+          if (typeof data.fb === "string") CAMPAIGN_TAGS.fb = data.fb;
+          // Refresh tag chips if result screen is currently visible
+          const resultScreen = document.getElementById("resultScreen");
+          if (resultScreen && resultScreen.classList.contains("active")) {
+            const allTags = [
+              ...(CAMPAIGN_TAGS.ig || "").split(/\s+/),
+              ...(CAMPAIGN_TAGS.fb || "").split(/\s+/)
+            ].filter(t => t).filter((t, i, a) => a.indexOf(t) === i);
+
+            const chipsWrap = document.getElementById("campaignTagsChips");
+            const bar = document.getElementById("campaignTagsBar");
+            if (!chipsWrap || !bar) return;
+            chipsWrap.innerHTML = "";
+            if (allTags.length) {
+              allTags.forEach(tag => {
+                const chip = document.createElement("span");
+                chip.className = "campaign-tag-chip";
+                chip.textContent = tag;
+                chipsWrap.appendChild(chip);
+              });
+              bar.style.display = "";
+            } else {
+              bar.style.display = "none";
+            }
+          }
+        });
+      } catch (e) {
+        console.warn("Firebase tag sync unavailable:", e.message);
+      }
+    })();
   </script>
 </body>
 </html>
