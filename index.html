@@ -2086,10 +2086,9 @@
         const audio = document.getElementById("slotAudio");
         if (!audio) return;
         audio.loop = false;
-        const fade = setInterval(() => {
-          if (audio.volume > 0.06) audio.volume = Math.max(0, audio.volume - 0.07);
-          else { audio.pause(); audio.currentTime = 0; audio.volume = 0.7; audio.playbackRate = 2; clearInterval(fade); }
-        }, 50);
+        audio.pause();
+        audio.currentTime = 0;
+        audio.volume = 0.7; // reset for next play
       } catch (_) {}
     }
 
