@@ -462,10 +462,10 @@
 
     .avatar-frame {
       position: absolute;
-      left: 21.4%;
-      top: 23.4%;
-      width: 57%;
-      height: 30%;
+      left: var(--avatar-left, 21%);
+      top: var(--avatar-top, 23%);
+      width: var(--avatar-width, 58%);
+      height: var(--avatar-height, 31%);
       margin: 0;
       padding: 0;
       background: transparent;
@@ -505,12 +505,12 @@
     .card-student-name {
       color: #ffffff;
       font-family: var(--font-main);
-      font-size: 0.82rem;
-      font-weight: 750;
-      line-height: 1.05;
-      white-space: nowrap;
+      font-size: var(--name-font-size, 11px);
+      font-weight: 800;
+      line-height: 1.15;
+      white-space: normal;
+      word-break: break-word;
       overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     .card-high-school {
@@ -999,18 +999,32 @@
       }
     };
 
+    // All coordinates are percentages of the 1080×1920 reference canvas.
     const PERSONA_CARD_CONFIG = {
-      A: { bgId: "personaBgTBS", textColor: "#a0001b", bodyColor: "#0d1985", canvasBgSrc: "" },
-      B: { bgId: "personaBgSCD", textColor: "#0d1985", bodyColor: "#a0001b", canvasBgSrc: "" },
-      C: { bgId: "personaBgSSET", textColor: "#123c69", bodyColor: "#0d1985", canvasBgSrc: "" }
-    };
-
-    const PERSONA_LIVE_TEXT_LAYOUT = {
-      nameLeftPercent: 44,
-      nameTopPercent: 18.8,
-      nameWidthPercent: 37,
-      nameFontRem: 0.62,
-      nameLineHeight: 0.95
+      A: {
+        bgId: "personaBgTBS", textColor: "#a0001b", bodyColor: "#0d1985", canvasBgSrc: "",
+        layout: {
+          avatarLeftPct: 20.57, avatarTopPct: 20.56, avatarWidthPct: 58.44, avatarHeightPct: 31.22,
+          nameLeftPct: 22.90, nameTopPct: 15.21, nameWidthPct: 53.79,
+          nameFontPx: 38, nameLineHeight: 1.15
+        }
+      },
+      B: {
+        bgId: "personaBgSCD", textColor: "#0d1985", bodyColor: "#a0001b", canvasBgSrc: "",
+        layout: {
+          avatarLeftPct: 20.83, avatarTopPct: 23.42, avatarWidthPct: 58.07, avatarHeightPct: 30.53,
+          nameLeftPct: 22.84, nameTopPct: 17.80, nameWidthPct: 54.30,
+          nameFontPx: 38, nameLineHeight: 1.15
+        }
+      },
+      C: {
+        bgId: "personaBgSSET", textColor: "#123c69", bodyColor: "#0d1985", canvasBgSrc: "",
+        layout: {
+          avatarLeftPct: 21.05, avatarTopPct: 23.52, avatarWidthPct: 58.44, avatarHeightPct: 30.91,
+          nameLeftPct: 22.88, nameTopPct: 18.31, nameWidthPct: 54.79,
+          nameFontPx: 38, nameLineHeight: 1.15
+        }
+      }
     };
 
     let currentLanguage = "en";
@@ -1176,15 +1190,25 @@
     function renderResult() {
       const resultLetter = getResultLetter();
       const config = PERSONA_CARD_CONFIG[resultLetter];
+      const layout = config.layout;
       const personaCard = document.getElementById("personaCard");
-      setText("cardStudentName", getStudentName() || "Student Name");
+      const nameText = getStudentName() ? `I'm ${getStudentName()}` : "I'm Your Name";
+      setText("cardStudentName", nameText);
       setText("footerLeft", t().footerLeft);
 
       personaCard.style.setProperty("--persona-text-color", config.textColor || "#0d1985");
-      personaCard.style.setProperty("--name-left", `${PERSONA_LIVE_TEXT_LAYOUT.nameLeftPercent}%`);
-      personaCard.style.setProperty("--name-top", `${PERSONA_LIVE_TEXT_LAYOUT.nameTopPercent}%`);
-      personaCard.style.setProperty("--name-width", `${PERSONA_LIVE_TEXT_LAYOUT.nameWidthPercent}%`);
+      personaCard.style.setProperty("--name-left",   `${layout.nameLeftPct}%`);
+      personaCard.style.setProperty("--name-top",    `${layout.nameTopPct}%`);
+      personaCard.style.setProperty("--name-width",  `${layout.nameWidthPct}%`);
+      personaCard.style.setProperty("--avatar-left",   `${layout.avatarLeftPct}%`);
+      personaCard.style.setProperty("--avatar-top",    `${layout.avatarTopPct}%`);
+      personaCard.style.setProperty("--avatar-width",  `${layout.avatarWidthPct}%`);
+      personaCard.style.setProperty("--avatar-height", `${layout.avatarHeightPct}%`);
       personaCard.style.setProperty("--persona-body-color", config.bodyColor || "#0d1985");
+      // Scale name font to match canvas: nameFontPx is the size at 1920px reference height
+      const cardH = personaCard.getBoundingClientRect().height || 568;
+      const cssFontPx = layout.nameFontPx * (cardH / 1920);
+      personaCard.style.setProperty("--name-font-size", `${Math.round(cssFontPx * 10) / 10}px`);
 
       document.querySelectorAll(".story-bg").forEach(bg => bg.classList.remove("active"));
       const activeBg = document.getElementById(config.bgId);
@@ -1333,19 +1357,18 @@
     }
 
     function drawPersonaLiveText(ctx, W, H, config) {
-      const layout = PERSONA_LIVE_TEXT_LAYOUT;
-      const x = W * (layout.nameLeftPercent / 100);
-      const y = H * (layout.nameTopPercent / 100);
-      const maxWidth = W * (layout.nameWidthPercent / 100);
-      const scale = H / 568.8889;
-      const rem = 16 * scale;
-      const fontSize = layout.nameFontRem * rem;
+      const layout = config.layout;
+      const x = W * (layout.nameLeftPct / 100);
+      const y = H * (layout.nameTopPct / 100);
+      const maxWidth = W * (layout.nameWidthPct / 100);
+      const fontSize = layout.nameFontPx * (H / 1920);
 
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
       ctx.fillStyle = "#ffffff";
-      ctx.font = canvasFont(950, Math.round(fontSize));
-      wrapText(ctx, getStudentName() || "Student Name", x, y, maxWidth, fontSize * layout.nameLineHeight, 1);
+      ctx.font = canvasFont(900, Math.round(fontSize));
+      const nameText = getStudentName() ? `I'm ${getStudentName()}` : "I'm Your Name";
+      wrapText(ctx, nameText, x, y, maxWidth, fontSize * layout.nameLineHeight, 2);
       ctx.textBaseline = "alphabetic";
     }
 
@@ -1445,10 +1468,11 @@
           alert("Persona card background could not be loaded. Make sure tbs.png, scd.png, and sset.png are in the same folder as index.html.");
         }
 
-        const avatarX = 231;
-        const avatarY = 450;
-        const avatarW = 616;
-        const avatarH = 565;
+        const layout = config.layout;
+        const avatarX = W * (layout.avatarLeftPct / 100);
+        const avatarY = H * (layout.avatarTopPct / 100);
+        const avatarW = W * (layout.avatarWidthPct / 100);
+        const avatarH = H * (layout.avatarHeightPct / 100);
 
         const avatarSrc = getCurrentAvatarSource();
         const avatar = await loadCanvasSafeImage(avatarSrc);
@@ -1529,6 +1553,16 @@
       }
       renderResult();
       showScreen("result");
+      // Re-apply font size after card is visible and has a measurable height
+      requestAnimationFrame(() => {
+        const personaCard = document.getElementById("personaCard");
+        const config = PERSONA_CARD_CONFIG[getResultLetter()];
+        const cardH = personaCard.getBoundingClientRect().height;
+        if (cardH > 0) {
+          const cssFontPx = config.layout.nameFontPx * (cardH / 1920);
+          personaCard.style.setProperty("--name-font-size", `${Math.round(cssFontPx * 10) / 10}px`);
+        }
+      });
     });
 
     backToUploadBtn.addEventListener("click", () => showScreen("upload"));
