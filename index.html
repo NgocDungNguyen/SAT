@@ -1005,11 +1005,84 @@
     .course-card-name { font-size: 0.88rem; font-weight: 800; line-height: 1.3; }
     .course-card-arrow { font-size: 0.9rem; opacity: 0.5; flex-shrink: 0; }
 
+    /* ── Squad Banner ──────────────────────────────────────────────────── */
+    @keyframes squad-banner-in {
+      from { opacity: 0; transform: translateY(-10px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0)    scale(1); }
+    }
+    @keyframes result-actions-in {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .squad-banner {
+      margin-top: 20px;
+      background: linear-gradient(135deg, var(--red) 0%, var(--navy) 100%);
+      border-radius: 18px; padding: 18px 20px 16px;
+      text-align: center; color: #fff;
+      animation: squad-banner-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .squad-banner-emoji { font-size: 1.7rem; line-height: 1; margin-bottom: 8px; }
+    .squad-banner-text  { font-size: 0.9rem; font-weight: 700; line-height: 1.5; margin: 0; opacity: 0.9; }
+    .squad-banner-count { font-size: 1.55rem; font-weight: 900; display: block; margin: 4px 0 2px; letter-spacing: -0.02em; }
+    .result-actions-reveal { animation: result-actions-in 0.45s ease both; }
+
+    /* ── Friend QR Modal ───────────────────────────────────────────────── */
+    .friend-modal-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.62); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .friend-modal-card {
+      background: #fff; border-radius: 24px;
+      padding: 28px 24px 24px; text-align: center;
+      max-width: 340px; width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .friend-modal-card h3 {
+      font-size: 1.15rem; font-weight: 900; color: var(--navy);
+      margin: 0 0 4px;
+    }
+    .friend-modal-sub {
+      font-size: 0.8rem; color: var(--navy); opacity: 0.6;
+      margin: 0 0 16px;
+    }
+    #friendQrCode { display: flex; justify-content: center; margin-bottom: 14px; }
+    #friendQrCode img, #friendQrCode canvas { border-radius: 10px; border: 3px solid rgba(13,25,133,0.08); }
+    .friend-modal-hint { font-size: 0.8rem; color: var(--navy); opacity: 0.65; margin: 0 0 18px; }
+
+    /* ── Friend Result Overlay ─────────────────────────────────────────── */
+    .friend-result-screen {
+      position: fixed; inset: 0; z-index: 200;
+      background: linear-gradient(160deg, var(--red) 0%, var(--navy) 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 36px 28px; flex-direction: column; overflow-y: auto;
+    }
+    .friend-result-inner { text-align: center; max-width: 360px; width: 100%; }
+    .friend-persona-img {
+      width: 80%; max-width: 240px; border-radius: 20px;
+      box-shadow: 0 14px 44px rgba(0,0,0,0.4); margin-bottom: 22px;
+    }
+    .friend-result-inner h2 {
+      font-size: 1.45rem; font-weight: 900; color: #fff; margin: 0 0 8px;
+    }
+    .friend-result-inner p {
+      font-size: 0.88rem; color: rgba(255,255,255,0.82); margin: 0 0 26px; line-height: 1.5;
+    }
+    .btn-friend-try {
+      display: block; background: #fff; color: var(--navy);
+      font-family: var(--font-main); font-size: 1rem; font-weight: 900;
+      border: none; border-radius: 50px; padding: 14px 28px;
+      text-decoration: none; cursor: pointer;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.2); transition: transform 0.15s;
+    }
+    .btn-friend-try:hover { transform: scale(1.03); }
+
   </style>
   <!-- Firebase (optional) — loaded before main script so initFirebaseTags() can use it -->
   <script src="firebase-config.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
   <main class="app">
@@ -1152,7 +1225,13 @@
           </article>
         </div>
 
-        <div class="result-actions">
+        <div class="squad-banner" id="squadBanner" style="display:none">
+          <div class="squad-banner-emoji">🎉</div>
+          <span class="squad-banner-count" id="squadBannerNum"></span>
+          <p class="squad-banner-text" id="squadBannerText"></p>
+        </div>
+
+        <div class="result-actions" id="resultActions">
           <div class="campaign-tags-bar" id="campaignTagsBar">
             <p class="campaign-tags-label" id="campaignTagsLabel">Story caption</p>
             <div class="campaign-tags-chips" id="campaignTagsChips"></div>
@@ -1165,6 +1244,7 @@
               <button class="btn btn-full btn-share-ig" id="igStoryBtn" type="button">📸 Share to IG Story</button>
               <button class="btn btn-full btn-share-fb" id="fbStoryBtn" type="button">📘 Share to FB Story</button>
             </div>
+            <button class="btn btn-secondary btn-full" id="friendShareBtn" type="button">🔗 Share to a Friend</button>
             <button class="btn btn-secondary btn-full" id="backToUploadBtn" type="button">Upload / change photo</button>
             <button class="btn btn-ghost btn-full" id="restartBtn" type="button">Restart Quiz</button>
           </div>
@@ -1185,6 +1265,27 @@
     <button class="img-overlay-close" id="imgOverlayClose" type="button" aria-label="Close">✕</button>
     <img class="img-overlay-img" id="imgOverlayImg" src="" alt="Your RMIT Persona Card" />
     <p class="img-overlay-hint"><strong>Press and hold the image</strong><br>then tap "Save to Photos" to keep it.</p>
+  </div>
+
+  <!-- Friend QR Share Modal -->
+  <div class="friend-modal-overlay" id="friendModalOverlay" style="display:none" role="dialog" aria-modal="true">
+    <div class="friend-modal-card">
+      <h3 id="friendModalTitle">Share with a friend!</h3>
+      <p class="friend-modal-sub" id="friendModalSub">Your friend scans this to see your persona</p>
+      <div id="friendQrCode"></div>
+      <p class="friend-modal-hint" id="friendModalHint">👆 Scan the QR code to reveal my result</p>
+      <button class="btn btn-ghost btn-full" id="closeQrBtn" type="button">Close</button>
+    </div>
+  </div>
+
+  <!-- Friend Result Screen (shown when ?friend= URL param detected) -->
+  <div class="friend-result-screen" id="friendResultScreen" style="display:none">
+    <div class="friend-result-inner">
+      <img class="friend-persona-img" id="friendPersonaImg" src="" alt="Friend's persona" />
+      <h2 id="friendResultHeading"></h2>
+      <p id="friendResultSub"></p>
+      <a class="btn-friend-try" href="https://rmitsat.github.io/SAT-Challenge/" id="friendTryBtn">Try it yourself →</a>
+    </div>
   </div>
 
   <div class="share-toast" id="shareToast" role="status" aria-live="polite"></div>
@@ -1215,6 +1316,13 @@
         campaignTagsHint: "👆 Click tag/hashtag to copy",
         courseCardsEyebrow: "Courses recommended for you",
         slotSpinnerLabel: "Revealing your persona…",
+        squadBannerCountSuffix: "students discovered {school} with you!",
+        squadBannerPre: "You're in good company —",
+        friendShareBtn: "🔗 Share to a Friend",
+        friendModalTitle: "Share with a friend!",
+        friendModalSub: "Your friend scans this to see your persona",
+        friendModalHint: "👆 Scan the QR code to reveal my result",
+        friendResultSub: "Take the quiz to discover your own RMIT persona!",
         storyKicker: "RMIT High School Tour",
         storyTitle: "Instagram Challenge",
         avatarEmpty: "Upload photo to show avatar",
@@ -1292,6 +1400,13 @@
         campaignTagsHint: "👆 Nhấn tag/hashtag để sao chép",
         courseCardsEyebrow: "Môn học dành cho bạn",
         slotSpinnerLabel: "Đang khám phá persona của bạn…",
+        squadBannerCountSuffix: "học sinh cùng khám phá {school} với bạn!",
+        squadBannerPre: "Bạn không đơn độc —",
+        friendShareBtn: "🔗 Chia sẻ với bạn bè",
+        friendModalTitle: "Chia sẻ với bạn bè!",
+        friendModalSub: "Bạn của bạn quét mã này để xem kết quả của bạn",
+        friendModalHint: "👆 Quét mã QR để xem kết quả",
+        friendResultSub: "Hãy làm quiz để khám phá persona RMIT của bạn!",
         storyKicker: "RMIT High School Tour",
         storyTitle: "Instagram Challenge",
         avatarEmpty: "Tải ảnh để hiện avatar",
@@ -1463,12 +1578,16 @@
       setText("downloadBtn",       t().downloadBtn);
       setText("igStoryBtn",        t().igStoryBtn);
       setText("fbStoryBtn",        t().fbStoryBtn);
+      setText("friendShareBtn",    t().friendShareBtn);
       setText("backToUploadBtn",   t().backToUploadBtn);
       setText("restartBtn",        t().restartBtn);
       setText("campaignTagsLabel", t().campaignTagsLabel);
       setText("campaignTagsHint",  t().campaignTagsHint);
       setText("courseCardsEyebrow",  t().courseCardsEyebrow);
       setText("slotSpinnerLabel",   t().slotSpinnerLabel);
+      setText("friendModalTitle",   t().friendModalTitle);
+      setText("friendModalSub",     t().friendModalSub);
+      setText("friendModalHint",    t().friendModalHint);
       setText("storyKicker", t().storyKicker);
       setText("storyTitle", t().storyTitle);
       setText("avatarEmpty", t().avatarEmpty);
@@ -2188,6 +2307,11 @@
       // SCD → 2 extras (1 extra delay)  ≈ 5100ms total
       // SSET→ 3 extras (2 extra delays) ≈ 5425ms total
 
+      // Total spinning time = sum of every step delay except the last
+      const totalSpinMs = steps.slice(0, -1).reduce((s, step) => s + step.delay, 0);
+      // Fire clapping 2s before the slot stops (crowd cheers in anticipation)
+      setTimeout(playClapping, Math.max(0, totalSpinMs - 2000));
+
       let i = 0;
       function tick() {
         const { idx, delay } = steps[i];
@@ -2203,14 +2327,13 @@
           i++;
           setTimeout(tick, delay);
         } else {
-          // Landing — bounce the card
+          // Landing — slot sound cuts, bounce animation plays (clapping already running)
+          stopSlotSound();
           card.classList.add("slot-land");
           card.addEventListener("animationend", () => {
             card.classList.remove("slot-land");
             onComplete(); // avatar + name appear, confetti
           }, { once: true });
-          // 1 second after slot stops: fade out slot sound, fire clapping
-          setTimeout(() => { stopSlotSound(); playClapping(); }, 1000);
         }
       }
       tick();
@@ -2219,6 +2342,11 @@
     // ── Student Counter ───────────────────────────────────────────────────
     let _counterBase = 0;
     let _counterCount = 0;
+    let _personaCounters = {
+      tbs:  { base: 0, count: 0 },
+      scd:  { base: 0, count: 0 },
+      sset: { base: 0, count: 0 }
+    };
     let _displayedCount = 0;
     let _counterAnimId = null;
 
@@ -2263,6 +2391,23 @@
       try {
         if (typeof firebase === "undefined" || !firebase.apps || !firebase.apps.length) return;
         firebase.database().ref("studentCounter/count").transaction(cur => (cur || 0) + 1);
+      } catch (_) {}
+    }
+    function incrementPersonaCounter(school) {
+      try {
+        if (typeof firebase === "undefined" || !firebase.apps || !firebase.apps.length) return;
+        firebase.database().ref(`personaCounters/${school}/count`).transaction(cur => (cur || 0) + 1);
+      } catch (_) {}
+    }
+    function saveStudentResult(persona) {
+      try {
+        if (typeof firebase === "undefined" || !firebase.apps || !firebase.apps.length) return;
+        firebase.database().ref("studentResults").push({
+          name: getStudentName() || "Guest",
+          school: getSchoolName(),
+          persona,
+          t: Date.now()
+        });
       } catch (_) {}
     }
     function logShareClick(platform) {
@@ -2342,6 +2487,12 @@
       document.querySelector(".card-live-info").style.visibility = "hidden";
       showScreen("result");
 
+      // Hide result sections until slot machine finishes
+      const resultActionsEl = document.getElementById("resultActions");
+      const squadBannerEl   = document.getElementById("squadBanner");
+      resultActionsEl.style.display = "none";
+      squadBannerEl.style.display   = "none";
+
       // Card shows plain white during the 3s slot.mp3 buildup — spinner visible, no bg image
       document.querySelectorAll(".story-bg").forEach(bg => bg.classList.remove("active"));
       document.getElementById("personaCard").classList.remove("has-bg");
@@ -2371,10 +2522,39 @@
 
             renderCourseCards(resultLetter);
 
+            const schoolKey = { A: "tbs", B: "scd", C: "sset" }[resultLetter];
+            const schoolLabel = { A: "TBS", B: "SCD", C: "SSET" }[resultLetter];
+
             if (!_hasCountedThisSession) {
               incrementStudentCounter();
+              incrementPersonaCounter(schoolKey);
+              saveStudentResult(schoolLabel);
               _hasCountedThisSession = true;
             }
+
+            // Squad banner: show count for this persona
+            const pCnt = _personaCounters[schoolKey];
+            const total = (pCnt.base || 0) + (pCnt.count || 0);
+            const numEl = document.getElementById("squadBannerNum");
+            const txtEl = document.getElementById("squadBannerText");
+            numEl.textContent = total.toLocaleString();
+            txtEl.textContent = (t().squadBannerCountSuffix || "students discovered {school} with you!")
+              .replace("{school}", schoolLabel);
+            const squadBannerEl2 = document.getElementById("squadBanner");
+            squadBannerEl2.style.display = "";
+            squadBannerEl2.classList.remove("squad-banner-animate");
+            void squadBannerEl2.offsetWidth;
+            squadBannerEl2.classList.add("squad-banner-animate");
+
+            // Reveal result-actions below after a short delay
+            setTimeout(() => {
+              const ra = document.getElementById("resultActions");
+              ra.style.display = "";
+              ra.classList.remove("result-actions-reveal");
+              void ra.offsetWidth;
+              ra.classList.add("result-actions-reveal");
+              ra.addEventListener("animationend", () => ra.classList.remove("result-actions-reveal"), { once: true });
+            }, 650);
 
             // Card pop-in animation + confetti
             const storyWrap = document.querySelector(".story-wrap");
@@ -2393,6 +2573,43 @@
     downloadBtn.addEventListener("click", downloadPersonaCard);
     document.getElementById("igStoryBtn").addEventListener("click", () => shareToStory("ig"));
     document.getElementById("fbStoryBtn").addEventListener("click", () => shareToStory("fb"));
+
+    // Friend QR share button
+    document.getElementById("friendShareBtn").addEventListener("click", () => {
+      const letter = getResultLetter();
+      const url = `https://rmitsat.github.io/SAT-Challenge/?friend=${letter}`;
+      const qrEl = document.getElementById("friendQrCode");
+      qrEl.innerHTML = "";
+      if (typeof QRCode !== "undefined") {
+        new QRCode(qrEl, { text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+      } else {
+        qrEl.innerHTML = `<p style="font-size:0.75rem;color:#666">QR unavailable offline.<br><a href="${url}" style="color:var(--navy)">${url}</a></p>`;
+      }
+      document.getElementById("friendModalOverlay").style.display = "flex";
+    });
+    document.getElementById("closeQrBtn").addEventListener("click", () => {
+      document.getElementById("friendModalOverlay").style.display = "none";
+    });
+    document.getElementById("friendModalOverlay").addEventListener("click", e => {
+      if (e.target === document.getElementById("friendModalOverlay"))
+        document.getElementById("friendModalOverlay").style.display = "none";
+    });
+
+    // Friend result overlay — detect ?friend= URL param on page load
+    (function checkFriendParam() {
+      try {
+        const param = new URLSearchParams(window.location.search).get("friend");
+        if (!["A", "B", "C"].includes(param)) return;
+        const labels = { A: "TBS", B: "SCD", C: "SSET" };
+        const imgs   = { A: "tbs.png", B: "scd.png", C: "sset.png" };
+        document.getElementById("friendPersonaImg").src = imgs[param];
+        document.getElementById("friendResultHeading").textContent =
+          `Your friend got ${labels[param]}! 🎉`;
+        document.getElementById("friendResultSub").textContent =
+          t().friendResultSub || "Take the quiz to discover your own RMIT persona!";
+        document.getElementById("friendResultScreen").style.display = "flex";
+      } catch (_) {}
+    })();
 
     document.getElementById("imgOverlayClose").addEventListener("click", () => {
       const overlay = document.getElementById("imgOverlay");
@@ -2451,6 +2668,16 @@
           _counterBase  = typeof data.base  === "number" ? data.base  : 0;
           _counterCount = typeof data.count === "number" ? data.count : 0;
           updateCounterDisplay();
+        });
+
+        // Persona counters — per-school base + live count
+        db.ref("personaCounters").on("value", snapshot => {
+          const data = snapshot.val() || {};
+          ["tbs", "scd", "sset"].forEach(s => {
+            const d = data[s] || {};
+            _personaCounters[s].base  = typeof d.base  === "number" ? d.base  : 0;
+            _personaCounters[s].count = typeof d.count === "number" ? d.count : 0;
+          });
         });
 
         // Courses pool

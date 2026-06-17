@@ -446,6 +446,14 @@
       ".read": true,
       ".write": true
     },
+    "personaCounters": {
+      ".read": true,
+      ".write": true
+    },
+    "studentResults": {
+      ".read": true,
+      ".write": true
+    },
     "courses": {
       ".read": true,
       ".write": "auth != null"
@@ -547,6 +555,39 @@
       </div>
       <p class="input-hint" id="counterLiveHint" style="margin-top:8px">Live completions: loading…</p>
       <div class="msg" id="counterMsg"></div>
+
+      <!-- ── Persona Counters ── -->
+      <div class="divider"></div>
+      <h2 class="section-title">Persona Counters</h2>
+      <p class="section-sub">Set the base count for each school so students see how many peers share their persona. The quiz app auto-increments the live count each time a student gets that result.</p>
+
+      <div style="display:grid;gap:12px;margin-top:4px">
+        <div>
+          <label for="tbsBaseInput">TBS — The Business School base</label>
+          <div class="save-row">
+            <input type="number" id="tbsBaseInput" placeholder="e.g. 500" min="0" />
+            <button class="btn-inline" onclick="savePersonaCounter('tbs')" type="button">Save</button>
+          </div>
+          <p class="input-hint" id="tbsCounterHint" style="margin-top:4px">Loading…</p>
+        </div>
+        <div>
+          <label for="scdBaseInput">SCD — School of Communication & Design base</label>
+          <div class="save-row">
+            <input type="number" id="scdBaseInput" placeholder="e.g. 400" min="0" />
+            <button class="btn-inline" onclick="savePersonaCounter('scd')" type="button">Save</button>
+          </div>
+          <p class="input-hint" id="scdCounterHint" style="margin-top:4px">Loading…</p>
+        </div>
+        <div>
+          <label for="ssetBaseInput">SSET — Science, Engineering & Tech base</label>
+          <div class="save-row">
+            <input type="number" id="ssetBaseInput" placeholder="e.g. 300" min="0" />
+            <button class="btn-inline" onclick="savePersonaCounter('sset')" type="button">Save</button>
+          </div>
+          <p class="input-hint" id="ssetCounterHint" style="margin-top:4px">Loading…</p>
+        </div>
+      </div>
+      <div class="msg" id="personaCounterMsg"></div>
 
       <!-- ── Share Click Analytics ── -->
       <div class="divider"></div>
@@ -677,6 +718,7 @@
           document.getElementById("logoutBtn").style.display = "block";
           loadTags();
           loadCounter();
+          loadPersonaCounters();
           loadCourses();
           loadAnalytics();
         } else {
@@ -862,6 +904,41 @@ by: <strong>${escHtml(data.updatedBy || "—")}</strong>`;
         msgEl.textContent = "Reset failed: " + e.message; msgEl.className = "msg error";
       }
     });
+
+    // ── Persona Counters ────────────────────────────────────
+    const PERSONA_SCHOOLS = { tbs: "TBS", scd: "SCD", sset: "SSET" };
+    function loadPersonaCounters() {
+      ["tbs", "scd", "sset"].forEach(s => {
+        db.ref(`personaCounters/${s}`).on("value", snapshot => {
+          const data  = snapshot.val() || {};
+          const base  = typeof data.base  === "number" ? data.base  : 0;
+          const count = typeof data.count === "number" ? data.count : 0;
+          const inp   = document.getElementById(`${s}BaseInput`);
+          if (inp && document.activeElement !== inp) inp.value = base;
+          const hint = document.getElementById(`${s}CounterHint`);
+          if (hint) hint.textContent =
+            `Live results: ${count.toLocaleString()} | Total shown to students: ${(base + count).toLocaleString()}`;
+        });
+      });
+    }
+    async function savePersonaCounter(school) {
+      const msgEl  = document.getElementById("personaCounterMsg");
+      const rawVal = document.getElementById(`${school}BaseInput`).value;
+      const base   = parseInt(rawVal, 10);
+      if (isNaN(base) || base < 0) {
+        msgEl.textContent = "Enter a valid number (0 or higher).";
+        msgEl.className = "msg error"; return;
+      }
+      msgEl.className = "msg";
+      try {
+        await db.ref(`personaCounters/${school}/base`).set(base);
+        msgEl.textContent = `✓ ${PERSONA_SCHOOLS[school]} base saved!`;
+        msgEl.className = "msg success";
+        setTimeout(() => { msgEl.className = "msg"; }, 3000);
+      } catch (e) {
+        msgEl.textContent = "Save failed: " + e.message; msgEl.className = "msg error";
+      }
+    }
 
     // ── Share Click Analytics ────────────────────────────────
     let _igClicks = [];
