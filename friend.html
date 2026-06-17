@@ -155,23 +155,73 @@
 
   const TARGET_URL = "https://rmitsat.github.io/SAT-Challenge/";
 
-  function esc(s) { return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function esc(s) {
+    return String(s || "")
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  // Only JPEG/PNG/WebP data URIs are accepted as card image sources.
+  // SVG and other types can embed scripts and execute in some browsers.
+  const SAFE_IMG_RE = /^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/]+=*$/;
 
   function showFullCard(dataUrl, personaLetter, friendName) {
+    // Reject anything that isn't a safe raster-image data URI
+    if (!dataUrl || !SAFE_IMG_RE.test(dataUrl)) {
+      showTemplateCard(personaLetter);
+      return;
+    }
     const p = PERSONAS[personaLetter] || PERSONAS.A;
-    const nameHtml = friendName
-      ? `<p class="friend-name-hint">Your friend <strong>${esc(friendName)}</strong> got this!</p>`
-      : "";
-    document.getElementById("card").innerHTML = `
-      <p class="eyebrow">🎉 Your friend's RMIT persona</p>
-      ${nameHtml}
-      <div class="card-img-wrap">
-        <img src="${esc(dataUrl)}" alt="${esc(p.name)}" />
-      </div>
-      <span class="persona-label" style="background:${p.color}">${esc(p.label)} — ${esc(p.name)}</span>
-      <div class="divider" style="margin-top:16px"></div>
-      <p class="cta-label">Discover which RMIT persona is yours 👇</p>
-      <a class="btn-try" href="${TARGET_URL}">Try it yourself →</a>`;
+    const card = document.getElementById("card");
+
+    // Build via DOM to avoid any innerHTML injection from Firebase values
+    card.innerHTML = "";
+
+    const eyebrow = document.createElement("p");
+    eyebrow.className = "eyebrow";
+    eyebrow.textContent = "🎉 Your friend's RMIT persona";
+    card.appendChild(eyebrow);
+
+    if (friendName) {
+      const hint = document.createElement("p");
+      hint.className = "friend-name-hint";
+      hint.textContent = "Your friend ";
+      const strong = document.createElement("strong");
+      strong.textContent = friendName;
+      hint.appendChild(strong);
+      hint.appendChild(document.createTextNode(" got this!"));
+      card.appendChild(hint);
+    }
+
+    const wrap = document.createElement("div");
+    wrap.className = "card-img-wrap";
+    const img = document.createElement("img");
+    img.src = dataUrl;           // validated above — safe to assign directly
+    img.alt = p.name;
+    wrap.appendChild(img);
+    card.appendChild(wrap);
+
+    const label = document.createElement("span");
+    label.className = "persona-label";
+    label.style.background = p.color;
+    label.textContent = `${p.label} — ${p.name}`;
+    card.appendChild(label);
+
+    const divider = document.createElement("div");
+    divider.className = "divider";
+    divider.style.marginTop = "16px";
+    card.appendChild(divider);
+
+    const ctaLabel = document.createElement("p");
+    ctaLabel.className = "cta-label";
+    ctaLabel.textContent = "Discover which RMIT persona is yours 👇";
+    card.appendChild(ctaLabel);
+
+    const btn = document.createElement("a");
+    btn.className = "btn-try";
+    btn.href = TARGET_URL;
+    btn.textContent = "Try it yourself →";
+    card.appendChild(btn);
   }
 
   function showTemplateCard(personaLetter) {

@@ -2400,8 +2400,9 @@
       shuffled.forEach(course => {
         const a = document.createElement("a");
         a.className = "course-card";
-        a.href = course.url || "#";
-        if (course.url) { a.target = "_blank"; a.rel = "noopener"; }
+        const isSafeUrl = /^https?:\/\//.test(course.url);
+        a.href = isSafeUrl ? course.url : "#";
+        if (isSafeUrl) { a.target = "_blank"; a.rel = "noopener noreferrer"; }
         const nameEl = document.createElement("span");
         nameEl.className = "course-card-name";
         nameEl.textContent = course.name;
@@ -2575,7 +2576,11 @@
           qrEl.innerHTML = `<a href="${url}" style="font-size:0.75rem;color:var(--navy);word-break:break-all">${url}</a>`;
         }
       } catch (err) {
-        qrEl.innerHTML = `<p style="color:#c00;font-size:0.8rem;padding:12px">Failed: ${err.message}</p>`;
+        const errP = document.createElement("p");
+        errP.style.cssText = "color:#c00;font-size:0.8rem;padding:12px";
+        errP.textContent = "Failed: " + err.message;
+        qrEl.innerHTML = "";
+        qrEl.appendChild(errP);
       }
     });
     document.getElementById("closeQrBtn").addEventListener("click", () => {

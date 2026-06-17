@@ -510,15 +510,23 @@
     },
     "personaCounters": {
       ".read": true,
-      ".write": true
+      "tbs":  { ".write": true },
+      "scd":  { ".write": true },
+      "sset": { ".write": true }
     },
     "studentResults": {
       ".read": true,
-      ".write": true
+      "$entryId": {
+        ".write": true,
+        ".validate": "newData.hasChildren(['name','persona','t']) && newData.child('name').isString() && newData.child('name').val().length <= 80 && (newData.child('persona').val()==='TBS' || newData.child('persona').val()==='SCD' || newData.child('persona').val()==='SSET') && newData.child('t').isNumber()"
+      }
     },
     "sharedCards": {
       ".read": true,
-      ".write": true
+      "$cardId": {
+        ".write": "!data.exists()",
+        ".validate": "newData.hasChildren(['img','persona','t']) && newData.child('img').isString() && newData.child('img').val().length < 300000 && (newData.child('persona').val()==='A' || newData.child('persona').val()==='B' || newData.child('persona').val()==='C') && newData.child('t').isNumber()"
+      }
     },
     "courses": {
       ".read": true,
