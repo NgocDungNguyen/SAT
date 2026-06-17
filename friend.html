@@ -14,38 +14,50 @@
       --font: 'Be Vietnam Pro', sans-serif;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
+
     body {
       font-family: var(--font);
-      min-height: 100vh;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 32px 20px;
-      background: linear-gradient(160deg, #e61e2a 0%, #0d1985 100%);
+      min-height: 100dvh;
+      padding: 28px 16px 44px;
+      /* Fixed gradient that covers the whole scroll height */
+      background: linear-gradient(160deg, #e61e2a 0%, #0d1985 100%) fixed;
       color: #fff;
+      /* No flexbox centering — let content scroll naturally on small phones */
     }
 
     .card {
-      background: rgba(255,255,255,0.08);
-      border: 1.5px solid rgba(255,255,255,0.18);
-      backdrop-filter: blur(16px);
-      border-radius: 28px;
-      padding: 32px 28px 28px;
-      max-width: 400px; width: 100%;
+      background: rgba(255,255,255,0.09);
+      border: 1.5px solid rgba(255,255,255,0.2);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 26px;
+      padding: 26px 22px 26px;
+      max-width: 420px;
+      width: 100%;
+      margin: 0 auto; /* horizontal center */
       text-align: center;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.35);
+      box-shadow: 0 20px 56px rgba(0,0,0,0.35);
     }
 
     .eyebrow {
-      font-size: 0.72rem; font-weight: 900; letter-spacing: 0.16em;
-      text-transform: uppercase; opacity: 0.6; margin-bottom: 16px;
+      font-size: 0.7rem; font-weight: 900; letter-spacing: 0.16em;
+      text-transform: uppercase; opacity: 0.6; margin-bottom: 14px;
     }
 
+    /* Persona image: constrained height so it doesn't eat the whole viewport */
     .persona-img-wrap {
-      width: 100%; border-radius: 18px; overflow: hidden;
-      box-shadow: 0 12px 36px rgba(0,0,0,0.4); margin-bottom: 24px;
+      width: 100%;
+      max-height: 44vh; /* never taller than ~44% of screen — shows top of card */
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 10px 32px rgba(0,0,0,0.4); margin-bottom: 20px;
       border: 2px solid rgba(255,255,255,0.2);
     }
-    .persona-img-wrap img { width: 100%; display: block; }
+    .persona-img-wrap img {
+      width: 100%; display: block;
+      object-fit: cover;
+      object-position: center top; /* show the top portion of the 9:16 card */
+      max-height: 44vh;
+    }
 
     .persona-label {
       font-size: 0.65rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;
@@ -53,37 +65,39 @@
       color: #fff;
     }
 
-    h1 { font-size: 1.45rem; font-weight: 900; line-height: 1.25; margin-bottom: 8px; }
+    h1 { font-size: 1.35rem; font-weight: 900; line-height: 1.25; margin-bottom: 6px; }
 
-    .school { font-size: 0.82rem; font-weight: 700; opacity: 0.75; margin-bottom: 10px; }
+    .school { font-size: 0.8rem; font-weight: 700; opacity: 0.75; margin-bottom: 10px; }
 
     .tagline {
-      font-size: 0.85rem; line-height: 1.55; opacity: 0.82; margin-bottom: 28px;
+      font-size: 0.83rem; line-height: 1.55; opacity: 0.82; margin-bottom: 24px;
     }
 
     .divider {
-      width: 40px; height: 3px; border-radius: 2px;
-      background: rgba(255,255,255,0.3); margin: 0 auto 22px;
+      width: 36px; height: 3px; border-radius: 2px;
+      background: rgba(255,255,255,0.3); margin: 0 auto 20px;
     }
 
-    .cta-label { font-size: 0.8rem; opacity: 0.65; margin-bottom: 14px; }
+    .cta-label { font-size: 0.78rem; opacity: 0.65; margin-bottom: 12px; }
 
     .btn-try {
       display: block; width: 100%;
       background: #fff; color: var(--navy);
-      font-family: var(--font); font-size: 1.05rem; font-weight: 900;
+      font-family: var(--font); font-size: 1rem; font-weight: 900;
       border: none; border-radius: 50px; padding: 16px 24px;
       cursor: pointer; text-decoration: none;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+      box-shadow: 0 6px 22px rgba(0,0,0,0.25);
       transition: transform 0.13s, box-shadow 0.15s;
+      /* Large touch target */
+      min-height: 52px; display: flex; align-items: center; justify-content: center;
     }
-    .btn-try:hover  { transform: scale(1.03); box-shadow: 0 10px 32px rgba(0,0,0,0.32); }
+    .btn-try:hover  { transform: scale(1.02); box-shadow: 0 10px 30px rgba(0,0,0,0.32); }
     .btn-try:active { transform: scale(0.97); }
 
     /* Error / unsupported state */
-    .error-state { opacity: 0.75; padding: 40px 20px; text-align: center; }
-    .error-state h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; }
-    .error-state p  { font-size: 0.85rem; opacity: 0.7; }
+    .error-state { padding: 32px 16px; text-align: center; }
+    .error-state h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 8px; }
+    .error-state p  { font-size: 0.83rem; opacity: 0.75; margin-bottom: 20px; }
   </style>
 </head>
 <body>
