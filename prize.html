@@ -15,16 +15,14 @@
       --scd:   #0d1985;
       --sset:  #123c69;
       --font:  'Be Vietnam Pro', sans-serif;
-      --card-h: 110px;
-      --col-vis: 5;
+      --card-h: 140px;
+      --col-vis: 3;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
     body { font-family: var(--font); background: #f0f2f8; color: var(--navy); }
 
-    /* ─────────────────────────────────────────────
-       VIEW SWITCHING
-    ───────────────────────────────────────────── */
+    /* ─── VIEW SWITCHING ──────────────────────────────────── */
     .view { display: none; }
     .view.active { display: flex; flex-direction: column; min-height: 100vh; }
 
@@ -41,26 +39,27 @@
     .topbar-sub   { font-size: 0.75rem; opacity: 0.55; }
 
     .pool-page { max-width: 680px; margin: 0 auto; padding: 32px 20px 60px; width: 100%; }
-
     .pool-page h1 { font-size: 1.55rem; font-weight: 900; margin-bottom: 4px; }
     .pool-page .sub { font-size: 0.86rem; opacity: 0.6; margin-bottom: 28px; }
 
-    /* Date row */
+    /* Date range bar */
     .date-bar {
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
       background: #fff; border-radius: 16px; padding: 14px 18px;
       box-shadow: 0 2px 12px rgba(13,25,133,0.07); margin-bottom: 20px;
     }
-    .date-bar label { font-weight: 800; font-size: 0.88rem; }
+    .date-bar label { font-weight: 800; font-size: 0.88rem; white-space: nowrap; }
     .date-bar input[type=date] {
       border: 2px solid rgba(13,25,133,0.18); border-radius: 10px;
-      padding: 7px 13px; font-family: var(--font); font-size: 0.88rem;
-      color: var(--navy); background: #fff; outline: none;
+      padding: 7px 10px; font-family: var(--font); font-size: 0.88rem;
+      color: var(--navy); background: #fff; outline: none; flex: 1; min-width: 120px;
     }
     .date-bar input[type=date]:focus { border-color: var(--navy); }
-    .date-bar .pool-badge {
+    .date-sep { font-size: 0.8rem; opacity: 0.4; }
+    .pool-badge {
       margin-left: auto; background: rgba(13,25,133,0.09); color: var(--navy);
       border-radius: 20px; padding: 4px 12px; font-size: 0.78rem; font-weight: 800;
+      white-space: nowrap; flex-shrink: 0;
     }
 
     /* Pool card */
@@ -80,7 +79,6 @@
     .btn:active { transform: scale(0.96); }
     .btn:disabled { opacity: 0.38; pointer-events: none; }
     .btn-primary { background: var(--navy); color: #fff; font-size: 0.9rem; padding: 10px 22px; }
-    .btn-red     { background: var(--red);  color: #fff; font-size: 0.9rem; padding: 10px 22px; }
     .btn-ghost   { background: rgba(13,25,133,0.08); color: var(--navy); font-size: 0.9rem; padding: 10px 22px; }
     .btn-sm      { font-size: 0.74rem; padding: 5px 12px; border-radius: 10px; }
     .btn-add     { background: rgba(13,25,133,0.09); color: var(--navy); font-size: 0.82rem; padding: 7px 16px; }
@@ -113,8 +111,7 @@
     .confirm-bar {
       background: #fff; border-radius: 20px; padding: 18px 20px;
       box-shadow: 0 2px 14px rgba(13,25,133,0.07);
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      flex-wrap: wrap;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
     }
     .confirm-hint { font-size: 0.84rem; opacity: 0.65; }
     .confirm-hint strong { color: var(--navy); opacity: 1; }
@@ -134,13 +131,10 @@
     ══════════════════════════════════════════════ */
     #spinView {
       background: radial-gradient(ellipse at 50% 0%, #1a1f6e 0%, #050818 70%);
-      color: #fff; min-height: 100vh; position: relative; overflow: hidden;
+      color: #fff; min-height: 100vh; position: relative; overflow-x: hidden;
     }
-
-    /* Decorative stars */
     #spinView::before {
-      content: '';
-      position: absolute; inset: 0; pointer-events: none;
+      content: ''; position: absolute; inset: 0; pointer-events: none;
       background-image:
         radial-gradient(circle, rgba(255,255,255,0.55) 1px, transparent 1px),
         radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px);
@@ -151,77 +145,93 @@
 
     .spin-topbar {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 24px; flex-shrink: 0; position: relative; z-index: 2;
+      padding: 14px 20px; flex-shrink: 0; position: relative; z-index: 2;
     }
     .spin-back {
       background: rgba(255,255,255,0.1); border: none; color: #fff;
       font-family: var(--font); font-size: 0.85rem; font-weight: 700;
-      border-radius: 50px; padding: 8px 18px; cursor: pointer;
-      transition: background 0.15s;
+      border-radius: 50px; padding: 8px 16px; cursor: pointer; transition: background 0.15s;
     }
     .spin-back:hover { background: rgba(255,255,255,0.18); }
     .spin-back:disabled { opacity: 0.3; pointer-events: none; }
-    .spin-brand { font-size: 1rem; font-weight: 900; opacity: 0.75; letter-spacing: 0.04em; text-transform: uppercase; }
+    .spin-brand { font-size: 0.95rem; font-weight: 900; opacity: 0.75; letter-spacing: 0.04em; text-transform: uppercase; }
 
-    .spin-body {
-      flex: 1; display: flex; flex-direction: column; align-items: center;
-      justify-content: center; padding: 12px 16px 28px; gap: 20px; position: relative; z-index: 2;
+    /* Congrats banner — appears ABOVE machine after all 3 stop */
+    @keyframes congrats-in {
+      from { opacity:0; transform: translateY(-14px) scale(0.95); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+    .congrats-banner {
+      text-align: center; padding: 14px 20px;
+      background: linear-gradient(135deg, #ffcc00 0%, #ff9900 100%);
+      color: #1a1200; font-size: 1.05rem; font-weight: 900;
+      letter-spacing: 0.01em; position: relative; z-index: 2;
+      animation: congrats-in 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
     }
 
+    .spin-body {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 12px 14px 32px; gap: 14px; position: relative; z-index: 2;
+    }
     .spin-eyebrow {
-      font-size: 0.72rem; font-weight: 900; letter-spacing: 0.18em;
+      font-size: 0.7rem; font-weight: 900; letter-spacing: 0.18em;
       text-transform: uppercase; opacity: 0.45;
     }
 
     /* Slot machine */
     .slot-machine {
-      display: flex; gap: 12px; justify-content: center; width: 100%; max-width: 760px;
+      display: flex; gap: 10px; justify-content: center; width: 100%; max-width: 760px;
     }
-    .slot-col-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+    .slot-col-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; min-width: 0; }
     .slot-col-label {
-      font-size: 0.65rem; font-weight: 900; letter-spacing: 0.12em;
+      font-size: 0.6rem; font-weight: 900; letter-spacing: 0.12em;
       text-transform: uppercase; opacity: 0.4;
     }
     .slot-col {
       width: 100%;
       height: calc(var(--card-h) * var(--col-vis));
-      overflow: hidden; border-radius: 18px; position: relative;
+      overflow: hidden; border-radius: 14px; position: relative;
       border: 2px solid rgba(255,255,255,0.12);
       box-shadow: 0 0 0 1px rgba(255,255,255,0.04), inset 0 0 30px rgba(0,0,0,0.4);
     }
-    /* Fade top & bottom edges for reel effect */
-    .slot-col::before,
-    .slot-col::after {
-      content: ''; position: absolute; left: 0; right: 0; z-index: 3; pointer-events: none;
-      height: 36%;
+    /* Fade edges for reel illusion */
+    .slot-col::before, .slot-col::after {
+      content: ''; position: absolute; left: 0; right: 0; z-index: 3; pointer-events: none; height: 28%;
     }
-    .slot-col::before { top: 0;    background: linear-gradient(to bottom, rgba(5,8,24,0.85), transparent); }
-    .slot-col::after  { bottom: 0; background: linear-gradient(to top,   rgba(5,8,24,0.85), transparent); }
+    .slot-col::before { top: 0;    background: linear-gradient(to bottom, rgba(5,8,24,0.9), transparent); }
+    .slot-col::after  { bottom: 0; background: linear-gradient(to top,   rgba(5,8,24,0.9), transparent); }
 
-    /* Center indicator line */
-    .slot-col-inner {
-      display: flex; flex-direction: column; will-change: transform;
-    }
+    .slot-col-inner { display: flex; flex-direction: column; will-change: transform; }
+
+    /* Slot card: full persona background image with name overlay */
     .slot-card {
       height: var(--card-h); flex-shrink: 0;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 4px; padding: 8px 10px; text-align: center;
+      position: relative; overflow: hidden;
       border-bottom: 1px solid rgba(255,255,255,0.07);
     }
-    .slot-card .sc-persona {
-      font-size: 0.6rem; font-weight: 900; letter-spacing: 0.08em;
-      border-radius: 5px; padding: 2px 8px; color: #fff; opacity: 0.9;
+    .slot-card .card-bg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center top; display: block;
     }
-    .slot-card .sc-name   { font-size: 0.82rem; font-weight: 900; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
-    .slot-card .sc-school { font-size: 0.62rem; color: rgba(255,255,255,0.55); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
-    .slot-card.persona-TBS  { background: linear-gradient(160deg, #c0001f 0%, #7a0015 100%); }
-    .slot-card.persona-SCD  { background: linear-gradient(160deg, #1b35d4 0%, #0a1060 100%); }
-    .slot-card.persona-SSET { background: linear-gradient(160deg, #1a5292 0%, #0d2e52 100%); }
+    .slot-card .card-info {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 1;
+      padding: 6px 7px 5px;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+    }
+    .slot-card .sc-persona {
+      font-size: 0.5rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase;
+      color: rgba(255,255,255,0.7); display: block; line-height: 1;
+    }
+    .slot-card .sc-name {
+      font-size: 0.68rem; font-weight: 900; color: #fff;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; line-height: 1.25;
+    }
 
     @keyframes col-shake {
       0%,100% { transform: translateX(0); }
-      25%      { transform: translateX(-4px); }
-      75%      { transform: translateX(4px); }
+      25%      { transform: translateX(-3px); }
+      75%      { transform: translateX(3px); }
     }
     .slot-col.pre-spin { animation: col-shake 0.22s ease infinite; }
 
@@ -234,23 +244,21 @@
       animation: winner-pulse 1.4s ease-in-out infinite;
     }
 
-    /* Status text */
     .spin-status {
       font-size: 1rem; font-weight: 800; opacity: 0.7; text-align: center;
       letter-spacing: 0.02em; min-height: 1.4em;
     }
     .spin-status.countdown { font-size: 1.5rem; font-weight: 900; opacity: 1; color: #ffcc00; }
 
-    /* Spin button */
     @keyframes spin-btn-glow {
       0%,100% { box-shadow: 0 6px 28px rgba(230,30,42,0.5); }
       50%      { box-shadow: 0 8px 44px rgba(230,30,42,0.8); }
     }
     .btn-spin {
       background: linear-gradient(135deg, #e61e2a 0%, #a30015 100%);
-      color: #fff; font-family: var(--font); font-size: 1.25rem; font-weight: 900;
+      color: #fff; font-family: var(--font); font-size: 1.2rem; font-weight: 900;
       letter-spacing: 0.05em; border: none; border-radius: 50px;
-      padding: 18px 52px; cursor: pointer;
+      padding: 16px 44px; cursor: pointer;
       animation: spin-btn-glow 2s ease-in-out infinite;
       transition: transform 0.12s; text-transform: uppercase;
     }
@@ -264,37 +272,42 @@
       border: none; border-radius: 50px; padding: 12px 24px; cursor: pointer;
     }
 
-    /* ── Winners Overlay ── */
-    .winners-overlay {
-      position: fixed; inset: 0; z-index: 100;
-      background: rgba(0,0,0,0.78); backdrop-filter: blur(10px);
-      display: flex; align-items: center; justify-content: center; padding: 28px;
+    /* Winner cards revealed inline BELOW the slot machine */
+    @keyframes winner-card-pop {
+      from { opacity:0; transform: translateY(14px) scale(0.93); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
     }
-    @keyframes card-pop { from { opacity:0; transform: scale(0.85) translateY(20px); } to { opacity:1; transform: none; } }
-    .winners-card {
-      background: #fff; border-radius: 28px; padding: 36px 28px 28px;
-      max-width: 460px; width: 100%; text-align: center;
-      box-shadow: 0 28px 80px rgba(0,0,0,0.5);
-      animation: card-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+    .winners-row {
+      display: flex; gap: 8px; width: 100%; max-width: 760px;
     }
-    .winners-emoji  { font-size: 3.2rem; line-height: 1; margin-bottom: 8px; }
-    .winners-title  { font-size: 1.55rem; font-weight: 900; color: var(--navy); margin-bottom: 4px; }
-    .winners-sub    { font-size: 0.85rem; opacity: 0.55; margin-bottom: 22px; }
-    .winners-list   { display: flex; flex-direction: column; gap: 10px; margin-bottom: 26px; }
-    .winner-item {
-      display: flex; align-items: center; gap: 12px;
-      background: rgba(13,25,133,0.05); border-radius: 14px; padding: 12px 15px; text-align: left;
+    .winner-col {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      animation: winner-card-pop 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
     }
-    .winner-rank  { font-size: 1.4rem; flex-shrink: 0; }
-    .winner-info  { flex: 1; min-width: 0; }
-    .winner-name  { font-size: 0.92rem; font-weight: 900; color: var(--navy); }
-    .winner-school { font-size: 0.75rem; opacity: 0.5; }
-    .winner-badge { font-size: 0.66rem; font-weight: 900; border-radius: 8px; padding: 4px 9px; color: #fff; flex-shrink: 0; }
-    .winner-badge.TBS  { background: var(--tbs); }
-    .winner-badge.SCD  { background: var(--scd); }
-    .winner-badge.SSET { background: var(--sset); }
+    .winner-rank-badge { font-size: 1.3rem; line-height: 1; }
+    .winner-card-img {
+      width: 100%; border-radius: 10px; overflow: hidden;
+      aspect-ratio: 3/4; position: relative;
+      border: 2px solid rgba(255,255,255,0.25);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.45);
+    }
+    .winner-card-img img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center top; display: block;
+    }
+    .winner-card-info { text-align: center; width: 100%; }
+    .winner-card-name   { font-size: 0.7rem; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .winner-card-school { font-size: 0.6rem; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .winner-card-badge  {
+      display: inline-block; font-size: 0.56rem; font-weight: 900;
+      border-radius: 5px; padding: 2px 6px; color: #fff; margin-top: 3px;
+    }
+    .winner-card-badge.TBS  { background: var(--tbs); }
+    .winner-card-badge.SCD  { background: var(--scd); }
+    .winner-card-badge.SSET { background: var(--sset); }
 
-    /* ── Entry modal (add/edit) ── */
+    /* Entry modal */
     .entry-modal-overlay {
       position: fixed; inset: 0; z-index: 50;
       background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
@@ -308,18 +321,20 @@
     .entry-modal-card h3 { font-size: 1.05rem; font-weight: 900; margin-bottom: 18px; color: var(--navy); }
     .form-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
     .form-field label { font-size: 0.78rem; font-weight: 800; opacity: 0.65; }
-    .form-field input,
-    .form-field select {
+    .form-field input, .form-field select {
       border: 2px solid rgba(13,25,133,0.15); border-radius: 10px;
       padding: 9px 13px; font-family: var(--font); font-size: 0.9rem; color: var(--navy);
       background: #fff; outline: none;
     }
-    .form-field input:focus,
-    .form-field select:focus { border-color: var(--navy); }
+    .form-field input:focus, .form-field select:focus { border-color: var(--navy); }
     .modal-actions { display: flex; gap: 8px; margin-top: 18px; }
     .modal-actions .btn { flex: 1; padding: 11px 0; font-size: 0.9rem; border-radius: 12px; }
 
-    .error-banner { font-size: 0.82rem; color: var(--red); font-weight: 700; text-align: center; }
+    @media (max-width: 400px) {
+      .date-bar { padding: 10px 12px; gap: 6px; }
+      .pool-page { padding: 20px 14px 60px; }
+      .btn-spin { padding: 14px 32px; font-size: 1.05rem; }
+    }
   </style>
 </head>
 <body>
@@ -337,11 +352,14 @@
 
   <div class="pool-page">
     <h1>Student Pool Setup</h1>
-    <p class="sub">Choose a date, review the student list, add or remove entries, then confirm to launch the spin.</p>
+    <p class="sub">Choose a date range, review the student list, add or remove entries, then confirm to launch the spin.</p>
 
     <div class="date-bar">
-      <label for="datePicker">Date</label>
-      <input type="date" id="datePicker" />
+      <label for="dateFrom">From</label>
+      <input type="date" id="dateFrom" />
+      <span class="date-sep">→</span>
+      <label for="dateTo">To</label>
+      <input type="date" id="dateTo" />
       <span class="pool-badge" id="activeBadge">0 active</span>
     </div>
 
@@ -351,7 +369,7 @@
         <button class="btn btn-add" id="addEntryBtn" type="button">+ Add student</button>
       </div>
       <div class="pool-list" id="poolList">
-        <div class="pool-empty" id="poolEmpty">No students found for this date</div>
+        <div class="pool-empty" id="poolEmpty">No students found for this date range</div>
       </div>
     </div>
 
@@ -370,6 +388,11 @@
     <button class="spin-back" id="backToPoolBtn" type="button">← Back to Pool</button>
     <span class="spin-brand">RMIT SAT · Prize Spin</span>
     <span style="width:110px"></span>
+  </div>
+
+  <!-- Congrats banner appears ABOVE the machine after all 3 winners are revealed -->
+  <div class="congrats-banner" id="congratsBanner" style="display:none">
+    🎉 Congratulations to our winners!
   </div>
 
   <div class="spin-body">
@@ -396,17 +419,13 @@
       <button class="btn-spin" id="spinBtn" type="button">🎰 SPIN</button>
       <button class="btn-spin-reset" id="resetBtn" style="display:none" type="button">↺ Reset</button>
     </div>
-  </div>
-</div>
 
-<!-- Winners overlay -->
-<div class="winners-overlay" id="winnersOverlay" style="display:none">
-  <div class="winners-card">
-    <div class="winners-emoji">🎉</div>
-    <h2 class="winners-title">Congratulations!</h2>
-    <p class="winners-sub" id="winnersSub"></p>
-    <div class="winners-list" id="winnersList"></div>
-    <button class="btn btn-primary" style="width:100%;padding:13px 0;font-size:1rem" id="closeWinnersBtn" type="button">Close</button>
+    <!-- Winner cards revealed below machine as each column stops -->
+    <div class="winners-row" id="winnersRow" style="display:none">
+      <div class="winner-col" id="winnerCol0" style="visibility:hidden"></div>
+      <div class="winner-col" id="winnerCol1" style="visibility:hidden"></div>
+      <div class="winner-col" id="winnerCol2" style="visibility:hidden"></div>
+    </div>
   </div>
 </div>
 
@@ -432,7 +451,7 @@
     </div>
     <div class="modal-actions">
       <button class="btn btn-primary" id="saveEntryBtn" type="button">Save</button>
-      <button class="btn btn-ghost" id="cancelEntryBtn" type="button">Cancel</button>
+      <button class="btn btn-ghost"   id="cancelEntryBtn" type="button">Cancel</button>
     </div>
   </div>
 </div>
@@ -444,6 +463,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
+  const PERSONA_IMGS = { TBS: "tbs.png", SCD: "scd.png", SSET: "sset.png" };
+
   // ── Firebase ───────────────────────────────────────────────────────────
   let db;
   try {
@@ -477,14 +498,14 @@
   }
 
   // ── State ──────────────────────────────────────────────────────────────
-  let allEntries  = [];
-  let activePool  = [];
-  let unsubFn     = null;
-  let editingId   = null; // null = new entry, string = editing existing
-  let spinActive  = false;
-  let cancelFns   = [];
+  let allEntries = [];
+  let activePool = [];
+  let unsubFn    = null;
+  let editingId  = null;
+  let spinActive = false;
+  let cancelFns  = [];
 
-  const CARD_H = 110;
+  const CARD_H = 140; // px — must match CSS --card-h
 
   // ── View switching ─────────────────────────────────────────────────────
   function showView(id) {
@@ -499,12 +520,22 @@
   function todayStr() { return new Date().toLocaleDateString("en-CA"); }
   function dateToMs(dateStr) { return new Date(dateStr + "T12:00:00").getTime(); }
 
+  // ── Date range pickers ─────────────────────────────────────────────────
+  const dateFrom = document.getElementById("dateFrom");
+  const dateTo   = document.getElementById("dateTo");
+  dateFrom.value = todayStr();
+  dateTo.value   = todayStr();
+
+  dateFrom.addEventListener("change", () => {
+    if (dateTo.value && dateTo.value < dateFrom.value) dateTo.value = dateFrom.value;
+    loadPool();
+  });
+  dateTo.addEventListener("change", () => {
+    if (dateFrom.value && dateTo.value < dateFrom.value) dateFrom.value = dateTo.value;
+    loadPool();
+  });
+
   // ── Pool listener ──────────────────────────────────────────────────────
-  const datePicker = document.getElementById("datePicker");
-  datePicker.value = todayStr();
-
-  datePicker.addEventListener("change", loadPool);
-
   function loadPool() {
     if (!db) { renderPoolList([]); return; }
     if (unsubFn) { unsubFn(); unsubFn = null; }
@@ -518,20 +549,27 @@
   }
 
   function rebuildPool() {
-    const dateStr = datePicker.value;
-    activePool = allEntries.filter(e => !e.excluded && new Date(e.t).toLocaleDateString("en-CA") === dateStr);
-    const dayAll = allEntries.filter(e => new Date(e.t).toLocaleDateString("en-CA") === dateStr);
-    renderPoolList(dayAll);
+    const from = dateFrom.value;
+    const to   = dateTo.value || from;
+    activePool = allEntries.filter(e => {
+      if (e.excluded) return false;
+      const d = new Date(e.t).toLocaleDateString("en-CA");
+      return d >= from && d <= to;
+    });
+    const rangeAll = allEntries.filter(e => {
+      const d = new Date(e.t).toLocaleDateString("en-CA");
+      return d >= from && d <= to;
+    });
+    renderPoolList(rangeAll);
     updateConfirmBar();
   }
 
-  function renderPoolList(dayEntries) {
+  function renderPoolList(entries) {
     const list  = document.getElementById("poolList");
     const empty = document.getElementById("poolEmpty");
-    const badge = document.getElementById("activeBadge");
-    badge.textContent = `${activePool.length} active`;
+    document.getElementById("activeBadge").textContent = `${activePool.length} active`;
 
-    if (dayEntries.length === 0) {
+    if (entries.length === 0) {
       list.innerHTML = "";
       empty.style.display = "";
       return;
@@ -539,7 +577,7 @@
     empty.style.display = "none";
     list.innerHTML = "";
 
-    dayEntries.forEach(entry => {
+    entries.forEach(entry => {
       const div = document.createElement("div");
       div.className = "entry-row" + (entry.excluded ? " is-excluded" : "");
       div.innerHTML = `
@@ -555,12 +593,12 @@
       list.appendChild(div);
     });
 
-    list.querySelectorAll(".btn-edit").forEach(btn => btn.addEventListener("click", () => openEditModal(btn.dataset.id)));
-    list.querySelectorAll(".btn-remove").forEach(btn => btn.addEventListener("click", () => {
-      if (db) db.ref(`studentResults/${btn.dataset.id}`).update({ excluded: true });
+    list.querySelectorAll(".btn-edit").forEach(b => b.addEventListener("click", () => openEditModal(b.dataset.id)));
+    list.querySelectorAll(".btn-remove").forEach(b => b.addEventListener("click", () => {
+      if (db) db.ref(`studentResults/${b.dataset.id}`).update({ excluded: true });
     }));
-    list.querySelectorAll(".btn-restore").forEach(btn => btn.addEventListener("click", () => {
-      if (db) db.ref(`studentResults/${btn.dataset.id}`).update({ excluded: false });
+    list.querySelectorAll(".btn-restore").forEach(b => b.addEventListener("click", () => {
+      if (db) db.ref(`studentResults/${b.dataset.id}`).update({ excluded: false });
     }));
   }
 
@@ -568,14 +606,15 @@
     const btn  = document.getElementById("confirmBtn");
     const hint = document.getElementById("confirmHint");
     btn.disabled = activePool.length < 3;
-    if (activePool.length < 3) {
-      hint.innerHTML = `Need at least <strong>${Math.max(0, 3 - activePool.length)} more active student${3 - activePool.length !== 1 ? "s" : ""}</strong> to spin`;
+    const need = 3 - activePool.length;
+    if (need > 0) {
+      hint.innerHTML = `Need at least <strong>${need} more active student${need !== 1 ? "s" : ""}</strong> to spin`;
     } else {
       hint.innerHTML = `<strong>${activePool.length} students</strong> ready — confirm to launch the spin!`;
     }
   }
 
-  // ── Confirm → go to spin view ──────────────────────────────────────────
+  // ── Confirm → spin view ────────────────────────────────────────────────
   document.getElementById("confirmBtn").addEventListener("click", () => {
     if (activePool.length < 3) return;
     resetSpin();
@@ -589,7 +628,7 @@
   });
 
   // ── Add/Edit modal ─────────────────────────────────────────────────────
-  document.getElementById("addEntryBtn").addEventListener("click", () => openAddModal());
+  document.getElementById("addEntryBtn").addEventListener("click", openAddModal);
   document.getElementById("cancelEntryBtn").addEventListener("click", closeModal);
   document.getElementById("entryModal").addEventListener("click", e => {
     if (e.target === document.getElementById("entryModal")) closeModal();
@@ -597,26 +636,24 @@
 
   function openAddModal() {
     editingId = null;
-    document.getElementById("modalTitle").textContent  = "Add Student";
+    document.getElementById("modalTitle").textContent = "Add Student";
     document.getElementById("entryName").value         = "";
     document.getElementById("entrySchool").value       = "";
     document.getElementById("entryPersona").value      = "TBS";
     document.getElementById("entryModal").style.display = "flex";
     document.getElementById("entryName").focus();
   }
-
   function openEditModal(id) {
     const entry = allEntries.find(e => e.id === id);
     if (!entry) return;
     editingId = id;
-    document.getElementById("modalTitle").textContent  = "Edit Student";
-    document.getElementById("entryName").value         = entry.name   || "";
-    document.getElementById("entrySchool").value       = entry.school || "";
-    document.getElementById("entryPersona").value      = entry.persona || "TBS";
+    document.getElementById("modalTitle").textContent = "Edit Student";
+    document.getElementById("entryName").value        = entry.name   || "";
+    document.getElementById("entrySchool").value      = entry.school || "";
+    document.getElementById("entryPersona").value     = entry.persona || "TBS";
     document.getElementById("entryModal").style.display = "flex";
     document.getElementById("entryName").focus();
   }
-
   function closeModal() {
     document.getElementById("entryModal").style.display = "none";
     editingId = null;
@@ -628,13 +665,12 @@
     const persona = document.getElementById("entryPersona").value;
     if (!name) { document.getElementById("entryName").focus(); return; }
     if (!db) { closeModal(); return; }
-
     if (editingId) {
       await db.ref(`studentResults/${editingId}`).update({ name, school, persona });
     } else {
       await db.ref("studentResults").push({
         name, school, persona,
-        t: dateToMs(datePicker.value),
+        t: dateToMs(dateTo.value || todayStr()),
         excluded: false
       });
     }
@@ -643,44 +679,42 @@
 
   // ── Slot machine ───────────────────────────────────────────────────────
   function buildCard(entry) {
+    const persona = entry.persona || "TBS";
+    const imgSrc  = PERSONA_IMGS[persona] || "tbs.png";
     const div = document.createElement("div");
-    div.className = `slot-card persona-${entry.persona || "TBS"}`;
+    div.className = "slot-card";
     div.innerHTML = `
-      <span class="sc-persona">${escHtml(entry.persona || "?")}</span>
-      <span class="sc-name">${escHtml(entry.name || "Guest")}</span>
-      <span class="sc-school">${escHtml(entry.school || "")}</span>`;
+      <img class="card-bg" src="${escHtml(imgSrc)}" alt="${escHtml(persona)}" loading="eager" />
+      <div class="card-info">
+        <span class="sc-persona">${escHtml(persona)}</span>
+        <span class="sc-name">${escHtml(entry.name || "Guest")}</span>
+      </div>`;
     return div;
   }
 
   function easeOutQuint(t) { return 1 - Math.pow(1 - t, 5); }
 
   function spinColumn(innerEl, colEl, winners, colIndex, onDone) {
-    const pool = activePool;
     innerEl.innerHTML = "";
     innerEl.style.transform = "translateY(0)";
 
-    // Fill with shuffled pool repeated many times, then winner at end
-    const reps = Math.max(10, Math.ceil(50 / pool.length));
-    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    const reps     = Math.max(10, Math.ceil(50 / activePool.length));
+    const shuffled = [...activePool].sort(() => Math.random() - 0.5);
     for (let r = 0; r < reps; r++) shuffled.forEach(e => innerEl.appendChild(buildCard(e)));
     innerEl.appendChild(buildCard(winners[colIndex]));
 
-    const totalCards  = innerEl.children.length;
-    const winnerIdx   = totalCards - 1;
-    // Show winner in the middle visible row (row index 2 of 5)
-    const midSlot     = Math.floor(5 / 2); // = 2
-    const finalY      = -((winnerIdx - midSlot) * CARD_H);
+    const winnerIdx = innerEl.children.length - 1;
+    const midSlot   = Math.floor(3 / 2); // centre of 3 visible rows
+    const finalY    = -((winnerIdx - midSlot) * CARD_H);
 
-    const duration = 2200; // ms to decelerate into place
+    const duration  = 2200;
     const startTime = performance.now();
     let rafId;
 
     function step(now) {
-      const elapsed = Math.min(now - startTime, duration);
-      const t = elapsed / duration;
-      const eased = easeOutQuint(t);
-      innerEl.style.transform = `translateY(${finalY * eased}px)`;
-      if (t < 1) {
+      const progress = Math.min((now - startTime) / duration, 1);
+      innerEl.style.transform = `translateY(${finalY * easeOutQuint(progress)}px)`;
+      if (progress < 1) {
         rafId = requestAnimationFrame(step);
       } else {
         innerEl.style.transform = `translateY(${finalY}px)`;
@@ -693,76 +727,82 @@
     return () => cancelAnimationFrame(rafId);
   }
 
+  // ── Spin orchestration ─────────────────────────────────────────────────
   function startSpin() {
     if (spinActive || activePool.length < 3) return;
     spinActive = true;
     document.getElementById("spinBtn").disabled = true;
     document.getElementById("resetBtn").style.display = "none";
-
-    // Pick 3 random winners
-    const shuffled = [...activePool].sort(() => Math.random() - 0.5);
-    const winners  = shuffled.slice(0, 3);
-
-    const status = document.getElementById("spinStatus");
-
-    // Reset columns visually
+    document.getElementById("winnersRow").style.display = "none";
+    document.getElementById("congratsBanner").style.display = "none";
     [0,1,2].forEach(i => {
       document.getElementById(`col${i}`).classList.remove("winner-revealed","pre-spin");
-      document.getElementById(`inner${i}`).style.transform = "translateY(0)";
       document.getElementById(`inner${i}`).innerHTML = "";
+      document.getElementById(`inner${i}`).style.transform = "translateY(0)";
+      const wc = document.getElementById(`winnerCol${i}`);
+      wc.innerHTML = "";
+      wc.style.visibility = "hidden";
     });
 
-    // Play slot sound
-    playSlotSound();
+    const winners = [...activePool].sort(() => Math.random() - 0.5).slice(0, 3);
+    const status  = document.getElementById("spinStatus");
 
-    // Pre-spin: shake + countdown
+    playSlotSound();
     [0,1,2].forEach(i => document.getElementById(`col${i}`).classList.add("pre-spin"));
 
     let countdown = 3;
-    status.className = "spin-status countdown";
+    status.className  = "spin-status countdown";
     status.textContent = `Get ready… ${countdown}`;
-    const countdownInterval = setInterval(() => {
-      countdown--;
-      if (countdown > 0) {
-        status.textContent = `Get ready… ${countdown}`;
-      } else {
-        clearInterval(countdownInterval);
-      }
+    const cdInterval = setInterval(() => {
+      if (--countdown > 0) status.textContent = `Get ready… ${countdown}`;
+      else clearInterval(cdInterval);
     }, 2000);
+    cancelFns.push(() => clearInterval(cdInterval));
 
-    cancelFns.push(() => clearInterval(countdownInterval));
+    const RANKS = ["🥇","🥈","🥉"];
 
-    // t = 6s: start spinning all 3 columns
     const t1 = setTimeout(() => {
-      status.className = "spin-status";
+      status.className  = "spin-status";
       status.textContent = "Spinning…";
       [0,1,2].forEach(i => document.getElementById(`col${i}`).classList.remove("pre-spin"));
 
-      const revealedWinners = [];
-      const stopDelays = [3500, 3500, 3500]; // 3.5s between each stop
+      // Make winners-row visible (but cols still hidden) so layout space is reserved
+      document.getElementById("winnersRow").style.display = "flex";
 
       let accumulated = 0;
-      cancelFns.push(...stopDelays.map((delay, i) => {
+      cancelFns.push(...[3500, 3500, 3500].map((delay, i) => {
         accumulated += delay;
         const t = setTimeout(() => {
-          const col   = document.getElementById(`col${i}`);
-          const inner = document.getElementById(`inner${i}`);
-          const cancelAnim = spinColumn(inner, col, winners, i, () => {
-            playDing();
-            revealedWinners.push(winners[i]);
+          const cancelAnim = spinColumn(
+            document.getElementById(`inner${i}`),
+            document.getElementById(`col${i}`),
+            winners, i,
+            () => {
+              playDing();
 
-            if (i < 2) {
-              status.textContent = `Winner ${i + 1} revealed! Next…`;
-            } else {
-              // All 3 done
-              stopSlotSound();
-              setTimeout(playClapping, 200);
-              status.textContent = "🎉 We have our winners!";
-              document.getElementById("resetBtn").style.display = "";
-              spinActive = false;
-              setTimeout(() => showWinners(winners), 900);
+              // Reveal this winner card below machine
+              const wc = document.getElementById(`winnerCol${i}`);
+              wc.innerHTML = buildWinnerColHTML(winners[i], RANKS[i]);
+              wc.style.visibility = "";
+
+              if (i < 2) {
+                status.textContent = `Winner ${i + 1} revealed! Next…`;
+              } else {
+                stopSlotSound();
+                setTimeout(playClapping, 200);
+                status.textContent = "🎉 We have our winners!";
+                document.getElementById("resetBtn").style.display = "";
+                spinActive = false;
+
+                // Congrats banner above machine
+                const banner = document.getElementById("congratsBanner");
+                banner.style.display = "";
+                banner.style.animation = "none";
+                void banner.offsetWidth;
+                banner.style.animation = "";
+              }
             }
-          });
+          );
           cancelFns.push(cancelAnim);
         }, accumulated);
         return () => clearTimeout(t);
@@ -771,24 +811,18 @@
     cancelFns.push(() => clearTimeout(t1));
   }
 
-  function showWinners(winners) {
-    const ranks = ["🥇","🥈","🥉"];
-    const list  = document.getElementById("winnersList");
-    list.innerHTML = "";
-    winners.forEach((w, i) => {
-      const div = document.createElement("div");
-      div.className = "winner-item";
-      div.innerHTML = `
-        <span class="winner-rank">${ranks[i]}</span>
-        <div class="winner-info">
-          <div class="winner-name">${escHtml(w.name || "Guest")}</div>
-          <div class="winner-school">${escHtml(w.school || "")}</div>
-        </div>
-        <span class="winner-badge ${escHtml(w.persona)}">${escHtml(w.persona || "?")}</span>`;
-      list.appendChild(div);
-    });
-    document.getElementById("winnersSub").textContent = `Date: ${datePicker.value}`;
-    document.getElementById("winnersOverlay").style.display = "flex";
+  function buildWinnerColHTML(winner, rank) {
+    const persona = winner.persona || "TBS";
+    return `
+      <div class="winner-rank-badge">${rank}</div>
+      <div class="winner-card-img">
+        <img src="${escHtml(PERSONA_IMGS[persona] || "tbs.png")}" alt="${escHtml(persona)}" />
+      </div>
+      <div class="winner-card-info">
+        <div class="winner-card-name">${escHtml(winner.name || "Guest")}</div>
+        <div class="winner-card-school">${escHtml(winner.school || "")}</div>
+        <span class="winner-card-badge ${escHtml(persona)}">${escHtml(persona)}</span>
+      </div>`;
   }
 
   function resetSpin() {
@@ -796,25 +830,23 @@
     spinActive = false;
     stopSlotSound();
     [0,1,2].forEach(i => {
-      const col = document.getElementById(`col${i}`);
-      col.classList.remove("winner-revealed","pre-spin");
-      const inner = document.getElementById(`inner${i}`);
-      inner.innerHTML = "";
-      inner.style.transform = "translateY(0)";
+      document.getElementById(`col${i}`).classList.remove("winner-revealed","pre-spin");
+      document.getElementById(`inner${i}`).innerHTML = "";
+      document.getElementById(`inner${i}`).style.transform = "translateY(0)";
+      const wc = document.getElementById(`winnerCol${i}`);
+      wc.innerHTML = "";
+      wc.style.visibility = "hidden";
     });
-    document.getElementById("spinStatus").className = "spin-status";
+    document.getElementById("spinStatus").className  = "spin-status";
     document.getElementById("spinStatus").textContent = "Press SPIN to begin";
     document.getElementById("spinBtn").disabled = false;
     document.getElementById("resetBtn").style.display = "none";
-    document.getElementById("winnersOverlay").style.display = "none";
+    document.getElementById("winnersRow").style.display = "none";
+    document.getElementById("congratsBanner").style.display = "none";
   }
 
   document.getElementById("spinBtn").addEventListener("click", startSpin);
   document.getElementById("resetBtn").addEventListener("click", resetSpin);
-  document.getElementById("closeWinnersBtn").addEventListener("click", () => {
-    document.getElementById("winnersOverlay").style.display = "none";
-    resetSpin();
-  });
 
   // ── Init ───────────────────────────────────────────────────────────────
   loadPool();

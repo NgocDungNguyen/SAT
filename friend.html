@@ -19,10 +19,8 @@
       font-family: var(--font);
       min-height: 100dvh;
       padding: 28px 16px 44px;
-      /* Fixed gradient that covers the whole scroll height */
       background: linear-gradient(160deg, #e61e2a 0%, #0d1985 100%) fixed;
       color: #fff;
-      /* No flexbox centering — let content scroll naturally on small phones */
     }
 
     .card {
@@ -34,7 +32,7 @@
       padding: 26px 22px 26px;
       max-width: 420px;
       width: 100%;
-      margin: 0 auto; /* horizontal center */
+      margin: 0 auto;
       text-align: center;
       box-shadow: 0 20px 56px rgba(0,0,0,0.35);
     }
@@ -44,18 +42,26 @@
       text-transform: uppercase; opacity: 0.6; margin-bottom: 14px;
     }
 
-    /* Persona image: constrained height so it doesn't eat the whole viewport */
+    /* Full generated persona card image */
+    .card-img-wrap {
+      width: 100%;
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 10px 32px rgba(0,0,0,0.4); margin-bottom: 20px;
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+    .card-img-wrap img { width: 100%; display: block; }
+
+    /* Persona template image fallback: constrained height so it doesn't eat viewport */
     .persona-img-wrap {
       width: 100%;
-      max-height: 44vh; /* never taller than ~44% of screen — shows top of card */
+      max-height: 44vh;
       border-radius: 16px; overflow: hidden;
       box-shadow: 0 10px 32px rgba(0,0,0,0.4); margin-bottom: 20px;
       border: 2px solid rgba(255,255,255,0.2);
     }
     .persona-img-wrap img {
       width: 100%; display: block;
-      object-fit: cover;
-      object-position: center top; /* show the top portion of the 9:16 card */
+      object-fit: cover; object-position: center top;
       max-height: 44vh;
     }
 
@@ -69,8 +75,10 @@
 
     .school { font-size: 0.8rem; font-weight: 700; opacity: 0.75; margin-bottom: 10px; }
 
-    .tagline {
-      font-size: 0.83rem; line-height: 1.55; opacity: 0.82; margin-bottom: 24px;
+    .tagline { font-size: 0.83rem; line-height: 1.55; opacity: 0.82; margin-bottom: 24px; }
+
+    .friend-name-hint {
+      font-size: 0.82rem; opacity: 0.7; margin-bottom: 16px; font-weight: 700;
     }
 
     .divider {
@@ -81,82 +89,95 @@
     .cta-label { font-size: 0.78rem; opacity: 0.65; margin-bottom: 12px; }
 
     .btn-try {
-      display: block; width: 100%;
+      display: flex; width: 100%;
       background: #fff; color: var(--navy);
       font-family: var(--font); font-size: 1rem; font-weight: 900;
       border: none; border-radius: 50px; padding: 16px 24px;
       cursor: pointer; text-decoration: none;
       box-shadow: 0 6px 22px rgba(0,0,0,0.25);
       transition: transform 0.13s, box-shadow 0.15s;
-      /* Large touch target */
-      min-height: 52px; display: flex; align-items: center; justify-content: center;
+      min-height: 52px; align-items: center; justify-content: center;
     }
     .btn-try:hover  { transform: scale(1.02); box-shadow: 0 10px 30px rgba(0,0,0,0.32); }
     .btn-try:active { transform: scale(0.97); }
 
-    /* Error / unsupported state */
     .error-state { padding: 32px 16px; text-align: center; }
     .error-state h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 8px; }
     .error-state p  { font-size: 0.83rem; opacity: 0.75; margin-bottom: 20px; }
+
+    .loading-state { padding: 48px 16px; text-align: center; }
+    .loading-state .spinner { font-size: 2rem; }
+    .loading-state p { font-size: 0.88rem; opacity: 0.6; margin-top: 10px; }
   </style>
 </head>
 <body>
 
 <div class="card" id="card">
-  <!-- Content injected by JS -->
-  <div class="error-state">
-    <h2>Loading…</h2>
-    <p>One moment</p>
+  <div class="loading-state">
+    <div class="spinner">⏳</div>
+    <p>Loading your friend's result…</p>
   </div>
 </div>
 
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
   const PERSONAS = {
     A: {
-      img:      "tbs.png",
-      label:    "TBS",
-      color:    "#a0001b",
-      name:     "The Impact Strategist",
-      school:   "The Business School",
-      tagline:  "They turn ideas into direction, direction into action, and action into real-world impact."
+      img:     "tbs.png",
+      label:   "TBS",
+      color:   "#a0001b",
+      name:    "The Impact Strategist",
+      school:  "The Business School",
+      tagline: "They turn ideas into direction, direction into action, and action into real-world impact."
     },
     B: {
-      img:      "scd.png",
-      label:    "SCD",
-      color:    "#0d1985",
-      name:     "The Creative Connector",
-      school:   "School of Communication & Design",
-      tagline:  "They bring stories, visuals, and people together — making every idea feel alive and memorable."
+      img:     "scd.png",
+      label:   "SCD",
+      color:   "#0d1985",
+      name:    "The Creative Connector",
+      school:  "School of Communication & Design",
+      tagline: "They bring stories, visuals, and people together — making every idea feel alive and memorable."
     },
     C: {
-      img:      "sset.png",
-      label:    "SSET",
-      color:    "#123c69",
-      name:     "The Future Builder",
-      school:   "School of Science, Engineering & Technology",
-      tagline:  "They're curious about how things work — and even more excited about how they could work better."
+      img:     "sset.png",
+      label:   "SSET",
+      color:   "#123c69",
+      name:    "The Future Builder",
+      school:  "School of Science, Engineering & Technology",
+      tagline: "They're curious about how things work — and even more excited about how they could work better."
     }
   };
 
+  // Map stored persona label ("TBS"/"SCD"/"SSET") to letter key
+  const LABEL_TO_KEY = { TBS: "A", SCD: "B", SSET: "C" };
+
   const TARGET_URL = "https://rmitsat.github.io/SAT-Challenge/";
 
-  (function init() {
-    const param = new URLSearchParams(window.location.search).get("p");
-    const card  = document.getElementById("card");
+  function esc(s) { return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
-    if (!["A","B","C"].includes(param)) {
-      card.innerHTML = `
-        <div class="error-state">
-          <h2>Hmm, something's off 🤔</h2>
-          <p>This link doesn't have a valid persona code. Ask your friend to share again!</p>
-          <br/>
-          <a class="btn-try" href="${TARGET_URL}">Take the quiz yourself →</a>
-        </div>`;
-      return;
-    }
+  function showFullCard(dataUrl, personaLetter, friendName) {
+    const p = PERSONAS[personaLetter] || PERSONAS.A;
+    const nameHtml = friendName
+      ? `<p class="friend-name-hint">Your friend <strong>${esc(friendName)}</strong> got this!</p>`
+      : "";
+    document.getElementById("card").innerHTML = `
+      <p class="eyebrow">🎉 Your friend's RMIT persona</p>
+      ${nameHtml}
+      <div class="card-img-wrap">
+        <img src="${esc(dataUrl)}" alt="${esc(p.name)}" />
+      </div>
+      <span class="persona-label" style="background:${p.color}">${esc(p.label)} — ${esc(p.name)}</span>
+      <div class="divider" style="margin-top:16px"></div>
+      <p class="cta-label">Discover which RMIT persona is yours 👇</p>
+      <a class="btn-try" href="${TARGET_URL}">Try it yourself →</a>`;
+  }
 
-    const p = PERSONAS[param];
-    card.innerHTML = `
+  function showTemplateCard(personaLetter) {
+    const p = PERSONAS[personaLetter];
+    if (!p) return false;
+    document.getElementById("card").innerHTML = `
       <p class="eyebrow">🎉 Your friend's RMIT persona</p>
       <div class="persona-img-wrap">
         <img src="${p.img}" alt="${p.name}" />
@@ -168,6 +189,58 @@
       <div class="divider"></div>
       <p class="cta-label">Discover which RMIT persona is yours 👇</p>
       <a class="btn-try" href="${TARGET_URL}">Try it yourself →</a>`;
+    return true;
+  }
+
+  function showError(msg) {
+    document.getElementById("card").innerHTML = `
+      <div class="error-state">
+        <h2>Hmm, something's off 🤔</h2>
+        <p>${msg}</p>
+        <a class="btn-try" href="${TARGET_URL}">Take the quiz yourself →</a>
+      </div>`;
+  }
+
+  (async function init() {
+    const params = new URLSearchParams(window.location.search);
+    const key    = params.get("k");
+    const pParam = params.get("p");
+
+    if (key) {
+      // Load stored card image from Firebase
+      try {
+        if (typeof FIREBASE_CONFIG !== "undefined" && FIREBASE_CONFIG.apiKey) {
+          if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+          const db   = firebase.database();
+          const snap = await db.ref(`sharedCards/${key}`).once("value");
+          const data = snap.val();
+
+          if (data && data.img) {
+            // Resolve persona letter from stored persona label or ?p= param
+            const letter = data.persona || (pParam && PERSONAS[pParam] ? pParam : "A");
+            const resolvedLetter = PERSONAS[letter] ? letter : (LABEL_TO_KEY[letter] || "A");
+            showFullCard(data.img, resolvedLetter, data.name);
+            return;
+          }
+          // Key found but no image — fall back to persona template
+          if (data && data.persona) {
+            const letter = LABEL_TO_KEY[data.persona] || data.persona;
+            if (PERSONAS[letter]) { showTemplateCard(letter); return; }
+          }
+        }
+      } catch (_) {
+        // Firebase error — fall through
+      }
+      // Firebase failed or key not found — try ?p= fallback
+      if (pParam && PERSONAS[pParam]) { showTemplateCard(pParam); return; }
+      showError("This link may have expired. Ask your friend to share again!");
+      return;
+    }
+
+    // Legacy ?p= fallback (no Firebase key)
+    if (pParam && PERSONAS[pParam]) { showTemplateCard(pParam); return; }
+
+    showError("This link doesn't have a valid persona code. Ask your friend to share again!");
   })();
 </script>
 </body>

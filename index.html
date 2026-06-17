@@ -1022,8 +1022,8 @@
       animation: squad-banner-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
     }
     .squad-banner-emoji { font-size: 1.7rem; line-height: 1; margin-bottom: 8px; }
-    .squad-banner-text  { font-size: 0.9rem; font-weight: 700; line-height: 1.5; margin: 0; opacity: 0.9; }
-    .squad-banner-count { font-size: 1.55rem; font-weight: 900; display: block; margin: 4px 0 2px; letter-spacing: -0.02em; }
+    .squad-banner-line  { margin: 0; font-size: 0.92rem; font-weight: 700; line-height: 1.5; opacity: 0.9; word-break: break-word; }
+    .squad-banner-num   { font-size: 1.25rem; font-weight: 900; letter-spacing: -0.02em; color: #ffe066; font-variant-numeric: tabular-nums; }
     .result-actions-reveal { animation: result-actions-in 0.45s ease both; }
 
     /* ── Friend QR Modal ───────────────────────────────────────────────── */
@@ -1202,8 +1202,10 @@
 
         <div class="squad-banner" id="squadBanner" style="display:none">
           <div class="squad-banner-emoji">🎉</div>
-          <span class="squad-banner-count" id="squadBannerNum"></span>
-          <p class="squad-banner-text" id="squadBannerText"></p>
+          <p class="squad-banner-line">
+            <span class="squad-banner-num" id="squadBannerNum">0</span>
+            <span id="squadBannerText"></span>
+          </p>
         </div>
 
         <div class="result-actions" id="resultActions">
@@ -2504,14 +2506,14 @@
             const total = (pCnt.base || 0) + (pCnt.count || 0);
             const numEl = document.getElementById("squadBannerNum");
             const txtEl = document.getElementById("squadBannerText");
-            numEl.textContent = total.toLocaleString();
-            txtEl.textContent = (t().squadBannerCountSuffix || "students discovered {school} with you!")
+            txtEl.textContent = " " + (t().squadBannerCountSuffix || "students discovered {school} with you!")
               .replace("{school}", schoolLabel);
             const squadBannerEl2 = document.getElementById("squadBanner");
             squadBannerEl2.style.display = "";
             squadBannerEl2.classList.remove("squad-banner-animate");
             void squadBannerEl2.offsetWidth;
             squadBannerEl2.classList.add("squad-banner-animate");
+            animateCounter(numEl, 0, total, 1800);
 
             // Reveal result-actions below after a short delay
             setTimeout(() => {
@@ -2541,18 +2543,40 @@
     document.getElementById("igStoryBtn").addEventListener("click", () => shareToStory("ig"));
     document.getElementById("fbStoryBtn").addEventListener("click", () => shareToStory("fb"));
 
-    // Friend QR share button — QR links to friend.html?p=A/B/C (dedicated landing page)
-    document.getElementById("friendShareBtn").addEventListener("click", () => {
+    // Friend QR share — build card canvas, store in Firebase, QR links to friend.html?k=<key>
+    document.getElementById("friendShareBtn").addEventListener("click", async () => {
       const letter = getResultLetter();
-      const url = `https://rmitsat.github.io/SAT-Challenge/friend.html?p=${letter}`;
-      const qrEl = document.getElementById("friendQrCode");
-      qrEl.innerHTML = "";
-      if (typeof QRCode !== "undefined") {
-        new QRCode(qrEl, { text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
-      } else {
-        qrEl.innerHTML = `<p style="font-size:0.75rem;color:#666">QR unavailable offline.<br><a href="${url}" style="color:var(--navy);word-break:break-all">${url}</a></p>`;
-      }
+      const qrEl  = document.getElementById("friendQrCode");
+      qrEl.innerHTML = '<p style="padding:24px 0;font-size:0.82rem;text-align:center;opacity:0.55">Generating…</p>';
       document.getElementById("friendModalOverlay").style.display = "flex";
+      try {
+        const srcCanvas = await buildPersonaCanvas();
+        // Scale down to 360×640 for compact Firebase storage (~30–70 KB JPEG)
+        const small = document.createElement("canvas");
+        small.width = 360; small.height = 640;
+        small.getContext("2d").drawImage(srcCanvas, 0, 0, 360, 640);
+        const dataUrl = small.toDataURL("image/jpeg", 0.72);
+
+        let url;
+        if (typeof firebase !== "undefined" && firebase.apps && firebase.apps.length) {
+          const ref = await firebase.database().ref("sharedCards").push({
+            img: dataUrl, persona: letter,
+            name: getStudentName() || "", t: Date.now()
+          });
+          url = `https://rmitsat.github.io/SAT-Challenge/friend.html?k=${ref.key}`;
+        } else {
+          url = `https://rmitsat.github.io/SAT-Challenge/friend.html?p=${letter}`;
+        }
+
+        qrEl.innerHTML = "";
+        if (typeof QRCode !== "undefined") {
+          new QRCode(qrEl, { text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+        } else {
+          qrEl.innerHTML = `<a href="${url}" style="font-size:0.75rem;color:var(--navy);word-break:break-all">${url}</a>`;
+        }
+      } catch (err) {
+        qrEl.innerHTML = `<p style="color:#c00;font-size:0.8rem;padding:12px">Failed: ${err.message}</p>`;
+      }
     });
     document.getElementById("closeQrBtn").addEventListener("click", () => {
       document.getElementById("friendModalOverlay").style.display = "none";
