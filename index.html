@@ -2368,15 +2368,24 @@
         firebase.database().ref(`personaCounters/${school}/count`).transaction(cur => (cur || 0) + 1);
       } catch (_) {}
     }
-    function saveStudentResult(persona) {
+    async function saveStudentResult(persona) {
       try {
         if (typeof firebase === "undefined" || !firebase.apps || !firebase.apps.length) return;
-        firebase.database().ref("studentResults").push({
+        const ref = await firebase.database().ref("studentResults").push({
           name: getStudentName() || "Guest",
           school: getSchoolName(),
           persona,
           t: Date.now()
         });
+        // Save a compressed card image so the prize spin can display real student cards
+        try {
+          const srcCanvas = await buildPersonaCanvas();
+          const small = document.createElement("canvas");
+          small.width = 210; small.height = 373;
+          small.getContext("2d").drawImage(srcCanvas, 0, 0, 210, 373);
+          const imgData = small.toDataURL("image/jpeg", 0.68);
+          await ref.update({ img: imgData });
+        } catch (_) {}
       } catch (_) {}
     }
     function logShareClick(platform) {

@@ -735,20 +735,32 @@
   });
 
   // ── Card builder ─────────────────────────────────────────────────────
-  // cardH: explicit pixel height for the card (avoids aspect-ratio bugs in flex columns)
+  // If entry.img exists (saved from quiz completion), show the real student card.
+  // Otherwise fall back to the persona template + "I'm Name" text overlay.
+  const SAFE_IMG_RE = /^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/]+=*$/;
+
   function buildCard(entry, cardH) {
-    const persona = entry.persona || "TBS";
-    const img     = PERSONA_IMGS[persona] || "tbs.png";
-    const div     = document.createElement("div");
-    div.className = "slot-card";
-    div.style.height = cardH + "px"; // ← explicit height: the key bug fix
-    div.innerHTML = `
-      <img class="card-bg" src="${escHtml(img)}" alt="${escHtml(persona)}" />
-      <div class="card-overlay"></div>
-      <div class="card-info">
-        <span class="sc-persona">${escHtml(persona)}</span>
-        <span class="sc-name">${escHtml(entry.name || "Guest")}</span>
-      </div>`;
+    const persona   = entry.persona || "TBS";
+    const div       = document.createElement("div");
+    div.className   = "slot-card";
+    div.style.height = cardH + "px";
+
+    const hasRealCard = entry.img && SAFE_IMG_RE.test(entry.img);
+    const imgSrc = hasRealCard ? entry.img : (PERSONA_IMGS[persona] || "tbs.png");
+
+    if (hasRealCard) {
+      // Full card image already contains the student photo + "I'm Name" — show as-is
+      div.innerHTML = `<img class="card-bg" src="${escHtml(imgSrc)}" alt="${escHtml(entry.name || persona)}" />`;
+    } else {
+      // No saved image: show persona template + text overlay
+      div.innerHTML = `
+        <img class="card-bg" src="${escHtml(imgSrc)}" alt="${escHtml(persona)}" />
+        <div class="card-overlay"></div>
+        <div class="card-info">
+          <span class="sc-persona">${escHtml(persona)}</span>
+          <span class="sc-name">I'm ${escHtml(entry.name || "Guest")}</span>
+        </div>`;
+    }
     return div;
   }
 
