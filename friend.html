@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Friend's RMIT Persona 🎉</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --red:  #e61e2a;
+      --navy: #0d1985;
+      --font: 'Be Vietnam Pro', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 32px 20px;
+      background: linear-gradient(160deg, #e61e2a 0%, #0d1985 100%);
+      color: #fff;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.08);
+      border: 1.5px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(16px);
+      border-radius: 28px;
+      padding: 32px 28px 28px;
+      max-width: 400px; width: 100%;
+      text-align: center;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.35);
+    }
+
+    .eyebrow {
+      font-size: 0.72rem; font-weight: 900; letter-spacing: 0.16em;
+      text-transform: uppercase; opacity: 0.6; margin-bottom: 16px;
+    }
+
+    .persona-img-wrap {
+      width: 100%; border-radius: 18px; overflow: hidden;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.4); margin-bottom: 24px;
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+    .persona-img-wrap img { width: 100%; display: block; }
+
+    .persona-label {
+      font-size: 0.65rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;
+      border-radius: 8px; padding: 4px 12px; margin-bottom: 10px; display: inline-block;
+      color: #fff;
+    }
+
+    h1 { font-size: 1.45rem; font-weight: 900; line-height: 1.25; margin-bottom: 8px; }
+
+    .school { font-size: 0.82rem; font-weight: 700; opacity: 0.75; margin-bottom: 10px; }
+
+    .tagline {
+      font-size: 0.85rem; line-height: 1.55; opacity: 0.82; margin-bottom: 28px;
+    }
+
+    .divider {
+      width: 40px; height: 3px; border-radius: 2px;
+      background: rgba(255,255,255,0.3); margin: 0 auto 22px;
+    }
+
+    .cta-label { font-size: 0.8rem; opacity: 0.65; margin-bottom: 14px; }
+
+    .btn-try {
+      display: block; width: 100%;
+      background: #fff; color: var(--navy);
+      font-family: var(--font); font-size: 1.05rem; font-weight: 900;
+      border: none; border-radius: 50px; padding: 16px 24px;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+      transition: transform 0.13s, box-shadow 0.15s;
+    }
+    .btn-try:hover  { transform: scale(1.03); box-shadow: 0 10px 32px rgba(0,0,0,0.32); }
+    .btn-try:active { transform: scale(0.97); }
+
+    /* Error / unsupported state */
+    .error-state { opacity: 0.75; padding: 40px 20px; text-align: center; }
+    .error-state h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; }
+    .error-state p  { font-size: 0.85rem; opacity: 0.7; }
+  </style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <!-- Content injected by JS -->
+  <div class="error-state">
+    <h2>Loading…</h2>
+    <p>One moment</p>
+  </div>
+</div>
+
+<script>
+  const PERSONAS = {
+    A: {
+      img:      "tbs.png",
+      label:    "TBS",
+      color:    "#a0001b",
+      name:     "The Impact Strategist",
+      school:   "The Business School",
+      tagline:  "They turn ideas into direction, direction into action, and action into real-world impact."
+    },
+    B: {
+      img:      "scd.png",
+      label:    "SCD",
+      color:    "#0d1985",
+      name:     "The Creative Connector",
+      school:   "School of Communication & Design",
+      tagline:  "They bring stories, visuals, and people together — making every idea feel alive and memorable."
+    },
+    C: {
+      img:      "sset.png",
+      label:    "SSET",
+      color:    "#123c69",
+      name:     "The Future Builder",
+      school:   "School of Science, Engineering & Technology",
+      tagline:  "They're curious about how things work — and even more excited about how they could work better."
+    }
+  };
+
+  const TARGET_URL = "https://rmitsat.github.io/SAT-Challenge/";
+
+  (function init() {
+    const param = new URLSearchParams(window.location.search).get("p");
+    const card  = document.getElementById("card");
+
+    if (!["A","B","C"].includes(param)) {
+      card.innerHTML = `
+        <div class="error-state">
+          <h2>Hmm, something's off 🤔</h2>
+          <p>This link doesn't have a valid persona code. Ask your friend to share again!</p>
+          <br/>
+          <a class="btn-try" href="${TARGET_URL}">Take the quiz yourself →</a>
+        </div>`;
+      return;
+    }
+
+    const p = PERSONAS[param];
+    card.innerHTML = `
+      <p class="eyebrow">🎉 Your friend's RMIT persona</p>
+      <div class="persona-img-wrap">
+        <img src="${p.img}" alt="${p.name}" />
+      </div>
+      <span class="persona-label" style="background:${p.color}">${p.label}</span>
+      <h1>${p.name}</h1>
+      <p class="school">${p.school}</p>
+      <p class="tagline">${p.tagline}</p>
+      <div class="divider"></div>
+      <p class="cta-label">Discover which RMIT persona is yours 👇</p>
+      <a class="btn-try" href="${TARGET_URL}">Try it yourself →</a>`;
+  })();
+</script>
+</body>
+</html>

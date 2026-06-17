@@ -1050,32 +1050,7 @@
     #friendQrCode img, #friendQrCode canvas { border-radius: 10px; border: 3px solid rgba(13,25,133,0.08); }
     .friend-modal-hint { font-size: 0.8rem; color: var(--navy); opacity: 0.65; margin: 0 0 18px; }
 
-    /* ── Friend Result Overlay ─────────────────────────────────────────── */
-    .friend-result-screen {
-      position: fixed; inset: 0; z-index: 200;
-      background: linear-gradient(160deg, var(--red) 0%, var(--navy) 100%);
-      display: flex; align-items: center; justify-content: center;
-      padding: 36px 28px; flex-direction: column; overflow-y: auto;
-    }
-    .friend-result-inner { text-align: center; max-width: 360px; width: 100%; }
-    .friend-persona-img {
-      width: 80%; max-width: 240px; border-radius: 20px;
-      box-shadow: 0 14px 44px rgba(0,0,0,0.4); margin-bottom: 22px;
-    }
-    .friend-result-inner h2 {
-      font-size: 1.45rem; font-weight: 900; color: #fff; margin: 0 0 8px;
-    }
-    .friend-result-inner p {
-      font-size: 0.88rem; color: rgba(255,255,255,0.82); margin: 0 0 26px; line-height: 1.5;
-    }
-    .btn-friend-try {
-      display: block; background: #fff; color: var(--navy);
-      font-family: var(--font-main); font-size: 1rem; font-weight: 900;
-      border: none; border-radius: 50px; padding: 14px 28px;
-      text-decoration: none; cursor: pointer;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.2); transition: transform 0.15s;
-    }
-    .btn-friend-try:hover { transform: scale(1.03); }
+
 
   </style>
   <!-- Firebase (optional) — loaded before main script so initFirebaseTags() can use it -->
@@ -1278,15 +1253,7 @@
     </div>
   </div>
 
-  <!-- Friend Result Screen (shown when ?friend= URL param detected) -->
-  <div class="friend-result-screen" id="friendResultScreen" style="display:none">
-    <div class="friend-result-inner">
-      <img class="friend-persona-img" id="friendPersonaImg" src="" alt="Friend's persona" />
-      <h2 id="friendResultHeading"></h2>
-      <p id="friendResultSub"></p>
-      <a class="btn-friend-try" href="https://rmitsat.github.io/SAT-Challenge/" id="friendTryBtn">Try it yourself →</a>
-    </div>
-  </div>
+
 
   <div class="share-toast" id="shareToast" role="status" aria-live="polite"></div>
 
@@ -2574,16 +2541,16 @@
     document.getElementById("igStoryBtn").addEventListener("click", () => shareToStory("ig"));
     document.getElementById("fbStoryBtn").addEventListener("click", () => shareToStory("fb"));
 
-    // Friend QR share button
+    // Friend QR share button — QR links to friend.html?p=A/B/C (dedicated landing page)
     document.getElementById("friendShareBtn").addEventListener("click", () => {
       const letter = getResultLetter();
-      const url = `https://rmitsat.github.io/SAT-Challenge/?friend=${letter}`;
+      const url = `https://rmitsat.github.io/SAT-Challenge/friend.html?p=${letter}`;
       const qrEl = document.getElementById("friendQrCode");
       qrEl.innerHTML = "";
       if (typeof QRCode !== "undefined") {
         new QRCode(qrEl, { text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
       } else {
-        qrEl.innerHTML = `<p style="font-size:0.75rem;color:#666">QR unavailable offline.<br><a href="${url}" style="color:var(--navy)">${url}</a></p>`;
+        qrEl.innerHTML = `<p style="font-size:0.75rem;color:#666">QR unavailable offline.<br><a href="${url}" style="color:var(--navy);word-break:break-all">${url}</a></p>`;
       }
       document.getElementById("friendModalOverlay").style.display = "flex";
     });
@@ -2594,22 +2561,6 @@
       if (e.target === document.getElementById("friendModalOverlay"))
         document.getElementById("friendModalOverlay").style.display = "none";
     });
-
-    // Friend result overlay — detect ?friend= URL param on page load
-    (function checkFriendParam() {
-      try {
-        const param = new URLSearchParams(window.location.search).get("friend");
-        if (!["A", "B", "C"].includes(param)) return;
-        const labels = { A: "TBS", B: "SCD", C: "SSET" };
-        const imgs   = { A: "tbs.png", B: "scd.png", C: "sset.png" };
-        document.getElementById("friendPersonaImg").src = imgs[param];
-        document.getElementById("friendResultHeading").textContent =
-          `Your friend got ${labels[param]}! 🎉`;
-        document.getElementById("friendResultSub").textContent =
-          t().friendResultSub || "Take the quiz to discover your own RMIT persona!";
-        document.getElementById("friendResultScreen").style.display = "flex";
-      } catch (_) {}
-    })();
 
     document.getElementById("imgOverlayClose").addEventListener("click", () => {
       const overlay = document.getElementById("imgOverlay");
