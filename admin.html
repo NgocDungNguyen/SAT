@@ -518,7 +518,7 @@
       ".read": true,
       "$entryId": {
         ".write": true,
-        ".validate": "newData.hasChildren(['name','persona','t']) && newData.child('name').isString() && newData.child('name').val().length <= 80 && (newData.child('persona').val()==='TBS' || newData.child('persona').val()==='SCD' || newData.child('persona').val()==='SSET') && newData.child('t').isNumber()"
+        ".validate": "newData.hasChildren(['name','persona','t']) && newData.child('name').isString() && newData.child('name').val().length <= 80 && (newData.child('persona').val()==='TBS' || newData.child('persona').val()==='SCD' || newData.child('persona').val()==='SSET') && newData.child('t').isNumber() && (!newData.hasChild('img') || (newData.child('img').isString() && newData.child('img').val().length < 400000))"
       }
     },
     "sharedCards": {
