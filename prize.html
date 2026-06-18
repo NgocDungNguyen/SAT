@@ -3,405 +3,410 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RMIT SAT — Prize Spin</title>
+  <title>RMIT Challenge — Prize Draw</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --red:   #e61e2a;
-      --navy:  #0d1985;
-      --font:  'Be Vietnam Pro', sans-serif;
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
-    body { font-family: var(--font); background: #f0f2f8; color: var(--navy); }
+    :root { --red:#e61e2a; --navy:#0d1985; --font:'Be Vietnam Pro',sans-serif; }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    html, body { height:100%; }
+    body { font-family:var(--font); background:#f0f2f8; color:var(--navy); }
+    .view { display:none; }
+    .view.active { display:flex; flex-direction:column; min-height:100vh; }
 
-    .view { display: none; }
-    .view.active { display: flex; flex-direction: column; min-height: 100vh; }
-
-    /* ════════════════════════════════════════════════
-       POOL VIEW  (admin / setup side)
-    ════════════════════════════════════════════════ */
-    #poolView { background: #f0f2f8; }
-
-    .topbar {
-      background: var(--navy); color: #fff;
-      padding: 14px 32px; display: flex; align-items: center; gap: 16px; flex-shrink: 0;
+    /* ═══════════════ SHARED DARK TOPBAR ═══════════════ */
+    .dark-topbar {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 28px; border-bottom:1px solid rgba(255,255,255,0.07);
+      flex-shrink:0; position:relative; z-index:10; color:#fff;
     }
-    .topbar-brand { font-size: 1.15rem; font-weight: 900; }
-    .topbar-sub   { font-size: 0.75rem; opacity: 0.5; }
+    .dark-topbar-brand { font-size:0.85rem; font-weight:900; opacity:0.45; letter-spacing:0.14em; text-transform:uppercase; }
+    .dark-back-btn {
+      background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);
+      color:#fff; font-family:var(--font); font-size:0.88rem; font-weight:700;
+      border-radius:50px; padding:9px 18px; cursor:pointer; transition:background 0.15s;
+    }
+    .dark-back-btn:hover { background:rgba(255,255,255,0.16); }
+    .dark-back-btn:disabled { opacity:0.3; pointer-events:none; }
 
-    .pool-page { max-width: 860px; margin: 0 auto; padding: 36px 24px 80px; width: 100%; }
-    .pool-page h1 { font-size: 1.7rem; font-weight: 900; margin-bottom: 6px; }
-    .pool-page .sub { font-size: 0.88rem; opacity: 0.6; margin-bottom: 30px; }
+    /* ═══════════════ POOL VIEW ═══════════════ */
+    #poolView { background:#f0f2f8; }
+    .topbar { background:var(--navy); color:#fff; padding:14px 32px; display:flex; align-items:center; gap:16px; flex-shrink:0; }
+    .topbar-brand { font-size:1.15rem; font-weight:900; }
+    .topbar-sub { font-size:0.75rem; opacity:0.5; }
+    .pool-page { max-width:860px; margin:0 auto; padding:36px 24px 80px; width:100%; }
+    .pool-page h1 { font-size:1.7rem; font-weight:900; margin-bottom:6px; }
+    .pool-page .sub { font-size:0.88rem; opacity:0.6; margin-bottom:30px; }
+    .date-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:#fff; border-radius:18px; padding:16px 20px; box-shadow:0 2px 14px rgba(13,25,133,0.07); margin-bottom:22px; }
+    .date-bar label { font-weight:800; font-size:0.9rem; white-space:nowrap; }
+    .date-bar input[type=date] { border:2px solid rgba(13,25,133,0.18); border-radius:10px; padding:8px 12px; font-family:var(--font); font-size:0.9rem; color:var(--navy); background:#fff; outline:none; flex:1; min-width:130px; }
+    .date-bar input[type=date]:focus { border-color:var(--navy); }
+    .date-sep { font-size:0.85rem; opacity:0.4; }
+    .pool-badge { margin-left:auto; background:rgba(13,25,133,0.1); color:var(--navy); border-radius:20px; padding:5px 14px; font-size:0.8rem; font-weight:800; white-space:nowrap; flex-shrink:0; }
+    .pool-card { background:#fff; border-radius:22px; padding:22px; box-shadow:0 2px 14px rgba(13,25,133,0.07); margin-bottom:22px; }
+    .pool-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+    .pool-card-title { font-size:0.95rem; font-weight:900; }
+    .btn { font-family:var(--font); font-weight:800; border:none; border-radius:50px; cursor:pointer; transition:transform 0.12s,opacity 0.15s; }
+    .btn:active { transform:scale(0.96); }
+    .btn:disabled { opacity:0.38; pointer-events:none; }
+    .btn-primary { background:var(--navy); color:#fff; font-size:0.9rem; padding:10px 22px; }
+    .btn-ghost { background:rgba(13,25,133,0.08); color:var(--navy); font-size:0.9rem; padding:10px 22px; }
+    .btn-sm { font-size:0.76rem; padding:5px 13px; border-radius:10px; }
+    .btn-add { background:rgba(13,25,133,0.09); color:var(--navy); font-size:0.84rem; padding:8px 18px; }
+    .btn-edit { background:rgba(13,25,133,0.08); color:var(--navy); }
+    .btn-remove { background:rgba(230,30,42,0.1); color:var(--red); }
+    .btn-restore { background:rgba(13,25,133,0.08); color:var(--navy); }
+    .pool-list { display:flex; flex-direction:column; gap:7px; max-height:460px; overflow-y:auto; }
+    .pool-empty { text-align:center; padding:36px 0; font-size:0.86rem; opacity:0.45; }
+    .entry-row { display:flex; align-items:center; gap:10px; border-radius:14px; padding:10px 14px; border:1.5px solid rgba(13,25,133,0.08); background:rgba(13,25,133,0.03); }
+    .entry-row.is-excluded { opacity:0.38; }
+    .persona-chip { font-size:0.65rem; font-weight:900; letter-spacing:0.05em; border-radius:7px; padding:3px 9px; color:#fff; flex-shrink:0; }
+    .persona-chip.TBS { background:#a0001b; }
+    .persona-chip.SCD { background:#0d1985; }
+    .persona-chip.SSET { background:#123c69; }
+    .entry-name { font-size:0.88rem; font-weight:800; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .entry-school { font-size:0.74rem; opacity:0.5; flex-shrink:0; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .entry-actions { display:flex; gap:5px; flex-shrink:0; }
+    .confirm-bar { background:#fff; border-radius:22px; padding:20px 22px; box-shadow:0 2px 14px rgba(13,25,133,0.07); display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+    .confirm-hint { font-size:0.86rem; opacity:0.65; }
+    .confirm-hint strong { color:var(--navy); opacity:1; }
+    .btn-confirm { background:linear-gradient(135deg,var(--red) 0%,#b50016 100%); color:#fff; font-size:1.05rem; padding:14px 32px; font-weight:900; border-radius:50px; border:none; cursor:pointer; font-family:var(--font); transition:transform 0.12s,box-shadow 0.15s; box-shadow:0 4px 20px rgba(230,30,42,0.3); }
+    .btn-confirm:hover { transform:scale(1.03); }
+    .btn-confirm:active { transform:scale(0.97); }
+    .btn-confirm:disabled { opacity:0.38; pointer-events:none; box-shadow:none; }
 
-    .date-bar {
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-      background: #fff; border-radius: 18px; padding: 16px 20px;
-      box-shadow: 0 2px 14px rgba(13,25,133,0.07); margin-bottom: 22px;
+    /* ═══════════════ MENU VIEW ═══════════════ */
+    #menuView {
+      background:radial-gradient(ellipse at 50% -10%, #1a2580 0%, #050818 65%);
+      color:#fff; min-height:100vh; position:relative; overflow:hidden;
     }
-    .date-bar label { font-weight: 800; font-size: 0.9rem; white-space: nowrap; }
-    .date-bar input[type=date] {
-      border: 2px solid rgba(13,25,133,0.18); border-radius: 10px;
-      padding: 8px 12px; font-family: var(--font); font-size: 0.9rem;
-      color: var(--navy); background: #fff; outline: none; flex: 1; min-width: 130px;
+    #menuView::before {
+      content:''; position:absolute; inset:0; pointer-events:none;
+      background-image:radial-gradient(circle,rgba(255,255,255,0.6) 1px,transparent 1px),
+                        radial-gradient(circle,rgba(255,255,255,0.25) 1px,transparent 1px);
+      background-size:180px 180px,90px 90px; background-position:0 0,45px 45px; opacity:0.2;
     }
-    .date-bar input[type=date]:focus { border-color: var(--navy); }
-    .date-sep { font-size: 0.85rem; opacity: 0.4; }
-    .pool-badge {
-      margin-left: auto; background: rgba(13,25,133,0.1); color: var(--navy);
-      border-radius: 20px; padding: 5px 14px; font-size: 0.8rem; font-weight: 800;
-      white-space: nowrap; flex-shrink: 0;
+    .menu-body {
+      flex:1; display:flex; flex-direction:column; align-items:center;
+      padding:44px 24px 60px; gap:28px; position:relative; z-index:2;
     }
+    .menu-title { text-align:center; font-size:clamp(1.6rem,4vw,2.8rem); font-weight:900; }
+    .menu-title span { color:#ffcc00; }
+    .menu-pool-hint { font-size:0.88rem; opacity:0.5; background:rgba(255,255,255,0.07); padding:6px 18px; border-radius:30px; }
+    .game-options { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; max-width:1000px; width:100%; }
+    .game-option-card {
+      flex:1; min-width:220px; max-width:290px;
+      background:rgba(255,255,255,0.05); border:2px solid rgba(255,255,255,0.1);
+      border-radius:26px; padding:36px 24px; text-align:center;
+      cursor:pointer; transition:transform 0.2s,background 0.2s,border-color 0.2s,box-shadow 0.2s;
+      position:relative; overflow:hidden;
+    }
+    .game-option-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.04),transparent); }
+    .game-option-card:hover { background:rgba(255,255,255,0.1); border-color:#ffcc00; transform:translateY(-6px); box-shadow:0 20px 50px rgba(0,0,0,0.4),0 0 30px rgba(255,204,0,0.15); }
+    .game-option-icon { font-size:clamp(2.5rem,6vw,4rem); margin-bottom:16px; display:block; }
+    .game-option-name { font-size:clamp(1rem,2vw,1.25rem); font-weight:900; margin-bottom:10px; }
+    .game-option-desc { font-size:0.8rem; opacity:0.55; line-height:1.6; }
+    .game-option-badge { display:inline-block; margin-top:14px; font-size:0.7rem; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#ffcc00; opacity:0.85; }
 
-    .pool-card {
-      background: #fff; border-radius: 22px; padding: 22px;
-      box-shadow: 0 2px 14px rgba(13,25,133,0.07); margin-bottom: 22px;
+    /* ═══════════════ SHARED DARK BG for game views ═══════════════ */
+    #spinView, #flipView, #gachaView {
+      background:#03061a; color:#fff; min-height:100vh; position:relative; overflow:hidden;
     }
-    .pool-card-header {
-      display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
-    }
-    .pool-card-title { font-size: 0.95rem; font-weight: 900; }
-
-    .btn { font-family: var(--font); font-weight: 800; border: none; border-radius: 50px;
-      cursor: pointer; transition: transform 0.12s, opacity 0.15s; }
-    .btn:active { transform: scale(0.96); }
-    .btn:disabled { opacity: 0.38; pointer-events: none; }
-    .btn-primary { background: var(--navy); color: #fff; font-size: 0.9rem; padding: 10px 22px; }
-    .btn-ghost   { background: rgba(13,25,133,0.08); color: var(--navy); font-size: 0.9rem; padding: 10px 22px; }
-    .btn-sm      { font-size: 0.76rem; padding: 5px 13px; border-radius: 10px; }
-    .btn-add     { background: rgba(13,25,133,0.09); color: var(--navy); font-size: 0.84rem; padding: 8px 18px; }
-    .btn-edit    { background: rgba(13,25,133,0.08); color: var(--navy); }
-    .btn-remove  { background: rgba(230,30,42,0.1); color: var(--red); }
-    .btn-restore { background: rgba(13,25,133,0.08); color: var(--navy); }
-
-    .pool-list { display: flex; flex-direction: column; gap: 7px; max-height: 460px; overflow-y: auto; }
-    .pool-empty { text-align: center; padding: 36px 0; font-size: 0.86rem; opacity: 0.45; }
-
-    .entry-row {
-      display: flex; align-items: center; gap: 10px;
-      border-radius: 14px; padding: 10px 14px;
-      border: 1.5px solid rgba(13,25,133,0.08); background: rgba(13,25,133,0.03);
-    }
-    .entry-row.is-excluded { opacity: 0.38; }
-    .persona-chip {
-      font-size: 0.65rem; font-weight: 900; letter-spacing: 0.05em;
-      border-radius: 7px; padding: 3px 9px; color: #fff; flex-shrink: 0;
-    }
-    .persona-chip.TBS  { background: #a0001b; }
-    .persona-chip.SCD  { background: #0d1985; }
-    .persona-chip.SSET { background: #123c69; }
-    .entry-name   { font-size: 0.88rem; font-weight: 800; flex: 1; min-width: 0;
-                    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .entry-school { font-size: 0.74rem; opacity: 0.5; flex-shrink: 0; max-width: 160px;
-                    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .entry-actions { display: flex; gap: 5px; flex-shrink: 0; }
-
-    .confirm-bar {
-      background: #fff; border-radius: 22px; padding: 20px 22px;
-      box-shadow: 0 2px 14px rgba(13,25,133,0.07);
-      display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
-    }
-    .confirm-hint { font-size: 0.86rem; opacity: 0.65; }
-    .confirm-hint strong { color: var(--navy); opacity: 1; }
-    .btn-confirm {
-      background: linear-gradient(135deg, var(--red) 0%, #b50016 100%);
-      color: #fff; font-size: 1.05rem; padding: 14px 32px; font-weight: 900;
-      border-radius: 50px; border: none; cursor: pointer; font-family: var(--font);
-      transition: transform 0.12s, box-shadow 0.15s;
-      box-shadow: 0 4px 20px rgba(230,30,42,0.3);
-    }
-    .btn-confirm:hover  { transform: scale(1.03); }
-    .btn-confirm:active { transform: scale(0.97); }
-    .btn-confirm:disabled { opacity: 0.38; pointer-events: none; box-shadow: none; }
-
-    /* ════════════════════════════════════════════════
-       SPIN VIEW  (projector / audience display)
-    ════════════════════════════════════════════════ */
-    #spinView {
-      background: #03061a;
-      min-height: 100vh;
-      color: #fff;
-      position: relative;
-      overflow: hidden;
+    #spinView::before, #flipView::before, #gachaView::before {
+      content:''; position:absolute; inset:0; pointer-events:none;
+      background-image:radial-gradient(circle,rgba(255,255,255,0.55) 1px,transparent 1px),
+                        radial-gradient(circle,rgba(255,255,255,0.25) 1px,transparent 1px);
+      background-size:200px 200px,100px 100px; background-position:0 0,50px 50px; opacity:0.18;
     }
 
-    /* Starfield layer */
-    #spinView::before {
-      content: '';
-      position: absolute; inset: 0; pointer-events: none; z-index: 0;
-      background-image:
-        radial-gradient(circle, rgba(255,255,255,0.7) 1px, transparent 1px),
-        radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px),
-        radial-gradient(circle, rgba(255,255,255,0.2) 1px, transparent 1px);
-      background-size: 200px 200px, 130px 130px, 70px 70px;
-      background-position: 0 0, 60px 80px, 30px 40px;
-      opacity: 0.25;
-    }
-
-    /* Ambient colour glow */
-    #spinView::after {
-      content: '';
-      position: absolute; top: -30%; left: 50%; transform: translateX(-50%);
-      width: 80%; height: 60%;
-      background: radial-gradient(ellipse, rgba(13,25,133,0.55) 0%, transparent 70%);
-      pointer-events: none; z-index: 0;
-    }
-
-    .spin-topbar {
-      position: relative; z-index: 5;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 18px 32px; border-bottom: 1px solid rgba(255,255,255,0.07);
-    }
-    .spin-back {
-      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-      color: #fff; font-family: var(--font); font-size: 0.88rem; font-weight: 700;
-      border-radius: 50px; padding: 9px 18px; cursor: pointer; transition: background 0.15s;
-    }
-    .spin-back:hover    { background: rgba(255,255,255,0.16); }
-    .spin-back:disabled { opacity: 0.3; pointer-events: none; }
-    .spin-brand {
-      font-size: 0.85rem; font-weight: 900; opacity: 0.45;
-      letter-spacing: 0.14em; text-transform: uppercase;
-    }
-
-    /* ── Congrats banner (above machine, after all 3 stop) ── */
-    @keyframes congrats-drop {
-      from { opacity: 0; transform: translateY(-22px) scale(0.94); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
+    /* ═══════════════ CONGRATS BANNER ═══════════════ */
+    @keyframes congrats-drop { from{opacity:0;transform:translateY(-22px) scale(0.94)} to{opacity:1;transform:translateY(0) scale(1)} }
     .congrats-banner {
-      position: relative; z-index: 5;
-      text-align: center;
-      background: linear-gradient(135deg, #ffcc00 0%, #ff9500 100%);
-      color: #1a0e00; font-weight: 900;
-      font-size: clamp(1rem, 2.5vw, 1.55rem);
-      padding: 16px 28px; letter-spacing: 0.01em;
-      animation: congrats-drop 0.55s cubic-bezier(0.34,1.56,0.64,1) both;
+      position:relative; z-index:10; text-align:center;
+      background:linear-gradient(135deg,#ffcc00,#ff9500); color:#1a0e00;
+      font-weight:900; font-size:clamp(1rem,2.5vw,1.55rem); padding:16px 28px;
+      animation:congrats-drop 0.55s cubic-bezier(0.34,1.56,0.64,1) both;
     }
 
-    /* ── Main body ── */
-    .spin-body {
-      position: relative; z-index: 3;
-      display: flex; flex-direction: column; align-items: center;
-      padding: 16px 24px 32px; gap: 18px; flex: 1;
-    }
+    /* ═══════════════ SLOT MACHINE SPIN VIEW ═══════════════ */
+    .spin-body { position:relative; z-index:3; display:flex; flex-direction:column; align-items:center; padding:16px 24px 32px; gap:18px; flex:1; }
+    .spin-title { text-align:center; font-size:clamp(1.3rem,3.5vw,2.5rem); font-weight:900; text-shadow:0 2px 20px rgba(0,0,0,0.6); }
+    .spin-title span { color:#ffcc00; }
+    .slot-machine { display:flex; gap:clamp(10px,2vw,24px); justify-content:center; align-items:flex-start; width:100%; max-width:1100px; }
+    .slot-col-wrap { display:flex; flex-direction:column; align-items:center; gap:10px; flex:1; max-width:340px; min-width:0; }
+    .slot-col-label { font-size:clamp(0.6rem,1.2vw,0.8rem); font-weight:900; letter-spacing:0.15em; text-transform:uppercase; opacity:0.4; }
+    .slot-col { overflow:hidden; border-radius:18px; position:relative; width:100%; border:3px solid rgba(255,255,255,0.12); box-shadow:inset 0 0 60px rgba(0,0,0,0.5),0 10px 40px rgba(0,0,0,0.5); background:#0a0d2a; }
+    .slot-col-inner { display:flex; flex-direction:column; width:100%; will-change:transform; }
+    .slot-card { width:100%; flex-shrink:0; position:relative; overflow:hidden; }
+    .slot-card .card-bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:top center; display:block; pointer-events:none; }
+    .slot-card .card-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0) 50%); pointer-events:none; }
+    .slot-card .card-info { position:absolute; bottom:0; left:0; right:0; z-index:2; padding:clamp(10px,2vw,20px) clamp(10px,1.5vw,16px); }
+    .slot-card .sc-persona { display:block; font-size:clamp(0.55rem,1.1vw,0.75rem); font-weight:900; letter-spacing:0.08em; text-transform:uppercase; color:rgba(255,255,255,0.6); line-height:1; margin-bottom:4px; }
+    .slot-card .sc-name { display:block; font-size:clamp(0.85rem,1.8vw,1.25rem); font-weight:900; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-shadow:0 1px 6px rgba(0,0,0,0.8); }
+    @keyframes col-shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+    .slot-col.pre-spin { animation:col-shake 0.22s ease infinite; }
+    @keyframes winner-pulse { 0%,100%{box-shadow:0 0 0 4px #ffcc00,0 0 50px rgba(255,204,0,0.5),inset 0 0 60px rgba(0,0,0,0.5)} 50%{box-shadow:0 0 0 7px #ffe066,0 0 90px rgba(255,220,0,0.85),inset 0 0 60px rgba(0,0,0,0.5)} }
+    .slot-col.winner-revealed { border-color:#ffcc00; animation:winner-pulse 1.5s ease-in-out infinite; }
+    @keyframes medal-drop { from{opacity:0;transform:translateY(10px) scale(0.5)} to{opacity:1;transform:translateY(0) scale(1)} }
+    .winner-rank-overlay { position:absolute; bottom:10px; right:10px; font-size:clamp(1.6rem,4vw,2.8rem); line-height:1; z-index:10; pointer-events:none; filter:drop-shadow(0 3px 8px rgba(0,0,0,0.7)); animation:medal-drop 0.45s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .winner-name-strip { font-size:clamp(0.75rem,1.5vw,1rem); font-weight:800; color:#ffcc00; text-align:center; min-height:1.4em; text-shadow:0 1px 8px rgba(0,0,0,0.5); opacity:0; transition:opacity 0.4s ease 0.2s; }
+    .winner-name-strip.visible { opacity:1; }
+    .spin-status { font-size:clamp(0.95rem,2vw,1.3rem); font-weight:800; opacity:0.65; text-align:center; min-height:1.4em; }
+    .spin-status.countdown { font-size:clamp(2rem,6vw,4rem); font-weight:900; opacity:1; color:#ffcc00; text-shadow:0 0 30px rgba(255,204,0,0.7); }
+    @keyframes spin-btn-glow { 0%,100%{box-shadow:0 6px 30px rgba(230,30,42,0.55)} 50%{box-shadow:0 10px 50px rgba(230,30,42,0.9)} }
+    .btn-spin { background:linear-gradient(135deg,#e61e2a 0%,#a30015 100%); color:#fff; font-family:var(--font); font-size:clamp(1rem,2.5vw,1.5rem); font-weight:900; letter-spacing:0.07em; border:none; border-radius:50px; padding:clamp(14px,2.5vh,22px) clamp(36px,7vw,64px); cursor:pointer; text-transform:uppercase; animation:spin-btn-glow 2s ease-in-out infinite; transition:transform 0.12s; }
+    .btn-spin:hover { transform:scale(1.05); }
+    .btn-spin:active { transform:scale(0.97); }
+    .btn-spin:disabled { opacity:0.28; pointer-events:none; animation:none; box-shadow:none; }
+    .btn-spin-reset { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); color:#fff; font-family:var(--font); font-size:clamp(0.82rem,1.5vw,1rem); font-weight:800; border-radius:50px; padding:clamp(10px,1.8vh,16px) clamp(20px,3.5vw,32px); cursor:pointer; transition:background 0.15s; }
+    .btn-spin-reset:hover { background:rgba(255,255,255,0.15); }
+    .btn-spin-row { display:flex; gap:14px; align-items:center; justify-content:center; }
 
-    .spin-title {
-      text-align: center;
-      font-size: clamp(1.3rem, 3.5vw, 2.5rem);
-      font-weight: 900; letter-spacing: -0.01em;
-      text-shadow: 0 2px 20px rgba(0,0,0,0.6);
-    }
-    .spin-title span { color: #ffcc00; }
+    /* ═══════════════ CARD FLIP VIEW ═══════════════ */
+    .flip-status-bar { position:relative; z-index:5; text-align:center; padding:10px 24px 4px; font-size:clamp(0.88rem,2vw,1.15rem); font-weight:800; opacity:0.75; }
+    .flip-status-bar .pick-count { color:#ffcc00; opacity:1; font-size:1.3em; }
+    .flip-status-bar.picking { opacity:1; }
 
-    /* ── Slot machine container ── */
-    .slot-machine {
-      display: flex;
-      gap: clamp(10px, 2vw, 24px);
-      justify-content: center;
-      align-items: flex-start;
-      width: 100%;
-      max-width: 1100px;
-    }
+    .flip-grid-wrap { flex:1; overflow-y:auto; padding:12px 14px 16px; position:relative; z-index:3; }
+    .flip-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(68px, 1fr)); gap:6px; width:100%; }
 
-    .slot-col-wrap {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 10px; flex: 1; max-width: 340px; min-width: 0;
-    }
-    .slot-col-label {
-      font-size: clamp(0.6rem, 1.2vw, 0.8rem); font-weight: 900;
-      letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.4;
-    }
+    /* 3D card flip */
+    .flip-card-wrap { aspect-ratio:3/4; perspective:700px; cursor:default; transition:opacity 0.35s,transform 0.35s; }
+    .flip-card-wrap.clickable { cursor:pointer; }
+    .flip-card-wrap.clickable:hover .flip-card-inner { transform:rotateY(15deg); }
+    .flip-card-inner { width:100%; height:100%; transform-style:preserve-3d; transition:transform 0.65s cubic-bezier(0.4,0,0.2,1); position:relative; }
+    .flip-card-wrap.flipped .flip-card-inner,
+    .flip-card-wrap.winner-selected .flip-card-inner { transform:rotateY(180deg); }
+    .flip-card-front, .flip-card-back { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:8px; overflow:hidden; }
+    .flip-card-front { background:linear-gradient(155deg,#0d1985,#1a2db0); display:flex; flex-direction:column; align-items:center; justify-content:center; border:1.5px solid rgba(255,255,255,0.12); }
+    .flip-front-q { font-size:clamp(1rem,2.5vw,1.8rem); color:rgba(255,255,255,0.18); font-weight:900; }
+    .flip-front-brand { font-size:clamp(0.3rem,0.7vw,0.48rem); font-weight:900; color:rgba(255,255,255,0.22); letter-spacing:0.1em; text-transform:uppercase; margin-top:4px; }
+    .flip-card-back { transform:rotateY(180deg); background:#0a0d2a; position:relative; }
+    .flip-card-back img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:top; }
+    .flip-back-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,0.8) 0%,rgba(0,0,0,0) 55%); }
+    .flip-back-info { position:absolute; bottom:0; left:0; right:0; z-index:3; padding:12px 6px 6px; text-align:center; }
+    .flip-back-persona { display:block; font-size:clamp(0.38rem,0.9vw,0.6rem); font-weight:900; letter-spacing:0.07em; text-transform:uppercase; color:rgba(255,255,255,0.55); margin-bottom:2px; }
+    .flip-back-name { display:block; font-size:clamp(0.5rem,1.1vw,0.78rem); font-weight:900; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-shadow:0 1px 4px rgba(0,0,0,0.8); }
 
-    /*
-     * THE COLUMN — explicit pixel dimensions set by JS.
-     * overflow:hidden clips the reel; position:relative for the medal overlay.
-     */
-    .slot-col {
-      overflow: hidden;
-      border-radius: 18px;
-      position: relative;
-      width: 100%;         /* JS overrides with explicit px */
-      border: 3px solid rgba(255,255,255,0.12);
+    @keyframes flip-shuffle { 0%,100%{transform:rotate(0)} 20%{transform:rotate(-5deg) translateX(-3px)} 50%{transform:rotate(5deg) translateX(3px)} 80%{transform:rotate(-2deg)} }
+    .flip-card-wrap.shuffling { animation:flip-shuffle 0.55s ease both; }
+
+    @keyframes winner-card-glow { 0%,100%{box-shadow:0 0 0 3px #ffcc00,0 0 18px rgba(255,204,0,0.55)} 50%{box-shadow:0 0 0 5px #ffe066,0 0 36px rgba(255,220,0,0.85)} }
+    .flip-card-wrap.winner-selected { animation:winner-card-glow 1.3s ease-in-out infinite; border-radius:8px; }
+
+    /* Winner stage overlay */
+    .flip-winner-overlay {
+      position:fixed; inset:0; z-index:50; background:rgba(3,6,26,0.97);
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px;
+    }
+    .flip-winner-title { font-size:clamp(1.2rem,3vw,2rem); font-weight:900; color:#fff; text-align:center; }
+    .flip-winner-title span { color:#ffcc00; }
+    .flip-winner-cols { display:flex; gap:clamp(14px,3vw,28px); justify-content:center; align-items:flex-start; width:100%; max-width:860px; padding:0 20px; }
+    .flip-winner-col { flex:1; max-width:250px; display:flex; flex-direction:column; align-items:center; gap:10px; opacity:0; transform:translateY(40px) scale(0.88); transition:opacity 0.65s ease,transform 0.65s cubic-bezier(0.34,1.36,0.64,1); }
+    .flip-winner-col.revealed { opacity:1; transform:translateY(0) scale(1); }
+    .flip-winner-col-label { font-size:0.65rem; font-weight:900; opacity:0.38; letter-spacing:0.16em; text-transform:uppercase; color:#fff; }
+    .flip-winner-card-big { width:100%; aspect-ratio:3/4; border-radius:18px; overflow:hidden; position:relative; border:3px solid #ffcc00; box-shadow:0 0 50px rgba(255,204,0,0.45); }
+    .flip-winner-card-big img { width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
+    .flip-winner-card-big .card-text-fallback { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:12px; background:var(--bg); }
+    .flip-winner-rank { position:absolute; bottom:10px; right:10px; font-size:clamp(1.8rem,4vw,2.8rem); z-index:5; filter:drop-shadow(0 3px 8px rgba(0,0,0,0.7)); }
+    .flip-winner-name { font-size:clamp(0.78rem,1.6vw,1rem); font-weight:900; color:#ffcc00; text-align:center; }
+
+    .flip-action-row { display:flex; gap:14px; justify-content:center; margin-top:8px; }
+    .flip-action-btn { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; font-family:var(--font); font-size:0.9rem; font-weight:800; border-radius:50px; padding:12px 28px; cursor:pointer; transition:background 0.15s; }
+    .flip-action-btn:hover { background:rgba(255,255,255,0.16); }
+    .flip-action-btn.primary { background:linear-gradient(135deg,#e61e2a,#a30015); border-color:transparent; }
+
+    /* ═══════════════ GACHA MACHINE VIEW ═══════════════ */
+    .gacha-body { position:relative; z-index:3; flex:1; display:flex; flex-direction:column; align-items:center; padding:10px 16px 28px; gap:14px; }
+    .gacha-title { font-size:clamp(1.1rem,2.8vw,2rem); font-weight:900; text-align:center; }
+    .gacha-title span { color:#ffcc00; }
+
+    .gacha-scene { display:flex; align-items:flex-start; justify-content:center; gap:0; position:relative; }
+
+    /* The machine itself */
+    .gacha-machine { display:flex; flex-direction:column; align-items:center; position:relative; }
+
+    .gacha-dome-wrap {
+      position:relative;
+      width:clamp(220px,30vw,320px);
+      height:clamp(220px,30vw,320px);
+    }
+    .gacha-dome {
+      width:100%; height:100%; border-radius:50%; overflow:hidden; position:relative;
+      background:radial-gradient(circle at 38% 28%, rgba(180,220,255,0.18), rgba(30,60,160,0.06));
+      border:5px solid rgba(255,255,255,0.28);
       box-shadow:
-        inset 0 0 60px rgba(0,0,0,0.5),
-        0 10px 40px rgba(0,0,0,0.5);
-      background: #0a0d2a;
+        inset 3px 3px 0 rgba(255,255,255,0.22),
+        inset -2px -2px 0 rgba(0,0,80,0.3),
+        0 0 60px rgba(80,120,255,0.2),
+        0 0 0 2px rgba(255,255,255,0.06);
+    }
+    /* Glass shine highlight */
+    .gacha-dome-shine {
+      position:absolute; top:8%; left:12%; width:30%; height:22%;
+      background:radial-gradient(ellipse, rgba(255,255,255,0.45), rgba(255,255,255,0));
+      border-radius:50%; pointer-events:none; z-index:5;
+      transform:rotate(-20deg);
+    }
+    /* Ball inside dome */
+    .gacha-ball {
+      position:absolute; border-radius:50%; pointer-events:none;
+      box-shadow:inset -3px -3px 6px rgba(0,0,0,0.25), inset 2px 2px 4px rgba(255,255,255,0.5), 0 2px 8px rgba(0,0,0,0.3);
+      /* size + start position set via JS inline style */
+    }
+    /* Neck connecting dome to cabinet */
+    .gacha-neck {
+      width:clamp(50px,8vw,72px); height:clamp(28px,4vw,44px);
+      background:linear-gradient(to bottom, #1a2070, #0d1450);
+      border-left:3px solid rgba(255,255,255,0.15);
+      border-right:3px solid rgba(255,255,255,0.15);
+      position:relative; overflow:hidden;
+    }
+    /* Cabinet body */
+    .gacha-cabinet {
+      width:clamp(200px,28vw,280px);
+      background:linear-gradient(160deg, #1a1f70 0%, #0a0d40 100%);
+      border:3px solid rgba(255,255,255,0.18);
+      border-radius:10px 10px 18px 18px;
+      padding:14px 16px 18px;
+      display:flex; flex-direction:column; align-items:center; gap:10px;
+      box-shadow:0 10px 40px rgba(0,0,0,0.5);
+      position:relative;
+    }
+    .gacha-cabinet-label { font-size:clamp(0.6rem,1.5vw,0.85rem); font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.5); }
+    .gacha-cabinet-brand { font-size:clamp(0.9rem,2.5vw,1.4rem); font-weight:900; color:#ffcc00; letter-spacing:0.04em; text-shadow:0 0 12px rgba(255,204,0,0.5); }
+
+    /* Output capsule door */
+    .gacha-output-door {
+      width:clamp(90px,14vw,130px); height:clamp(70px,10vw,96px);
+      background:rgba(0,0,0,0.45);
+      border:2px solid rgba(255,255,255,0.18);
+      border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      position:relative; overflow:hidden;
+      box-shadow:inset 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .gacha-output-hint { font-size:clamp(0.55rem,1.1vw,0.72rem); font-weight:800; color:rgba(255,255,255,0.2); text-align:center; letter-spacing:0.06em; text-transform:uppercase; }
+
+    /* Capsule in output door */
+    .gacha-capsule {
+      width:clamp(52px,8vw,72px); height:clamp(64px,10vw,88px);
+      border-radius:50%;
+      position:relative; overflow:visible;
+      display:flex; flex-direction:column; align-items:center;
+    }
+    .cap-top, .cap-bot {
+      width:100%; height:50%; border-radius:50% 50% 0 0; position:absolute;
+      transition:transform 0.5s cubic-bezier(0.34,1.4,0.64,1);
+    }
+    .cap-top { top:0; transform-origin:center bottom; }
+    .cap-bot { bottom:0; border-radius:0 0 50% 50%; transform-origin:center top; }
+    .gacha-capsule.open .cap-top { transform:translateY(-55%) rotate(-20deg) scale(1.05); }
+    .gacha-capsule.open .cap-bot { transform:translateY(55%) rotate(20deg) scale(1.05); }
+    @keyframes capsule-drop { from{transform:translateY(-60px) scale(0.7);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
+    @keyframes capsule-shake { 0%,100%{transform:rotate(0) scale(1)} 15%{transform:rotate(-8deg) scale(1.05)} 35%{transform:rotate(8deg) scale(1.05)} 55%{transform:rotate(-5deg)} 75%{transform:rotate(5deg)} }
+    .gacha-capsule.dropping { animation:capsule-drop 0.55s cubic-bezier(0.34,1.3,0.64,1) both; }
+    .gacha-capsule.shaking  { animation:capsule-shake 0.7s ease-in-out; }
+
+    /* Winner card that replaces capsule */
+    @keyframes card-emerge { from{transform:scale(0.4) rotate(-5deg);opacity:0} to{transform:scale(1) rotate(0);opacity:1} }
+    .gacha-win-card {
+      width:clamp(72px,11vw,100px); border-radius:10px; overflow:hidden;
+      border:2px solid #ffcc00; box-shadow:0 0 24px rgba(255,204,0,0.5);
+      animation:card-emerge 0.5s cubic-bezier(0.34,1.4,0.64,1) both;
+    }
+    .gacha-win-card img { width:100%; display:block; aspect-ratio:3/4; object-fit:cover; object-position:top; }
+    .gacha-win-card .win-card-text { background:linear-gradient(to top,rgba(0,0,0,0.85),transparent); padding:6px 6px 4px; }
+    .gacha-win-card .win-card-name { font-size:clamp(0.5rem,1vw,0.7rem); font-weight:900; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; text-align:center; }
+
+    /* Lever on the right */
+    .gacha-lever-mount {
+      display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+      padding-bottom:clamp(20px,3vw,36px);
+      padding-left:clamp(8px,1.5vw,16px);
+      height:100%;
+    }
+    .gacha-lever {
+      width:clamp(44px,6vw,62px); position:relative; cursor:pointer;
+      transform-origin:bottom center;
+      transition:transform 0.25s cubic-bezier(0.34,1.4,0.64,1);
+    }
+    .gacha-lever:hover .gacha-lever-ball { filter:brightness(1.2); }
+    .gacha-lever.pulled { transform:rotate(28deg); }
+    .gacha-lever-ball {
+      width:100%; aspect-ratio:1; border-radius:50%; margin:0 auto;
+      background:radial-gradient(circle at 38% 35%, #ff9a9a, #cc0000);
+      box-shadow:0 4px 14px rgba(200,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.4);
+      display:flex; align-items:center; justify-content:center;
+      font-size:clamp(0.6rem,1.2vw,0.85rem); font-weight:900; color:rgba(255,255,255,0.7);
+    }
+    .gacha-lever-arm {
+      width:clamp(8px,1.4vw,12px); height:clamp(70px,12vw,110px);
+      background:linear-gradient(to right,#888,#ddd,#777);
+      border-radius:6px; margin:0 auto;
+    }
+    .gacha-lever-base {
+      width:clamp(28px,4.5vw,40px); height:clamp(10px,1.8vw,16px);
+      background:linear-gradient(to bottom,#555,#333);
+      border-radius:6px 6px 2px 2px; margin:0 auto;
     }
 
-    /* Reel — vertical flex list scrolled by translateY */
-    .slot-col-inner {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      will-change: transform;
-    }
+    /* Gacha draw count + status */
+    .gacha-status { font-size:clamp(0.88rem,2vw,1.2rem); font-weight:800; opacity:0.7; text-align:center; min-height:1.4em; color:#fff; }
+    .gacha-status .hl { color:#ffcc00; opacity:1; }
 
-    /*
-     * Card — height set explicitly via inline style by buildCard(entry, cardH).
-     * This is the BUG FIX: aspect-ratio alone can give 0 height inside flex columns.
-     */
-    .slot-card {
-      width: 100%;
-      flex-shrink: 0;
-      position: relative;
-      overflow: hidden;
-    }
-    .slot-card .card-bg {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      object-fit: cover; object-position: top center;
-      display: block; pointer-events: none;
-    }
-    .slot-card .card-overlay {
-      position: absolute; inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.0) 50%);
-      pointer-events: none;
-    }
-    .slot-card .card-info {
-      position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
-      padding: clamp(10px, 2vw, 20px) clamp(10px, 1.5vw, 16px);
-    }
-    .slot-card .sc-persona {
-      display: block; font-size: clamp(0.55rem, 1.1vw, 0.75rem);
-      font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase;
-      color: rgba(255,255,255,0.6); line-height: 1; margin-bottom: 4px;
-    }
-    .slot-card .sc-name {
-      display: block; font-size: clamp(0.85rem, 1.8vw, 1.25rem);
-      font-weight: 900; color: #fff;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      text-shadow: 0 1px 6px rgba(0,0,0,0.8);
-    }
+    /* Winners row: mini cards that appear as each winner is drawn */
+    .gacha-winners-row { display:flex; gap:14px; justify-content:center; align-items:flex-start; min-height:80px; }
+    .gacha-winner-slot { display:flex; flex-direction:column; align-items:center; gap:6px; }
+    .gacha-winner-slot-label { font-size:0.65rem; font-weight:900; opacity:0.35; text-transform:uppercase; letter-spacing:0.12em; color:#fff; }
+    .gacha-winner-slot-card { width:clamp(70px,10vw,100px); aspect-ratio:3/4; border-radius:12px; overflow:hidden; position:relative; border:2.5px solid transparent; box-shadow:0 4px 18px rgba(0,0,0,0.4); background:#0a0d2a; transition:border-color 0.3s; }
+    .gacha-winner-slot-card.filled { border-color:#ffcc00; box-shadow:0 0 28px rgba(255,204,0,0.45); }
+    .gacha-winner-slot-card img { width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
+    .gacha-winner-slot-card .slot-rank { position:absolute; bottom:4px; right:4px; font-size:1.2rem; z-index:5; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.7)); }
+    @keyframes slot-fill { from{transform:scale(0.7) rotate(-6deg);opacity:0} to{transform:scale(1) rotate(0);opacity:1} }
+    .gacha-winner-slot-card.filling { animation:slot-fill 0.55s cubic-bezier(0.34,1.4,0.64,1) both; }
+    .gacha-winner-slot-empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:1.5rem; opacity:0.15; }
 
-    /* Winner column glow */
-    @keyframes col-shake {
-      0%,100% { transform: translateX(0); }
-      25%      { transform: translateX(-5px); }
-      75%      { transform: translateX(5px); }
+    .gacha-btn-row { display:flex; gap:12px; justify-content:center; }
+    .gacha-pull-btn {
+      background:linear-gradient(135deg,#e61e2a,#a30015); color:#fff; font-family:var(--font);
+      font-size:clamp(1rem,2.5vw,1.4rem); font-weight:900; border:none; border-radius:50px;
+      padding:clamp(13px,2vh,20px) clamp(32px,6vw,56px); cursor:pointer; text-transform:uppercase;
+      letter-spacing:0.06em; box-shadow:0 6px 30px rgba(230,30,42,0.55);
+      transition:transform 0.12s, box-shadow 0.15s;
     }
-    .slot-col.pre-spin { animation: col-shake 0.22s ease infinite; }
+    .gacha-pull-btn:hover { transform:scale(1.04); }
+    .gacha-pull-btn:active { transform:scale(0.97); }
+    .gacha-pull-btn:disabled { opacity:0.3; pointer-events:none; box-shadow:none; }
+    .gacha-reset-btn { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); color:#fff; font-family:var(--font); font-size:clamp(0.82rem,1.5vw,1rem); font-weight:800; border-radius:50px; padding:clamp(10px,1.8vh,16px) clamp(20px,3.5vw,32px); cursor:pointer; transition:background 0.15s; }
+    .gacha-reset-btn:hover { background:rgba(255,255,255,0.15); }
 
-    @keyframes winner-pulse {
-      0%,100% { box-shadow: 0 0 0 4px #ffcc00, 0 0 50px rgba(255,204,0,0.5), inset 0 0 60px rgba(0,0,0,0.5); }
-      50%      { box-shadow: 0 0 0 7px #ffe066, 0 0 90px rgba(255,220,0,0.85), inset 0 0 60px rgba(0,0,0,0.5); }
-    }
-    .slot-col.winner-revealed {
-      border-color: #ffcc00;
-      animation: winner-pulse 1.5s ease-in-out infinite;
-    }
-
-    /* Rank medal drops inside column */
-    @keyframes medal-drop {
-      from { opacity: 0; transform: translateY(10px) scale(0.5); }
-      to   { opacity: 1; transform: translateY(0)    scale(1);   }
-    }
-    .winner-rank-overlay {
-      position: absolute; bottom: 10px; right: 10px;
-      font-size: clamp(1.6rem, 4vw, 2.8rem); line-height: 1;
-      z-index: 10; pointer-events: none;
-      filter: drop-shadow(0 3px 8px rgba(0,0,0,0.7));
-      animation: medal-drop 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
-    }
-
-    /* Winner name strip below column */
-    .winner-name-strip {
-      font-size: clamp(0.75rem, 1.5vw, 1rem);
-      font-weight: 800; color: #ffcc00; text-align: center;
-      min-height: 1.4em; line-height: 1.4;
-      text-shadow: 0 1px 8px rgba(0,0,0,0.5);
-      opacity: 0;
-      transition: opacity 0.4s ease 0.2s;
-    }
-    .winner-name-strip.visible { opacity: 1; }
-
-    /* Status + countdown */
-    .spin-status {
-      font-size: clamp(0.95rem, 2vw, 1.3rem);
-      font-weight: 800; opacity: 0.65; text-align: center;
-      letter-spacing: 0.03em; min-height: 1.4em;
-    }
-    .spin-status.countdown {
-      font-size: clamp(2rem, 6vw, 4rem);
-      font-weight: 900; opacity: 1; color: #ffcc00;
-      text-shadow: 0 0 30px rgba(255,204,0,0.7);
-    }
-
-    /* Spin / reset buttons */
-    @keyframes spin-btn-glow {
-      0%,100% { box-shadow: 0 6px 30px rgba(230,30,42,0.55); }
-      50%      { box-shadow: 0 10px 50px rgba(230,30,42,0.9); }
-    }
-    .btn-spin {
-      background: linear-gradient(135deg, #e61e2a 0%, #a30015 100%);
-      color: #fff; font-family: var(--font);
-      font-size: clamp(1rem, 2.5vw, 1.5rem);
-      font-weight: 900; letter-spacing: 0.07em;
-      border: none; border-radius: 50px;
-      padding: clamp(14px, 2.5vh, 22px) clamp(36px, 7vw, 64px);
-      cursor: pointer; text-transform: uppercase;
-      animation: spin-btn-glow 2s ease-in-out infinite;
-      transition: transform 0.12s;
-    }
-    .btn-spin:hover  { transform: scale(1.05); }
-    .btn-spin:active { transform: scale(0.97); }
-    .btn-spin:disabled { opacity: 0.28; pointer-events: none; animation: none; box-shadow: none; }
-
-    .btn-spin-reset {
-      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18);
-      color: #fff; font-family: var(--font);
-      font-size: clamp(0.82rem, 1.5vw, 1rem);
-      font-weight: 800; border-radius: 50px;
-      padding: clamp(10px,1.8vh,16px) clamp(20px,3.5vw,32px);
-      cursor: pointer; transition: background 0.15s;
-    }
-    .btn-spin-reset:hover { background: rgba(255,255,255,0.15); }
-
-    .btn-spin-row { display: flex; gap: 14px; align-items: center; justify-content: center; }
-
-    /* ── Add/Edit modal ── */
-    .entry-modal-overlay {
-      position: fixed; inset: 0; z-index: 50;
-      background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center; padding: 24px;
-    }
-    .entry-modal-card {
-      background: #fff; border-radius: 24px; padding: 30px 26px;
-      max-width: 380px; width: 100%;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.28);
-    }
-    .entry-modal-card h3 { font-size: 1.1rem; font-weight: 900; margin-bottom: 20px; color: var(--navy); }
-    .form-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
-    .form-field label { font-size: 0.78rem; font-weight: 800; opacity: 0.65; }
-    .form-field input, .form-field select {
-      border: 2px solid rgba(13,25,133,0.15); border-radius: 10px;
-      padding: 9px 13px; font-family: var(--font); font-size: 0.9rem; color: var(--navy);
-      background: #fff; outline: none;
-    }
-    .form-field input:focus, .form-field select:focus { border-color: var(--navy); }
-    .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
-    .modal-actions .btn { flex: 1; padding: 12px 0; font-size: 0.9rem; border-radius: 14px; }
+    /* ═══════════════ MODAL ═══════════════ */
+    .entry-modal-overlay { position:fixed; inset:0; z-index:80; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:24px; }
+    .entry-modal-card { background:#fff; border-radius:24px; padding:30px 26px; max-width:380px; width:100%; box-shadow:0 24px 64px rgba(0,0,0,0.28); }
+    .entry-modal-card h3 { font-size:1.1rem; font-weight:900; margin-bottom:20px; color:var(--navy); }
+    .form-field { display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
+    .form-field label { font-size:0.78rem; font-weight:800; opacity:0.65; }
+    .form-field input, .form-field select { border:2px solid rgba(13,25,133,0.15); border-radius:10px; padding:9px 13px; font-family:var(--font); font-size:0.9rem; color:var(--navy); background:#fff; outline:none; }
+    .form-field input:focus, .form-field select:focus { border-color:var(--navy); }
+    .modal-actions { display:flex; gap:8px; margin-top:20px; }
+    .modal-actions .btn { flex:1; padding:12px 0; font-size:0.9rem; border-radius:14px; }
   </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════════════
-     POOL VIEW — admin setup
-════════════════════════════════════════════════════════ -->
+<!-- ══════════════════ POOL VIEW ══════════════════ -->
 <div class="view active" id="poolView">
   <header class="topbar">
     <div>
-      <div class="topbar-brand">RMIT SAT — Prize Spin 🎰</div>
-      <div class="topbar-sub">Step 1 · Set up your student pool, then launch the spin</div>
+      <div class="topbar-brand">RMIT Challenge — Prize Draw 🎰</div>
+      <div class="topbar-sub">Step 1 · Set up your student pool, then choose a game</div>
     </div>
   </header>
-
   <div class="pool-page">
     <h1>Student Pool Setup</h1>
-    <p class="sub">Select a date range, review and manage students, then confirm to open the slot machine.</p>
-
+    <p class="sub">Select a date range, review and manage students, then confirm to choose your prize draw game.</p>
     <div class="date-bar">
       <label for="dateFrom">From</label>
       <input type="date" id="dateFrom" />
@@ -410,7 +415,6 @@
       <input type="date" id="dateTo" />
       <span class="pool-badge" id="activeBadge">0 active</span>
     </div>
-
     <div class="pool-card">
       <div class="pool-card-header">
         <span class="pool-card-title">Students in pool</span>
@@ -420,74 +424,179 @@
         <div class="pool-empty" id="poolEmpty">No students found for this date range</div>
       </div>
     </div>
-
     <div class="confirm-bar">
-      <p class="confirm-hint" id="confirmHint">Need at least <strong>3 active students</strong> to spin</p>
-      <button class="btn-confirm" id="confirmBtn" disabled type="button">🎰 Launch Prize Spin →</button>
+      <p class="confirm-hint" id="confirmHint">Need at least <strong>3 active students</strong> to continue</p>
+      <button class="btn-confirm" id="confirmBtn" disabled type="button">Choose Game →</button>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     SPIN VIEW — projector / audience display
-════════════════════════════════════════════════════════ -->
+<!-- ══════════════════ MENU VIEW ══════════════════ -->
+<div class="view" id="menuView">
+  <div class="dark-topbar">
+    <button class="dark-back-btn" id="menuBackBtn" type="button">← Back to Pool</button>
+    <span class="dark-topbar-brand">RMIT Challenge · Prize Draw</span>
+    <span style="width:120px"></span>
+  </div>
+  <div class="menu-body">
+    <div class="menu-title">Choose Your <span>Prize Draw</span> Game</div>
+    <div class="menu-pool-hint" id="menuPoolHint">0 students in pool</div>
+    <div class="game-options">
+      <div class="game-option-card" id="menuSlot">
+        <span class="game-option-icon">🎰</span>
+        <div class="game-option-name">Slot Machine</div>
+        <div class="game-option-desc">Three spinning reels reveal winners one by one. Classic casino energy for the whole crowd.</div>
+        <div class="game-option-badge">Classic</div>
+      </div>
+      <div class="game-option-card" id="menuFlip">
+        <span class="game-option-icon">🃏</span>
+        <div class="game-option-name">Mystery Card Flip</div>
+        <div class="game-option-desc">All student cards face-down in a grid. Click any 3 cards to reveal your lucky winners.</div>
+        <div class="game-option-badge">Interactive</div>
+      </div>
+      <div class="game-option-card" id="menuGacha">
+        <span class="game-option-icon">🫧</span>
+        <div class="game-option-name">Gacha Machine</div>
+        <div class="game-option-desc">Pull the lever! Capsules bounce in a glass dome. One rolls out and opens to reveal each winner.</div>
+        <div class="game-option-badge">Japanese Style</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ SPIN VIEW (Slot Machine) ══════════════════ -->
 <div class="view" id="spinView">
-  <div class="spin-topbar">
-    <button class="spin-back" id="backToPoolBtn" type="button">← Back</button>
-    <span class="spin-brand">RMIT Open Day · Prize Spin</span>
-    <span style="width: 80px;"></span>
+  <div class="dark-topbar">
+    <button class="dark-back-btn" id="spinBackBtn" type="button">← Back to Menu</button>
+    <span class="dark-topbar-brand">RMIT Challenge · Slot Machine</span>
+    <span style="width:120px"></span>
   </div>
-
-  <!-- Congrats banner — hidden until all 3 columns stop -->
-  <div class="congrats-banner" id="congratsBanner" style="display:none">
-    🎉 Congratulations to our winners! 🎉
-  </div>
-
+  <div class="congrats-banner" id="spinCongrats" style="display:none">🎉 Congratulations to our winners! 🎉</div>
   <div class="spin-body">
     <div class="spin-title">🎰 <span>RMIT</span> Prize Draw</div>
-
-    <!-- Slot machine — 3 columns, 1 full card visible at a time -->
     <div class="slot-machine" id="slotMachine">
-      <div class="slot-col-wrap" id="wrap0">
-        <div class="slot-col-label">Winner 1</div>
-        <div class="slot-col" id="col0"><div class="slot-col-inner" id="inner0"></div></div>
-        <div class="winner-name-strip" id="strip0"></div>
-      </div>
-      <div class="slot-col-wrap" id="wrap1">
-        <div class="slot-col-label">Winner 2</div>
-        <div class="slot-col" id="col1"><div class="slot-col-inner" id="inner1"></div></div>
-        <div class="winner-name-strip" id="strip1"></div>
-      </div>
-      <div class="slot-col-wrap" id="wrap2">
-        <div class="slot-col-label">Winner 3</div>
-        <div class="slot-col" id="col2"><div class="slot-col-inner" id="inner2"></div></div>
-        <div class="winner-name-strip" id="strip2"></div>
-      </div>
+      <div class="slot-col-wrap" id="wrap0"><div class="slot-col-label">Winner 1</div><div class="slot-col" id="col0"><div class="slot-col-inner" id="inner0"></div></div><div class="winner-name-strip" id="strip0"></div></div>
+      <div class="slot-col-wrap" id="wrap1"><div class="slot-col-label">Winner 2</div><div class="slot-col" id="col1"><div class="slot-col-inner" id="inner1"></div></div><div class="winner-name-strip" id="strip1"></div></div>
+      <div class="slot-col-wrap" id="wrap2"><div class="slot-col-label">Winner 3</div><div class="slot-col" id="col2"><div class="slot-col-inner" id="inner2"></div></div><div class="winner-name-strip" id="strip2"></div></div>
     </div>
-
     <div class="spin-status" id="spinStatus">Press SPIN to begin</div>
-
     <div class="btn-spin-row">
       <button class="btn-spin"       id="spinBtn"  type="button">🎰 SPIN</button>
-      <button class="btn-spin-reset" id="resetBtn" type="button" style="display:none">↺ Reset</button>
+      <button class="btn-spin-reset" id="spinResetBtn" type="button" style="display:none">↺ Reset</button>
     </div>
   </div>
 </div>
 
-<!-- Add / Edit modal -->
+<!-- ══════════════════ FLIP VIEW (Card Flip Wall) ══════════════════ -->
+<div class="view" id="flipView">
+  <div class="dark-topbar">
+    <button class="dark-back-btn" id="flipBackBtn" type="button">← Back to Menu</button>
+    <span class="dark-topbar-brand">RMIT Challenge · Card Flip</span>
+    <span style="width:120px"></span>
+  </div>
+  <div class="flip-status-bar" id="flipStatus">Shuffling cards…</div>
+  <div class="flip-grid-wrap" id="flipGridWrap">
+    <div class="flip-grid" id="flipGrid"></div>
+  </div>
+
+  <!-- Winner overlay (appears after 3 picks) -->
+  <div class="flip-winner-overlay" id="flipWinnerOverlay" style="display:none">
+    <div class="flip-winner-title">🎉 <span>RMIT Challenge</span> Winners!</div>
+    <div class="flip-winner-cols">
+      <div class="flip-winner-col" id="flipWinCol0">
+        <div class="flip-winner-col-label">Winner 1</div>
+        <div class="flip-winner-card-big" id="flipWinCard0"></div>
+        <div class="flip-winner-name" id="flipWinName0"></div>
+      </div>
+      <div class="flip-winner-col" id="flipWinCol1">
+        <div class="flip-winner-col-label">Winner 2</div>
+        <div class="flip-winner-card-big" id="flipWinCard1"></div>
+        <div class="flip-winner-name" id="flipWinName1"></div>
+      </div>
+      <div class="flip-winner-col" id="flipWinCol2">
+        <div class="flip-winner-col-label">Winner 3</div>
+        <div class="flip-winner-card-big" id="flipWinCard2"></div>
+        <div class="flip-winner-name" id="flipWinName2"></div>
+      </div>
+    </div>
+    <div class="flip-action-row">
+      <button class="flip-action-btn primary" id="flipPlayAgainBtn" type="button">🔄 Play Again</button>
+      <button class="flip-action-btn" id="flipMenuBtn" type="button">← Back to Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ GACHA VIEW ══════════════════ -->
+<div class="view" id="gachaView">
+  <div class="dark-topbar">
+    <button class="dark-back-btn" id="gachaBackBtn" type="button">← Back to Menu</button>
+    <span class="dark-topbar-brand">RMIT Challenge · Gacha Machine</span>
+    <span style="width:120px"></span>
+  </div>
+  <div class="congrats-banner" id="gachaCongrats" style="display:none">🎉 Congratulations to our winners! 🎉</div>
+  <div class="gacha-body">
+    <div class="gacha-title">🫧 <span>Gacha</span> Prize Draw</div>
+
+    <div class="gacha-scene">
+      <!-- The machine -->
+      <div class="gacha-machine" id="gachaMachine">
+        <div class="gacha-dome-wrap">
+          <div class="gacha-dome" id="gachaDome"></div>
+          <div class="gacha-dome-shine"></div>
+        </div>
+        <div class="gacha-neck" id="gachaNeck">
+          <div id="gachaNeckBall" style="display:none; position:absolute; left:50%; top:0; transform:translateX(-50%); border-radius:50%; background:radial-gradient(circle at 38% 35%,rgba(255,255,255,0.5),transparent); width:clamp(22px,3.5vw,32px); height:clamp(22px,3.5vw,32px); transition:top 0.5s ease-in;"></div>
+        </div>
+        <div class="gacha-cabinet">
+          <div class="gacha-cabinet-label">RMIT Challenge</div>
+          <div class="gacha-cabinet-brand">Prize Draw</div>
+          <div class="gacha-output-door" id="gachaOutput">
+            <div class="gacha-output-hint" id="gachaOutputHint">Pull the lever</div>
+          </div>
+        </div>
+      </div>
+      <!-- Lever on right -->
+      <div class="gacha-lever-mount">
+        <div class="gacha-lever" id="gachaLever" title="Pull to draw!">
+          <div class="gacha-lever-ball">PULL</div>
+          <div class="gacha-lever-arm"></div>
+          <div class="gacha-lever-base"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gacha-status" id="gachaStatus">Pull the lever to draw a winner</div>
+
+    <!-- 3 winner slots that fill up -->
+    <div class="gacha-winners-row" id="gachaWinnersRow">
+      <div class="gacha-winner-slot">
+        <div class="gacha-winner-slot-label">Winner 1</div>
+        <div class="gacha-winner-slot-card" id="gachaSlot0"><div class="gacha-winner-slot-empty">?</div></div>
+      </div>
+      <div class="gacha-winner-slot">
+        <div class="gacha-winner-slot-label">Winner 2</div>
+        <div class="gacha-winner-slot-card" id="gachaSlot1"><div class="gacha-winner-slot-empty">?</div></div>
+      </div>
+      <div class="gacha-winner-slot">
+        <div class="gacha-winner-slot-label">Winner 3</div>
+        <div class="gacha-winner-slot-card" id="gachaSlot2"><div class="gacha-winner-slot-empty">?</div></div>
+      </div>
+    </div>
+
+    <div class="gacha-btn-row">
+      <button class="gacha-pull-btn" id="gachaPullBtn" type="button">🫧 Pull Lever</button>
+      <button class="gacha-reset-btn" id="gachaResetBtn" type="button" style="display:none">↺ Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit modal -->
 <div class="entry-modal-overlay" id="entryModal" style="display:none">
   <div class="entry-modal-card">
     <h3 id="modalTitle">Add Student</h3>
-    <div class="form-field">
-      <label>Name</label>
-      <input type="text" id="entryName" placeholder="Nguyen Van A" maxlength="50" />
-    </div>
-    <div class="form-field">
-      <label>High School</label>
-      <input type="text" id="entrySchool" placeholder="THPT Chu Van An" maxlength="60" />
-    </div>
-    <div class="form-field">
-      <label>Persona</label>
+    <div class="form-field"><label>Name</label><input type="text" id="entryName" placeholder="Nguyen Van A" maxlength="50" /></div>
+    <div class="form-field"><label>High School</label><input type="text" id="entrySchool" placeholder="THPT Chu Van An" maxlength="60" /></div>
+    <div class="form-field"><label>Persona</label>
       <select id="entryPersona">
         <option value="TBS">TBS — The Business School</option>
         <option value="SCD">SCD — Communication &amp; Design</option>
@@ -495,8 +604,8 @@
       </select>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-primary" id="saveEntryBtn"   type="button">Save</button>
-      <button class="btn btn-ghost"   id="cancelEntryBtn" type="button">Cancel</button>
+      <button class="btn btn-primary" id="saveEntryBtn" type="button">Save</button>
+      <button class="btn btn-ghost" id="cancelEntryBtn" type="button">Cancel</button>
     </div>
   </div>
 </div>
@@ -508,9 +617,11 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-  const PERSONA_IMGS = { TBS: "tbs.png", SCD: "scd.png", SSET: "sset.png" };
+  const PERSONA_IMGS   = { TBS:"tbs.png", SCD:"scd.png", SSET:"sset.png" };
+  const PERSONA_COLORS = { TBS:"#a0001b", SCD:"#0d1985", SSET:"#123c69" };
+  const SAFE_IMG_RE    = /^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/]+=*$/;
 
-  // ── Firebase ─────────────────────────────────────────────────────────
+  /* ── Firebase ──────────────────────────────────────────── */
   let db;
   try {
     if (typeof FIREBASE_CONFIG !== "undefined" && FIREBASE_CONFIG.apiKey) {
@@ -519,452 +630,529 @@
     }
   } catch (e) { console.warn("Firebase unavailable:", e.message); }
 
-  // ── Audio ────────────────────────────────────────────────────────────
-  function playSlotSound() {
-    try { const a = document.getElementById("slotAudio"); a.currentTime = 0; a.volume = 0.65; a.playbackRate = 2; a.loop = true; a.play().catch(() => {}); } catch (_) {}
-  }
-  function stopSlotSound() {
-    try { const a = document.getElementById("slotAudio"); a.loop = false; a.pause(); a.currentTime = 0; } catch (_) {}
-  }
-  function playClapping() {
-    try { const a = document.getElementById("clappingAudio"); a.currentTime = 0; a.volume = 0.8; a.playbackRate = 1.4; a.play().catch(() => {}); } catch (_) {}
-  }
+  /* ── Audio ─────────────────────────────────────────────── */
+  function playSlotSound()  { try { const a=document.getElementById("slotAudio"); a.currentTime=0; a.volume=0.65; a.playbackRate=2; a.loop=true; a.play().catch(()=>{}); } catch(_){} }
+  function stopSlotSound()  { try { const a=document.getElementById("slotAudio"); a.loop=false; a.pause(); a.currentTime=0; } catch(_){} }
+  function playClapping()   { try { const a=document.getElementById("clappingAudio"); a.currentTime=0; a.volume=0.8; a.playbackRate=1.4; a.play().catch(()=>{}); } catch(_){} }
   function playDing() {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator(), gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(1047, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(523, ctx.currentTime + 0.4);
-      gain.gain.setValueAtTime(0.7, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.7);
-      osc.start(); osc.stop(ctx.currentTime + 0.7);
-    } catch (_) {}
+      const ctx=new (window.AudioContext||window.webkitAudioContext)(),osc=ctx.createOscillator(),gain=ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination); osc.type="sine";
+      osc.frequency.setValueAtTime(1047,ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(523,ctx.currentTime+0.4);
+      gain.gain.setValueAtTime(0.7,ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.7);
+      osc.start(); osc.stop(ctx.currentTime+0.7);
+    } catch(_){}
+  }
+  function playPop() {
+    try {
+      const ctx=new (window.AudioContext||window.webkitAudioContext)(),osc=ctx.createOscillator(),gain=ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination); osc.type="sine";
+      osc.frequency.setValueAtTime(400,ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(900,ctx.currentTime+0.08);
+      osc.frequency.exponentialRampToValueAtTime(300,ctx.currentTime+0.2);
+      gain.gain.setValueAtTime(0.55,ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
+      osc.start(); osc.stop(ctx.currentTime+0.3);
+    } catch(_){}
   }
 
-  // ── State ────────────────────────────────────────────────────────────
-  let allEntries = [];
-  let activePool = [];
-  let unsubFn    = null;
-  let editingId  = null;
-  let spinActive = false;
-  let cancelFns  = [];
-  let spinners   = [null, null, null]; // continuous-spin RAF handles
+  /* ── Shared state ──────────────────────────────────────── */
+  let allEntries=[], activePool=[], unsubFn=null, editingId=null;
+  function escHtml(s) { return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function todayStr()        { return new Date().toLocaleDateString("en-CA"); }
+  function dateToMs(d)       { return new Date(d+"T12:00:00").getTime(); }
+  function easeOutQuint(t)   { return 1-Math.pow(1-t,5); }
+  function shuffle(arr)      { return [...arr].sort(()=>Math.random()-0.5); }
 
-  // ── View switching ───────────────────────────────────────────────────
+  /* ── View switching ────────────────────────────────────── */
   function showView(id) {
-    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
     document.getElementById(id).classList.add("active");
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────
-  function escHtml(s) {
-    return String(s || "")
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-  }
-  function todayStr()        { return new Date().toLocaleDateString("en-CA"); }
-  function dateToMs(dateStr) { return new Date(dateStr + "T12:00:00").getTime(); }
-  function easeOutQuint(t)   { return 1 - Math.pow(1 - t, 5); }
+  /* ── Date pickers ──────────────────────────────────────── */
+  const dfEl=document.getElementById("dateFrom"), dtEl=document.getElementById("dateTo");
+  dfEl.value=dtEl.value=todayStr();
+  dfEl.addEventListener("change",()=>{ if(dtEl.value<dfEl.value) dtEl.value=dfEl.value; loadPool(); });
+  dtEl.addEventListener("change",()=>{ if(dfEl.value>dtEl.value) dfEl.value=dtEl.value; loadPool(); });
 
-  // ── Date range ───────────────────────────────────────────────────────
-  const dateFrom = document.getElementById("dateFrom");
-  const dateTo   = document.getElementById("dateTo");
-  dateFrom.value = todayStr();
-  dateTo.value   = todayStr();
-  dateFrom.addEventListener("change", () => {
-    if (dateTo.value && dateTo.value < dateFrom.value) dateTo.value = dateFrom.value;
-    loadPool();
-  });
-  dateTo.addEventListener("change", () => {
-    if (dateFrom.value && dateTo.value < dateFrom.value) dateFrom.value = dateTo.value;
-    loadPool();
-  });
-
-  // ── Pool ─────────────────────────────────────────────────────────────
+  /* ── Pool ──────────────────────────────────────────────── */
   function loadPool() {
     if (!db) { renderPoolList([]); return; }
-    if (unsubFn) { unsubFn(); unsubFn = null; }
-    const ref = db.ref("studentResults");
-    const listener = ref.on("value", snapshot => {
-      allEntries = [];
-      snapshot.forEach(child => { const v = child.val(); if (v) allEntries.push({ id: child.key, ...v }); });
-      rebuildPool();
-    });
-    unsubFn = () => ref.off("value", listener);
+    if (unsubFn) { unsubFn(); unsubFn=null; }
+    const ref=db.ref("studentResults");
+    const fn=ref.on("value",snap=>{ allEntries=[]; snap.forEach(c=>{ const v=c.val(); if(v) allEntries.push({id:c.key,...v}); }); rebuildPool(); });
+    unsubFn=()=>ref.off("value",fn);
   }
-
   function rebuildPool() {
-    const from = dateFrom.value;
-    const to   = dateTo.value || from;
-    activePool = allEntries.filter(e => {
-      if (e.excluded) return false;
-      const d = new Date(e.t).toLocaleDateString("en-CA");
-      return d >= from && d <= to;
-    });
-    const rangeAll = allEntries.filter(e => {
-      const d = new Date(e.t).toLocaleDateString("en-CA");
-      return d >= from && d <= to;
-    });
-    renderPoolList(rangeAll);
-    updateConfirmBar();
+    const from=dfEl.value, to=dtEl.value||from;
+    activePool=allEntries.filter(e=>{ if(e.excluded) return false; const d=new Date(e.t).toLocaleDateString("en-CA"); return d>=from&&d<=to; });
+    const rangeAll=allEntries.filter(e=>{ const d=new Date(e.t).toLocaleDateString("en-CA"); return d>=from&&d<=to; });
+    renderPoolList(rangeAll); updateConfirmBar();
   }
-
   function renderPoolList(entries) {
-    const list  = document.getElementById("poolList");
-    const empty = document.getElementById("poolEmpty");
-    document.getElementById("activeBadge").textContent = `${activePool.length} active`;
-    if (entries.length === 0) { list.innerHTML = ""; empty.style.display = ""; return; }
-    empty.style.display = "none";
-    list.innerHTML = "";
-    entries.forEach(entry => {
-      const div = document.createElement("div");
-      div.className = "entry-row" + (entry.excluded ? " is-excluded" : "");
-      div.innerHTML = `
-        <span class="persona-chip ${escHtml(entry.persona)}">${escHtml(entry.persona)}</span>
-        <span class="entry-name">${escHtml(entry.name || "Guest")}</span>
-        <span class="entry-school">${escHtml(entry.school || "")}</span>
-        <div class="entry-actions">
-          <button class="btn btn-sm btn-edit"    data-id="${entry.id}" type="button">Edit</button>
-          ${entry.excluded
-            ? `<button class="btn btn-sm btn-restore" data-id="${entry.id}" type="button">Restore</button>`
-            : `<button class="btn btn-sm btn-remove"  data-id="${entry.id}" type="button">Remove</button>`}
-        </div>`;
+    const list=document.getElementById("poolList"),empty=document.getElementById("poolEmpty");
+    document.getElementById("activeBadge").textContent=`${activePool.length} active`;
+    if (!entries.length) { list.innerHTML=""; empty.style.display=""; return; }
+    empty.style.display="none"; list.innerHTML="";
+    entries.forEach(entry=>{
+      const div=document.createElement("div"); div.className="entry-row"+(entry.excluded?" is-excluded":"");
+      div.innerHTML=`<span class="persona-chip ${escHtml(entry.persona)}">${escHtml(entry.persona)}</span><span class="entry-name">${escHtml(entry.name||"Guest")}</span><span class="entry-school">${escHtml(entry.school||"")}</span><div class="entry-actions"><button class="btn btn-sm btn-edit" data-id="${entry.id}" type="button">Edit</button>${entry.excluded?`<button class="btn btn-sm btn-restore" data-id="${entry.id}" type="button">Restore</button>`:`<button class="btn btn-sm btn-remove" data-id="${entry.id}" type="button">Remove</button>`}</div>`;
       list.appendChild(div);
     });
-    list.querySelectorAll(".btn-edit").forEach(b => b.addEventListener("click", () => openEditModal(b.dataset.id)));
-    list.querySelectorAll(".btn-remove").forEach(b => b.addEventListener("click", () => {
-      if (db) db.ref(`studentResults/${b.dataset.id}`).update({ excluded: true });
-    }));
-    list.querySelectorAll(".btn-restore").forEach(b => b.addEventListener("click", () => {
-      if (db) db.ref(`studentResults/${b.dataset.id}`).update({ excluded: false });
-    }));
+    list.querySelectorAll(".btn-edit").forEach(b=>b.addEventListener("click",()=>openEditModal(b.dataset.id)));
+    list.querySelectorAll(".btn-remove").forEach(b=>b.addEventListener("click",()=>{ if(db) db.ref(`studentResults/${b.dataset.id}`).update({excluded:true}); }));
+    list.querySelectorAll(".btn-restore").forEach(b=>b.addEventListener("click",()=>{ if(db) db.ref(`studentResults/${b.dataset.id}`).update({excluded:false}); }));
   }
-
   function updateConfirmBar() {
-    const btn  = document.getElementById("confirmBtn");
-    const hint = document.getElementById("confirmHint");
-    btn.disabled = activePool.length < 3;
-    const need = 3 - activePool.length;
-    hint.innerHTML = need > 0
-      ? `Need at least <strong>${need} more active student${need !== 1 ? "s" : ""}</strong> to spin`
-      : `<strong>${activePool.length} students</strong> ready — click to launch!`;
+    const btn=document.getElementById("confirmBtn"),hint=document.getElementById("confirmHint");
+    btn.disabled=activePool.length<3;
+    const need=3-activePool.length;
+    hint.innerHTML=need>0?`Need at least <strong>${need} more active student${need!==1?"s":""}</strong> to continue`:`<strong>${activePool.length} students</strong> ready — choose your game!`;
   }
 
-  // ── Confirm / back ───────────────────────────────────────────────────
-  document.getElementById("confirmBtn").addEventListener("click", () => {
-    if (activePool.length < 3) return;
-    resetSpin();
-    showView("spinView");
-    // Size the columns once the view is visible
-    requestAnimationFrame(sizeColumns);
+  /* ── Pool → Menu ───────────────────────────────────────── */
+  document.getElementById("confirmBtn").addEventListener("click",()=>{
+    if(activePool.length<3) return;
+    document.getElementById("menuPoolHint").textContent=`${activePool.length} students in pool`;
+    showView("menuView");
   });
-  document.getElementById("backToPoolBtn").addEventListener("click", () => {
-    if (spinActive) return;
-    stopSlotSound();
-    cancelFns.forEach(fn => fn()); cancelFns = [];
-    showView("poolView");
-  });
+  document.getElementById("menuBackBtn").addEventListener("click",()=>showView("poolView"));
 
-  // ── Column sizing ────────────────────────────────────────────────────
-  // Computes the card pixel height from the available viewport height,
-  // then sets each column to have explicit width (9:16) and height.
-  function sizeColumns() {
-    const spinBody = document.querySelector(".spin-body");
-    const bodyH    = spinBody ? spinBody.offsetHeight : window.innerHeight * 0.7;
-    // Reserve space for title, status, buttons (~200px) plus gaps
-    const colH = Math.max(180, Math.min(bodyH - 200, Math.floor(window.innerHeight * 0.58)));
-    const colW = Math.round(colH * 9 / 16);
-    [0, 1, 2].forEach(i => {
-      const col = document.getElementById(`col${i}`);
-      col.style.height = colH + "px";
-      col.style.width  = colW + "px";
-    });
-    return colH;
-  }
+  /* ── Game selection ─────────────────────────────────────── */
+  document.getElementById("menuSlot").addEventListener("click",()=>{ resetSpin(); showView("spinView"); requestAnimationFrame(sizeColumns); });
+  document.getElementById("menuFlip").addEventListener("click",()=>{ initFlipWall(); showView("flipView"); });
+  document.getElementById("menuGacha").addEventListener("click",()=>{ initGacha(); showView("gachaView"); });
 
-  // ── Add/Edit modal ───────────────────────────────────────────────────
-  document.getElementById("addEntryBtn").addEventListener("click", openAddModal);
-  document.getElementById("cancelEntryBtn").addEventListener("click", closeModal);
-  document.getElementById("entryModal").addEventListener("click", e => {
-    if (e.target === document.getElementById("entryModal")) closeModal();
-  });
-
-  function openAddModal() {
-    editingId = null;
-    document.getElementById("modalTitle").textContent      = "Add Student";
-    document.getElementById("entryName").value             = "";
-    document.getElementById("entrySchool").value           = "";
-    document.getElementById("entryPersona").value          = "TBS";
-    document.getElementById("entryModal").style.display   = "flex";
-    document.getElementById("entryName").focus();
-  }
-  function openEditModal(id) {
-    const entry = allEntries.find(e => e.id === id);
-    if (!entry) return;
-    editingId = id;
-    document.getElementById("modalTitle").textContent      = "Edit Student";
-    document.getElementById("entryName").value             = entry.name    || "";
-    document.getElementById("entrySchool").value           = entry.school  || "";
-    document.getElementById("entryPersona").value          = entry.persona || "TBS";
-    document.getElementById("entryModal").style.display   = "flex";
-    document.getElementById("entryName").focus();
-  }
-  function closeModal() {
-    document.getElementById("entryModal").style.display = "none";
-    editingId = null;
-  }
-
-  document.getElementById("saveEntryBtn").addEventListener("click", async () => {
-    const name    = document.getElementById("entryName").value.trim();
-    const school  = document.getElementById("entrySchool").value.trim();
-    const persona = document.getElementById("entryPersona").value;
-    if (!name) { document.getElementById("entryName").focus(); return; }
-    if (!db)   { closeModal(); return; }
-    if (editingId) {
-      await db.ref(`studentResults/${editingId}`).update({ name, school, persona });
-    } else {
-      await db.ref("studentResults").push({
-        name, school, persona,
-        t: dateToMs(dateTo.value || todayStr()),
-        excluded: false
-      });
-    }
+  /* ── Add/Edit modal ─────────────────────────────────────── */
+  document.getElementById("addEntryBtn").addEventListener("click",openAddModal);
+  document.getElementById("cancelEntryBtn").addEventListener("click",closeModal);
+  document.getElementById("entryModal").addEventListener("click",e=>{ if(e.target===document.getElementById("entryModal")) closeModal(); });
+  function openAddModal(){ editingId=null; document.getElementById("modalTitle").textContent="Add Student"; document.getElementById("entryName").value=""; document.getElementById("entrySchool").value=""; document.getElementById("entryPersona").value="TBS"; document.getElementById("entryModal").style.display="flex"; document.getElementById("entryName").focus(); }
+  function openEditModal(id){ const e=allEntries.find(x=>x.id===id); if(!e) return; editingId=id; document.getElementById("modalTitle").textContent="Edit Student"; document.getElementById("entryName").value=e.name||""; document.getElementById("entrySchool").value=e.school||""; document.getElementById("entryPersona").value=e.persona||"TBS"; document.getElementById("entryModal").style.display="flex"; document.getElementById("entryName").focus(); }
+  function closeModal(){ document.getElementById("entryModal").style.display="none"; editingId=null; }
+  document.getElementById("saveEntryBtn").addEventListener("click",async()=>{
+    const name=document.getElementById("entryName").value.trim(), school=document.getElementById("entrySchool").value.trim(), persona=document.getElementById("entryPersona").value;
+    if(!name){ document.getElementById("entryName").focus(); return; }
+    if(!db){ closeModal(); return; }
+    if(editingId) await db.ref(`studentResults/${editingId}`).update({name,school,persona});
+    else await db.ref("studentResults").push({name,school,persona,t:dateToMs(dtEl.value||todayStr()),excluded:false});
     closeModal();
   });
 
-  // ── Card builder ─────────────────────────────────────────────────────
-  // If entry.img exists (saved from quiz completion), show the real student card.
-  // Otherwise fall back to the persona template + "I'm Name" text overlay.
-  const SAFE_IMG_RE = /^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/]+=*$/;
-
+  /* ── Shared card builder ────────────────────────────────── */
   function buildCard(entry, cardH) {
-    const persona   = entry.persona || "TBS";
-    const div       = document.createElement("div");
-    div.className   = "slot-card";
-    div.style.height = cardH + "px";
-
-    const hasRealCard = entry.img && SAFE_IMG_RE.test(entry.img);
-    const imgSrc = hasRealCard ? entry.img : (PERSONA_IMGS[persona] || "tbs.png");
-
-    if (hasRealCard) {
-      // Full card image already contains the student photo + "I'm Name" — show as-is
-      div.innerHTML = `<img class="card-bg" src="${escHtml(imgSrc)}" alt="${escHtml(entry.name || persona)}" />`;
+    const persona=entry.persona||"TBS", div=document.createElement("div");
+    div.className="slot-card"; div.style.height=cardH+"px";
+    const hasReal=entry.img&&SAFE_IMG_RE.test(entry.img);
+    if(hasReal) {
+      div.innerHTML=`<img class="card-bg" src="${escHtml(entry.img)}" alt="${escHtml(entry.name||persona)}" />`;
     } else {
-      // No saved image: show persona template + text overlay
-      div.innerHTML = `
-        <img class="card-bg" src="${escHtml(imgSrc)}" alt="${escHtml(persona)}" />
-        <div class="card-overlay"></div>
-        <div class="card-info">
-          <span class="sc-persona">${escHtml(persona)}</span>
-          <span class="sc-name">I'm ${escHtml(entry.name || "Guest")}</span>
-        </div>`;
+      div.innerHTML=`<img class="card-bg" src="${escHtml(PERSONA_IMGS[persona]||"tbs.png")}" alt="${escHtml(persona)}" /><div class="card-overlay"></div><div class="card-info"><span class="sc-persona">${escHtml(persona)}</span><span class="sc-name">I'm ${escHtml(entry.name||"Guest")}</span></div>`;
     }
     return div;
   }
 
-  // ── Continuous spin ───────────────────────────────────────────────────
-  // Fills column reel with many cards, scrolls at blur-speed (12 cards/sec).
-  function startContinuousSpin(colIndex, cardH) {
-    const innerEl = document.getElementById(`inner${colIndex}`);
-    innerEl.innerHTML = "";
-    innerEl.style.transform = "translateY(0)";
+  /* ══════════════════════════════════════════════════════════
+     SLOT MACHINE GAME
+  ══════════════════════════════════════════════════════════ */
+  let spinActive=false, spinCancelFns=[], spinners=[null,null,null];
 
-    const reps     = Math.max(40, Math.ceil(200 / activePool.length));
-    const shuffled = [...activePool].sort(() => Math.random() - 0.5);
-    for (let r = 0; r < reps; r++) {
-      shuffled.forEach(e => innerEl.appendChild(buildCard(e, cardH)));
-    }
-
-    const SPEED = cardH * 12; // 12 full cards per second (blur)
-    let y = 0, last = null;
-
-    function frame(now) {
-      if (last === null) last = now;
-      const dt = Math.min((now - last) / 1000, 0.05);
-      last = now;
-      y -= SPEED * dt;
-      innerEl.style.transform = `translateY(${y}px)`;
-      spinners[colIndex].rafId = requestAnimationFrame(frame);
-    }
-
-    spinners[colIndex] = { rafId: null };
-    spinners[colIndex].rafId = requestAnimationFrame(frame);
+  function sizeColumns() {
+    const spinBody=document.querySelector(".spin-body"), bodyH=spinBody?spinBody.offsetHeight:window.innerHeight*0.7;
+    const colH=Math.max(180,Math.min(bodyH-200,Math.floor(window.innerHeight*0.58)));
+    const colW=Math.round(colH*9/16);
+    [0,1,2].forEach(i=>{ const c=document.getElementById(`col${i}`); c.style.height=colH+"px"; c.style.width=colW+"px"; });
+    return colH;
   }
 
-  // ── Stop one column, decelerate into winner ───────────────────────────
-  // Snaps invisibly (during blur) to 8 cards above winner, then eases in.
-  function stopColumn(colIndex, winner, cardH, onDone) {
-    const colEl   = document.getElementById(`col${colIndex}`);
-    const innerEl = document.getElementById(`inner${colIndex}`);
-
-    // Kill continuous spin
-    if (spinners[colIndex]) {
-      cancelAnimationFrame(spinners[colIndex].rafId);
-      spinners[colIndex] = null;
-    }
-
-    // Append 8 random filler cards + winner at the very end
-    const tail = [...activePool].sort(() => Math.random() - 0.5).slice(0, 8);
-    tail.forEach(e => innerEl.appendChild(buildCard(e, cardH)));
-    innerEl.appendChild(buildCard(winner, cardH));
-
-    const winnerIdx = innerEl.children.length - 1;
-    const toY       = -(winnerIdx * cardH);
-    const fromY     = toY + 8 * cardH;  // snap to 8 cards above winner (hidden by blur)
-
-    innerEl.style.transform = `translateY(${fromY}px)`;
-
-    const duration = 2400;
-    const startT   = performance.now();
-    let rafId;
-
-    function frame(now) {
-      const p     = Math.min((now - startT) / duration, 1);
-      const eased = easeOutQuint(p);
-      innerEl.style.transform = `translateY(${fromY + (toY - fromY) * eased}px)`;
-      if (p < 1) {
-        rafId = requestAnimationFrame(frame);
-      } else {
-        innerEl.style.transform = `translateY(${toY}px)`;
-        // Gold glow
-        colEl.classList.remove("pre-spin");
-        colEl.classList.add("winner-revealed");
-        // Rank medal
-        const medal = document.createElement("div");
-        medal.className   = "winner-rank-overlay";
-        medal.textContent = ["🥇", "🥈", "🥉"][colIndex];
-        colEl.appendChild(medal);
-        // Name strip below column
-        const strip = document.getElementById(`strip${colIndex}`);
-        strip.textContent = winner.name || "Guest";
-        strip.classList.add("visible");
-        if (onDone) onDone();
-      }
-    }
-    rafId = requestAnimationFrame(frame);
-    cancelFns.push(() => cancelAnimationFrame(rafId));
+  function startContinuousSpin(colIndex,cardH) {
+    const innerEl=document.getElementById(`inner${colIndex}`);
+    innerEl.innerHTML=""; innerEl.style.transform="translateY(0)";
+    const reps=Math.max(40,Math.ceil(200/activePool.length)), shuffled=shuffle(activePool);
+    for(let r=0;r<reps;r++) shuffled.forEach(e=>innerEl.appendChild(buildCard(e,cardH)));
+    const SPEED=cardH*12; let y=0,last=null;
+    function frame(now){ if(last===null) last=now; const dt=Math.min((now-last)/1000,0.05); last=now; y-=SPEED*dt; innerEl.style.transform=`translateY(${y}px)`; spinners[colIndex].rafId=requestAnimationFrame(frame); }
+    spinners[colIndex]={rafId:null}; spinners[colIndex].rafId=requestAnimationFrame(frame);
   }
 
-  // ── Spin orchestration ────────────────────────────────────────────────
+  function stopColumn(colIndex,winner,cardH,onDone) {
+    const colEl=document.getElementById(`col${colIndex}`), innerEl=document.getElementById(`inner${colIndex}`);
+    if(spinners[colIndex]){ cancelAnimationFrame(spinners[colIndex].rafId); spinners[colIndex]=null; }
+    shuffle(activePool).slice(0,8).forEach(e=>innerEl.appendChild(buildCard(e,cardH)));
+    innerEl.appendChild(buildCard(winner,cardH));
+    const winnerIdx=innerEl.children.length-1, toY=-(winnerIdx*cardH), fromY=toY+8*cardH;
+    innerEl.style.transform=`translateY(${fromY}px)`;
+    const dur=2400, startT=performance.now(); let rafId;
+    function frame(now){ const p=Math.min((now-startT)/dur,1), eased=easeOutQuint(p); innerEl.style.transform=`translateY(${fromY+(toY-fromY)*eased}px)`; if(p<1){ rafId=requestAnimationFrame(frame); } else { innerEl.style.transform=`translateY(${toY}px)`; colEl.classList.remove("pre-spin"); colEl.classList.add("winner-revealed"); const m=document.createElement("div"); m.className="winner-rank-overlay"; m.textContent=["🥇","🥈","🥉"][colIndex]; colEl.appendChild(m); const s=document.getElementById(`strip${colIndex}`); s.textContent=winner.name||"Guest"; s.classList.add("visible"); if(onDone) onDone(); } }
+    rafId=requestAnimationFrame(frame); spinCancelFns.push(()=>cancelAnimationFrame(rafId));
+  }
+
   function startSpin() {
-    if (spinActive || activePool.length < 3) return;
-    spinActive = true;
-    document.getElementById("spinBtn").disabled   = true;
-    document.getElementById("resetBtn").style.display = "none";
-    document.getElementById("congratsBanner").style.display = "none";
-
-    // Pick 3 distinct winners
-    const winners = [...activePool].sort(() => Math.random() - 0.5).slice(0, 3);
-    const status  = document.getElementById("spinStatus");
-
-    // Clear columns
-    [0, 1, 2].forEach(i => {
-      const col   = document.getElementById(`col${i}`);
-      const inner = document.getElementById(`inner${i}`);
-      const strip = document.getElementById(`strip${i}`);
-      col.classList.remove("winner-revealed", "pre-spin");
-      col.querySelectorAll(".winner-rank-overlay").forEach(el => el.remove());
-      inner.innerHTML = "";
-      inner.style.transform = "translateY(0)";
-      strip.textContent = "";
-      strip.classList.remove("visible");
-    });
-
-    // Measure card height (columns sized by sizeColumns, called on view open)
-    const cardH = document.getElementById("col0").offsetHeight || 320;
-
+    if(spinActive||activePool.length<3) return;
+    spinActive=true;
+    document.getElementById("spinBtn").disabled=true; document.getElementById("spinResetBtn").style.display="none"; document.getElementById("spinCongrats").style.display="none";
+    const winners=shuffle(activePool).slice(0,3), status=document.getElementById("spinStatus");
+    [0,1,2].forEach(i=>{ const c=document.getElementById(`col${i}`),in_=document.getElementById(`inner${i}`),s=document.getElementById(`strip${i}`); c.classList.remove("winner-revealed","pre-spin"); c.querySelectorAll(".winner-rank-overlay").forEach(e=>e.remove()); in_.innerHTML=""; in_.style.transform="translateY(0)"; s.textContent=""; s.classList.remove("visible"); });
+    const cardH=document.getElementById("col0").offsetHeight||320;
     playSlotSound();
-    [0, 1, 2].forEach(i => document.getElementById(`col${i}`).classList.add("pre-spin"));
-
-    // 3-2-1 countdown: 2 seconds per tick = 6 seconds total
-    let countdown = 3;
-    status.className   = "spin-status countdown";
-    status.textContent = countdown;
-    const cdInterval = setInterval(() => {
-      if (--countdown > 0) {
-        status.textContent = countdown;
-      } else {
-        clearInterval(cdInterval);
-      }
-    }, 2000);
-    cancelFns.push(() => clearInterval(cdInterval));
-
-    const t1 = setTimeout(() => {
-      // All 3 columns blur simultaneously
-      status.className   = "spin-status";
-      status.textContent = "Spinning…";
-      [0, 1, 2].forEach(i => {
-        document.getElementById(`col${i}`).classList.remove("pre-spin");
-        startContinuousSpin(i, cardH);
-      });
-
-      // Stop columns left → right, 3.5 s apart
-      let acc = 0;
-      cancelFns.push(...[3500, 3500, 3500].map((delay, i) => {
-        acc += delay;
-        const t = setTimeout(() => {
-          stopColumn(i, winners[i], cardH, () => {
+    [0,1,2].forEach(i=>document.getElementById(`col${i}`).classList.add("pre-spin"));
+    let countdown=3; status.className="spin-status countdown"; status.textContent=countdown;
+    const cd=setInterval(()=>{ if(--countdown>0) status.textContent=countdown; else clearInterval(cd); },2000);
+    spinCancelFns.push(()=>clearInterval(cd));
+    const t1=setTimeout(()=>{
+      status.className="spin-status"; status.textContent="Spinning…";
+      [0,1,2].forEach(i=>{ document.getElementById(`col${i}`).classList.remove("pre-spin"); startContinuousSpin(i,cardH); });
+      let acc=0;
+      spinCancelFns.push(...[3500,3500,3500].map((delay,i)=>{
+        acc+=delay;
+        const t=setTimeout(()=>{
+          stopColumn(i,winners[i],cardH,()=>{
             playDing();
-            if (i < 2) {
-              status.textContent = `Winner ${i + 1} revealed! Next…`;
-            } else {
-              // All done
-              stopSlotSound();
-              setTimeout(playClapping, 200);
-              status.textContent = "🎉 Congratulations to our winners!";
-              document.getElementById("resetBtn").style.display = "";
-              spinActive = false;
-              // Congrats banner
-              const banner = document.getElementById("congratsBanner");
-              banner.style.display = "";
-              banner.style.animation = "none";
-              void banner.offsetWidth;
-              banner.style.animation = "";
-            }
+            if(i<2){ status.textContent=`Winner ${i+1} revealed! Next…`; }
+            else { stopSlotSound(); setTimeout(playClapping,200); status.textContent="🎉 We have our winners!"; document.getElementById("spinResetBtn").style.display=""; spinActive=false; const b=document.getElementById("spinCongrats"); b.style.display=""; b.style.animation="none"; void b.offsetWidth; b.style.animation=""; }
           });
-        }, acc);
-        return () => clearTimeout(t);
+        },acc); return ()=>clearTimeout(t);
       }));
-    }, 6000);
-    cancelFns.push(() => clearTimeout(t1));
+    },6000);
+    spinCancelFns.push(()=>clearTimeout(t1));
   }
 
   function resetSpin() {
-    cancelFns.forEach(fn => { try { fn(); } catch (_) {} }); cancelFns = [];
-    [0, 1, 2].forEach(i => {
-      if (spinners[i]) { cancelAnimationFrame(spinners[i].rafId); spinners[i] = null; }
-      const col   = document.getElementById(`col${i}`);
-      const inner = document.getElementById(`inner${i}`);
-      const strip = document.getElementById(`strip${i}`);
-      col.classList.remove("winner-revealed", "pre-spin");
-      col.querySelectorAll(".winner-rank-overlay").forEach(el => el.remove());
-      inner.innerHTML = "";
-      inner.style.transform = "translateY(0)";
-      strip.textContent = "";
-      strip.classList.remove("visible");
-    });
+    spinCancelFns.forEach(fn=>{try{fn();}catch(_){}}); spinCancelFns=[];
+    [0,1,2].forEach(i=>{ if(spinners[i]){cancelAnimationFrame(spinners[i].rafId);spinners[i]=null;} const c=document.getElementById(`col${i}`),in_=document.getElementById(`inner${i}`),s=document.getElementById(`strip${i}`); c.classList.remove("winner-revealed","pre-spin"); c.querySelectorAll(".winner-rank-overlay").forEach(e=>e.remove()); in_.innerHTML=""; in_.style.transform="translateY(0)"; s.textContent=""; s.classList.remove("visible"); });
     stopSlotSound();
-    document.getElementById("spinStatus").className   = "spin-status";
-    document.getElementById("spinStatus").textContent = "Press SPIN to begin";
-    document.getElementById("spinBtn").disabled       = false;
-    document.getElementById("resetBtn").style.display = "none";
-    document.getElementById("congratsBanner").style.display = "none";
-    spinActive = false;
+    document.getElementById("spinStatus").className="spin-status"; document.getElementById("spinStatus").textContent="Press SPIN to begin";
+    document.getElementById("spinBtn").disabled=false; document.getElementById("spinResetBtn").style.display="none"; document.getElementById("spinCongrats").style.display="none";
+    spinActive=false;
   }
 
-  document.getElementById("spinBtn").addEventListener("click", startSpin);
-  document.getElementById("resetBtn").addEventListener("click", resetSpin);
+  document.getElementById("spinBtn").addEventListener("click",startSpin);
+  document.getElementById("spinResetBtn").addEventListener("click",resetSpin);
+  document.getElementById("spinBackBtn").addEventListener("click",()=>{ if(spinActive) return; stopSlotSound(); spinCancelFns.forEach(fn=>{try{fn();}catch(_){}}); spinCancelFns=[]; showView("menuView"); });
+  window.addEventListener("resize",()=>{ if(document.getElementById("spinView").classList.contains("active")&&!spinActive) sizeColumns(); });
 
-  // Re-size columns on window resize while spin view is active
-  window.addEventListener("resize", () => {
-    if (document.getElementById("spinView").classList.contains("active") && !spinActive) {
-      sizeColumns();
+  /* ══════════════════════════════════════════════════════════
+     CARD FLIP WALL GAME
+  ══════════════════════════════════════════════════════════ */
+  let flipAssignments=[], flipPicked=[], flipPickCount=0, flipDone=false;
+
+  function buildFlipCardBack(entry) {
+    const persona=entry.persona||"TBS", hasReal=entry.img&&SAFE_IMG_RE.test(entry.img);
+    const back=document.createElement("div"); back.className="flip-card-back";
+    if(hasReal) {
+      back.innerHTML=`<img src="${escHtml(entry.img)}" alt="${escHtml(entry.name||persona)}" loading="lazy" /><div class="flip-back-overlay"></div><div class="flip-back-info"><span class="flip-back-persona">${escHtml(persona)}</span><span class="flip-back-name">I'm ${escHtml(entry.name||"Guest")}</span></div>`;
+    } else {
+      back.style.background=PERSONA_COLORS[persona]||"#0a0d2a";
+      back.innerHTML=`<div class="flip-back-overlay" style="background:linear-gradient(to top,rgba(0,0,0,0.7),rgba(0,0,0,0.1))"></div><div class="flip-back-info"><span class="flip-back-persona">${escHtml(persona)}</span><span class="flip-back-name">I'm ${escHtml(entry.name||"Guest")}</span></div>`;
     }
+    return back;
+  }
+
+  function initFlipWall() {
+    flipPicked=[]; flipPickCount=0; flipDone=false;
+    document.getElementById("flipWinnerOverlay").style.display="none";
+    document.getElementById("flipGridWrap").style.opacity="1";
+    document.getElementById("flipGridWrap").style.transform="";
+    document.getElementById("flipStatus").textContent="Shuffling cards…";
+    document.getElementById("flipStatus").className="flip-status-bar";
+
+    const grid=document.getElementById("flipGrid"); grid.innerHTML="";
+    // Use all active pool (up to 120)
+    const poolSlice=shuffle(activePool).slice(0,120);
+    flipAssignments=shuffle(poolSlice);
+
+    flipAssignments.forEach((entry,i)=>{
+      const wrap=document.createElement("div"); wrap.className="flip-card-wrap"; wrap.dataset.idx=i;
+      const inner=document.createElement("div"); inner.className="flip-card-inner";
+      // Front (face-down)
+      const front=document.createElement("div"); front.className="flip-card-front";
+      front.innerHTML=`<div class="flip-front-q">?</div><div class="flip-front-brand">RMIT</div>`;
+      // Back (face-up)
+      const back=buildFlipCardBack(entry);
+      inner.appendChild(front); inner.appendChild(back); wrap.appendChild(inner); grid.appendChild(wrap);
+    });
+
+    // Shuffle animation
+    const allWraps=grid.querySelectorAll(".flip-card-wrap");
+    allWraps.forEach((w,i)=>{ setTimeout(()=>{ w.classList.add("shuffling"); setTimeout(()=>w.classList.remove("shuffling"),600); }, i*8); });
+
+    // After shuffle: enable picking
+    setTimeout(()=>{
+      document.getElementById("flipStatus").textContent="Click any card to reveal a winner (0 / 3 picked)";
+      document.getElementById("flipStatus").className="flip-status-bar picking";
+      allWraps.forEach(w=>{ w.classList.add("clickable"); w.addEventListener("click",onFlipCardClick,{once:true}); });
+    }, Math.min(allWraps.length*8+700, 2200));
+  }
+
+  function onFlipCardClick(e) {
+    if(flipDone) return;
+    const wrap=e.currentTarget;
+    if(wrap.classList.contains("winner-selected")) return;
+    const idx=parseInt(wrap.dataset.idx);
+    const entry=flipAssignments[idx];
+
+    // Flip it
+    wrap.classList.add("flipped","winner-selected");
+    wrap.classList.remove("clickable");
+    flipPicked.push({wrap,entry});
+    flipPickCount++;
+
+    playDing();
+    document.getElementById("flipStatus").textContent=`${flipPickCount} / 3 winners picked${flipPickCount<3?" — keep going!":""}`;
+
+    if(flipPickCount===3) {
+      flipDone=true;
+      // Disable remaining cards
+      document.getElementById("flipGrid").querySelectorAll(".flip-card-wrap.clickable").forEach(w=>{
+        w.classList.remove("clickable");
+        w.removeEventListener("click",onFlipCardClick);
+      });
+      setTimeout(revealFlipWinners, 900);
+    }
+  }
+
+  function revealFlipWinners() {
+    // Fade out grid
+    const gridWrap=document.getElementById("flipGridWrap");
+    gridWrap.style.transition="opacity 0.5s ease, transform 0.5s ease";
+    gridWrap.style.opacity="0"; gridWrap.style.transform="scale(0.95)";
+
+    // Build winner overlay
+    const overlay=document.getElementById("flipWinnerOverlay");
+    overlay.style.opacity="0"; overlay.style.display="flex";
+    overlay.style.transition="opacity 0.4s ease"; requestAnimationFrame(()=>requestAnimationFrame(()=>overlay.style.opacity="1"));
+
+    flipPicked.forEach(({entry},i)=>{
+      const cardEl=document.getElementById(`flipWinCard${i}`);
+      const nameEl=document.getElementById(`flipWinName${i}`);
+      cardEl.innerHTML="";
+
+      if(entry.img&&SAFE_IMG_RE.test(entry.img)) {
+        const img=document.createElement("img"); img.src=entry.img; img.alt=entry.name||""; cardEl.appendChild(img);
+      } else {
+        cardEl.style.background=PERSONA_COLORS[entry.persona||"TBS"]||"#0a0d2a";
+        cardEl.innerHTML=`<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:6px"><div style="font-size:clamp(0.6rem,1.2vw,0.85rem);font-weight:900;opacity:0.6;letter-spacing:0.08em;text-transform:uppercase;color:#fff">${escHtml(entry.persona||"TBS")}</div><div style="font-size:clamp(0.85rem,1.8vw,1.3rem);font-weight:900;color:#fff;text-align:center">I'm ${escHtml(entry.name||"Guest")}</div></div>`;
+      }
+
+      const rankEl=document.createElement("div"); rankEl.className="flip-winner-rank"; rankEl.textContent=["🥇","🥈","🥉"][i]; cardEl.appendChild(rankEl);
+      nameEl.textContent=entry.name||"Guest";
+
+      setTimeout(()=>{
+        document.getElementById(`flipWinCol${i}`).classList.add("revealed");
+        if(i===2) { setTimeout(()=>{ playClapping(); }, 300); }
+        else { playDing(); }
+      }, 500+i*500);
+    });
+  }
+
+  document.getElementById("flipBackBtn").addEventListener("click",()=>{
+    document.getElementById("flipWinnerOverlay").style.display="none";
+    [0,1,2].forEach(i=>document.getElementById(`flipWinCol${i}`).classList.remove("revealed"));
+    showView("menuView");
+  });
+  document.getElementById("flipMenuBtn").addEventListener("click",()=>{
+    document.getElementById("flipWinnerOverlay").style.display="none";
+    [0,1,2].forEach(i=>document.getElementById(`flipWinCol${i}`).classList.remove("revealed"));
+    showView("menuView");
+  });
+  document.getElementById("flipPlayAgainBtn").addEventListener("click",()=>{
+    document.getElementById("flipWinnerOverlay").style.display="none";
+    [0,1,2].forEach(i=>document.getElementById(`flipWinCol${i}`).classList.remove("revealed"));
+    initFlipWall();
   });
 
-  // ── Init ─────────────────────────────────────────────────────────────
+  /* ══════════════════════════════════════════════════════════
+     GACHA MACHINE GAME
+  ══════════════════════════════════════════════════════════ */
+  const BALL_COLORS=["#ff4757","#ff6b81","#ffa502","#eccc68","#2ed573","#1e90ff","#a29bfe","#fd79a8","#00cec9","#6c5ce7","#e17055","#fdcb6e","#81ecec","#fab1a0","#ff7675","#74b9ff","#55efc4","#e84393","#00b894","#d63031"];
+  const BALL_COUNT=20;
+  let gachaBallAnimIds=[], gachaWinnersDrawn=[], gachaDrawing=false, gachaStyleEl=null;
+
+  function initGacha() {
+    gachaWinnersDrawn=[]; gachaDrawing=false;
+    document.getElementById("gachaCongrats").style.display="none";
+    document.getElementById("gachaPullBtn").disabled=false;
+    document.getElementById("gachaResetBtn").style.display="none";
+    document.getElementById("gachaOutputHint").style.display="";
+    document.getElementById("gachaOutput").innerHTML=""; document.getElementById("gachaOutput").appendChild(document.getElementById("gachaOutputHint"));
+    document.getElementById("gachaStatus").innerHTML="Pull the lever to draw a winner";
+    document.getElementById("gachaLever").classList.remove("pulled");
+    // Reset winner slots
+    [0,1,2].forEach(i=>{ const s=document.getElementById(`gachaSlot${i}`); s.innerHTML=`<div class="gacha-winner-slot-empty">?</div>`; s.classList.remove("filled","filling"); });
+    // Build balls
+    buildGachaBalls();
+  }
+
+  function buildGachaBalls() {
+    const dome=document.getElementById("gachaDome"); dome.innerHTML="";
+    const domeSize=dome.offsetWidth||240; const ballSize=Math.max(24,Math.round(domeSize*0.11));
+    const maxDist=(domeSize/2)-ballSize/2-4;
+
+    // Inject per-ball CSS animations
+    if(gachaStyleEl) gachaStyleEl.remove();
+    gachaStyleEl=document.createElement("style"); document.head.appendChild(gachaStyleEl);
+    let css="";
+
+    for(let i=0;i<BALL_COUNT;i++){
+      const color=BALL_COLORS[i%BALL_COLORS.length];
+      // Random start position
+      const startAngle=Math.random()*Math.PI*2, startDist=Math.random()*maxDist*0.7;
+      const sx=Math.cos(startAngle)*startDist, sy=Math.sin(startAngle)*startDist;
+
+      // Generate 6 random waypoints inside circle
+      const pts=[];
+      for(let p=0;p<6;p++){
+        const a=Math.random()*Math.PI*2, d=Math.random()*maxDist*0.85;
+        pts.push({x:Math.round(Math.cos(a)*d), y:Math.round(Math.sin(a)*d)});
+      }
+      pts.push(pts[0]);
+      const dur=(2.5+Math.random()*3.5).toFixed(2);
+      const kf=pts.map((p,pi)=>`${Math.round(pi*100/(pts.length-1))}%{transform:translate(calc(-50% + ${p.x}px),calc(-50% + ${p.y}px))}`).join(" ");
+      css+=`@keyframes gb${i}{${kf}}.gacha-ball-${i}{animation:gb${i} ${dur}s ease-in-out infinite alternate;}\n`;
+
+      const ball=document.createElement("div");
+      ball.className=`gacha-ball gacha-ball-${i}`;
+      ball.style.cssText=`width:${ballSize}px;height:${ballSize}px;background:radial-gradient(circle at 38% 32%,rgba(255,255,255,0.6),${color});left:50%;top:50%;transform:translate(calc(-50% + ${sx}px),calc(-50% + ${sy}px));`;
+      ball.dataset.idx=i;
+      dome.appendChild(ball);
+    }
+    gachaStyleEl.textContent=css;
+  }
+
+  function doDraw() {
+    if(gachaDrawing||gachaWinnersDrawn.length>=3) return;
+    gachaDrawing=true;
+    document.getElementById("gachaPullBtn").disabled=true;
+    document.getElementById("gachaLever").classList.add("pulled");
+
+    // Pick random winner
+    const remaining=activePool.filter(e=>!gachaWinnersDrawn.find(w=>w.id===e.id));
+    const winner=shuffle(remaining)[0];
+    if(!winner){ gachaDrawing=false; return; }
+
+    // Lever snaps back
+    setTimeout(()=>document.getElementById("gachaLever").classList.remove("pulled"),400);
+
+    // Pause ball animations briefly
+    const dome=document.getElementById("gachaDome");
+    dome.style.animationPlayState="paused";
+    dome.querySelectorAll(".gacha-ball").forEach(b=>b.style.animationPlayState="paused");
+
+    // Show neck ball falling
+    const neckBall=document.getElementById("gachaNeckBall");
+    const neckH=document.getElementById("gachaNeck").offsetHeight;
+    const ballSize=dome.querySelector(".gacha-ball")?.offsetWidth||28;
+    neckBall.style.width=neckBall.style.height=ballSize+"px";
+    neckBall.style.background=`radial-gradient(circle at 38% 32%, rgba(255,255,255,0.5), ${BALL_COLORS[Math.floor(Math.random()*BALL_COLORS.length)]})`;
+    neckBall.style.top="0px"; neckBall.style.display="block";
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ neckBall.style.top=(neckH-ballSize)+"px"; }));
+
+    setTimeout(()=>{
+      neckBall.style.display="none";
+      dome.querySelectorAll(".gacha-ball").forEach(b=>b.style.animationPlayState="");
+
+      // Build and drop capsule in output door
+      const output=document.getElementById("gachaOutput");
+      output.innerHTML="";
+      const capsule=document.createElement("div"); capsule.className="gacha-capsule dropping";
+      const winnerIdx=gachaWinnersDrawn.length;
+      const capColor=BALL_COLORS[winnerIdx*3%BALL_COLORS.length];
+      const capColor2=BALL_COLORS[(winnerIdx*3+1)%BALL_COLORS.length];
+      capsule.innerHTML=`<div class="cap-top" style="background:${capColor}"></div><div class="cap-bot" style="background:${capColor2}"></div>`;
+      output.appendChild(capsule);
+
+      // Shake then open
+      setTimeout(()=>{
+        capsule.classList.remove("dropping"); capsule.classList.add("shaking");
+        setTimeout(()=>{
+          capsule.classList.remove("shaking"); capsule.classList.add("open");
+          playPop();
+          // Replace capsule with winner card after open
+          setTimeout(()=>{
+            output.innerHTML="";
+            const winCard=buildGachaWinCard(winner);
+            output.appendChild(winCard);
+
+            // Add to winner slots
+            gachaWinnersDrawn.push(winner);
+            fillGachaSlot(winnerIdx,winner);
+            playDing();
+
+            const remaining2=gachaWinnersDrawn.length;
+            document.getElementById("gachaStatus").innerHTML=`<span class="hl">${remaining2}</span> / 3 winners drawn`;
+
+            if(remaining2>=3) {
+              setTimeout(()=>{
+                document.getElementById("gachaResetBtn").style.display="";
+                const cg=document.getElementById("gachaCongrats"); cg.style.display=""; cg.style.animation="none"; void cg.offsetWidth; cg.style.animation="";
+                setTimeout(playClapping,300);
+                document.getElementById("gachaStatus").innerHTML="🎉 All 3 winners drawn!";
+              },600);
+            } else {
+              document.getElementById("gachaPullBtn").disabled=false;
+            }
+            gachaDrawing=false;
+          },500);
+        },800);
+      },700);
+    },600);
+  }
+
+  function buildGachaWinCard(entry) {
+    const persona=entry.persona||"TBS";
+    const card=document.createElement("div"); card.className="gacha-win-card";
+    if(entry.img&&SAFE_IMG_RE.test(entry.img)) {
+      card.innerHTML=`<img src="${escHtml(entry.img)}" alt="${escHtml(entry.name||"")}" />`;
+    } else {
+      card.style.background=PERSONA_COLORS[persona]||"#0a0d2a";
+      const inner=document.createElement("div");
+      inner.style.cssText="width:100%;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;gap:4px";
+      inner.innerHTML=`<div style="font-size:0.55rem;font-weight:900;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.07em">${escHtml(persona)}</div><div style="font-size:clamp(0.6rem,1.2vw,0.85rem);font-weight:900;color:#fff;text-align:center">I'm ${escHtml(entry.name||"Guest")}</div>`;
+      card.appendChild(inner);
+    }
+    return card;
+  }
+
+  function fillGachaSlot(slotIndex,entry) {
+    const slot=document.getElementById(`gachaSlot${slotIndex}`);
+    slot.innerHTML="";
+    const persona=entry.persona||"TBS";
+    if(entry.img&&SAFE_IMG_RE.test(entry.img)) {
+      const img=document.createElement("img"); img.src=entry.img; img.alt=entry.name||""; slot.appendChild(img);
+    } else {
+      slot.style.background=PERSONA_COLORS[persona]||"#0a0d2a";
+      const txt=document.createElement("div");
+      txt.style.cssText="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;gap:3px;";
+      txt.innerHTML=`<div style="font-size:0.5rem;font-weight:900;color:rgba(255,255,255,0.5);text-transform:uppercase">${escHtml(persona)}</div><div style="font-size:clamp(0.55rem,1vw,0.75rem);font-weight:900;color:#fff;text-align:center">I'm ${escHtml(entry.name||"Guest")}</div>`;
+      slot.appendChild(txt);
+    }
+    const rank=document.createElement("div"); rank.className="slot-rank"; rank.textContent=["🥇","🥈","🥉"][slotIndex]; slot.appendChild(rank);
+    slot.classList.add("filled","filling");
+    setTimeout(()=>slot.classList.remove("filling"),600);
+  }
+
+  function resetGacha() {
+    gachaWinnersDrawn=[]; gachaDrawing=false;
+    document.getElementById("gachaCongrats").style.display="none";
+    document.getElementById("gachaPullBtn").disabled=false;
+    document.getElementById("gachaResetBtn").style.display="none";
+    const output=document.getElementById("gachaOutput"); output.innerHTML="";
+    const hint=document.getElementById("gachaOutputHint"); output.appendChild(hint); hint.style.display="";
+    document.getElementById("gachaStatus").textContent="Pull the lever to draw a winner";
+    document.getElementById("gachaLever").classList.remove("pulled");
+    [0,1,2].forEach(i=>{ const s=document.getElementById(`gachaSlot${i}`); s.innerHTML=`<div class="gacha-winner-slot-empty">?</div>`; s.classList.remove("filled","filling"); s.style.background=""; });
+    buildGachaBalls();
+  }
+
+  document.getElementById("gachaPullBtn").addEventListener("click",doDraw);
+  document.getElementById("gachaLever").addEventListener("click",doDraw);
+  document.getElementById("gachaResetBtn").addEventListener("click",resetGacha);
+  document.getElementById("gachaBackBtn").addEventListener("click",()=>{ if(gachaDrawing) return; showView("menuView"); });
+
+  /* ── Init ──────────────────────────────────────────────── */
   loadPool();
 </script>
 </body>
