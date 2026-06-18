@@ -195,6 +195,15 @@
 
     @keyframes flip-shuffle { 0%,100%{transform:rotate(0)} 20%{transform:rotate(-5deg) translateX(-3px)} 50%{transform:rotate(5deg) translateX(3px)} 80%{transform:rotate(-2deg)} }
     .flip-card-wrap.shuffling { animation:flip-shuffle 0.55s ease both; }
+    .flip-shuffle-btn { background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.22); color:#fff; font-family:var(--font); font-size:clamp(0.85rem,1.8vw,1.05rem); font-weight:800; border-radius:50px; padding:10px 28px; cursor:pointer; transition:background 0.15s,transform 0.1s; }
+    .flip-shuffle-btn:hover { background:rgba(255,255,255,0.18); }
+    .flip-shuffle-btn:active { transform:scale(0.96); }
+    .flip-shuffle-btn:disabled { opacity:0.3; pointer-events:none; }
+    .shuffle-stage { position:fixed; inset:0; z-index:150; pointer-events:none; overflow:visible; }
+    .shuffle-ghost { position:fixed; border-radius:8px; background:linear-gradient(155deg,#0d1985,#1a2db0); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; border:1.5px solid rgba(255,255,255,0.12); box-shadow:0 4px 18px rgba(0,0,0,0.45); transition:left 0.72s ease-in-out, top 0.72s ease-in-out, opacity 0.18s ease; will-change:left,top; }
+    .shuffle-ghost.settling { transition:left 0.62s cubic-bezier(0.22,1,0.36,1), top 0.62s cubic-bezier(0.22,1,0.36,1), opacity 0.18s ease; }
+    .shuffle-ghost-q { font-size:clamp(0.9rem,2.2vw,1.6rem); color:rgba(255,255,255,0.18); font-weight:900; }
+    .shuffle-ghost-brand { font-size:clamp(0.28rem,0.6vw,0.42rem); font-weight:900; color:rgba(255,255,255,0.2); letter-spacing:0.1em; text-transform:uppercase; }
 
     @keyframes winner-card-glow { 0%,100%{box-shadow:0 0 0 3px #ffcc00,0 0 18px rgba(255,204,0,0.55)} 50%{box-shadow:0 0 0 5px #ffe066,0 0 36px rgba(255,220,0,0.85)} }
     .flip-card-wrap.winner-selected { animation:winner-card-glow 1.3s ease-in-out infinite; border-radius:8px; }
@@ -508,6 +517,9 @@
   <div class="flip-status-bar" id="flipStatus">Shuffling cards…</div>
   <div class="flip-grid-wrap" id="flipGridWrap">
     <div class="flip-grid" id="flipGrid"></div>
+  </div>
+  <div id="flipShuffleRow" style="display:none;position:relative;z-index:6;text-align:center;padding:8px 0 12px">
+    <button id="flipShuffleBtn" type="button" class="flip-shuffle-btn">🔀 Shuffle Cards</button>
   </div>
 
   <!-- Winner overlay (appears after 3 picks) -->
@@ -954,16 +966,112 @@
     const allWraps=grid.querySelectorAll(".flip-card-wrap");
     allWraps.forEach((w,i)=>{ setTimeout(()=>{ w.classList.add("shuffling"); setTimeout(()=>w.classList.remove("shuffling"),600); }, i*8); });
 
-    // After shuffle: enable picking
+    // After shuffle: enable picking + show shuffle button
     setTimeout(()=>{
       document.getElementById("flipStatus").textContent="Click any card to reveal a winner (0 / 3 picked)";
       document.getElementById("flipStatus").className="flip-status-bar picking";
       allWraps.forEach(w=>{ w.classList.add("clickable"); w.addEventListener("click",onFlipCardClick,{once:true}); });
+      document.getElementById("flipShuffleRow").style.display="";
+      document.getElementById("flipShuffleBtn").disabled=false;
     }, Math.min(allWraps.length*8+700, 2200));
   }
 
+  /* ── Shuffle animation ── */
+  let shuffleAnimating=false;
+
+  function startFlipShuffle() {
+    if(shuffleAnimating||flipPickCount>0||flipDone) return;
+    shuffleAnimating=true;
+    const btn=document.getElementById("flipShuffleBtn"); btn.disabled=true;
+    const grid=document.getElementById("flipGrid");
+    const wraps=[...grid.querySelectorAll(".flip-card-wrap")];
+    if(wraps.length<2){ shuffleAnimating=false; btn.disabled=false; return; }
+
+    // Record start positions
+    const startMap=new Map(wraps.map(w=>[w,w.getBoundingClientRect()]));
+
+    // Hide real cards, spawn fixed ghosts at their positions
+    wraps.forEach(w=>{ w.style.opacity="0"; w.style.transition="none"; });
+    const stage=document.createElement("div"); stage.className="shuffle-stage"; document.body.appendChild(stage);
+    const ghosts=wraps.map(w=>{
+      const r=startMap.get(w);
+      const g=document.createElement("div"); g.className="shuffle-ghost";
+      g.innerHTML=`<div class="shuffle-ghost-q">?</div><div class="shuffle-ghost-brand">RMIT</div>`;
+      g.style.left=r.left+"px"; g.style.top=r.top+"px"; g.style.width=r.width+"px"; g.style.height=r.height+"px";
+      stage.appendChild(g); return g;
+    });
+
+    // Phase 1: chaos fly-out (staggered 15ms)
+    const W=window.innerWidth, H=window.innerHeight;
+    ghosts.forEach((g,i)=>{
+      setTimeout(()=>{
+        const tx=60+Math.random()*(W-120), ty=60+Math.random()*(H-120);
+        const rot=(Math.random()-0.5)*28;
+        g.style.left=tx+"px"; g.style.top=ty+"px";
+        g.style.transform=`rotate(${rot}deg) scale(${0.82+Math.random()*0.26})`;
+      }, i*15);
+    });
+
+    // At midpoint: reshuffle DOM + data
+    const reshuffleAt=Math.min(wraps.length*15+420, 720);
+    setTimeout(()=>reshuffleFlipData(wraps), reshuffleAt);
+
+    // Phase 2: settle to new grid positions (staggered 20ms)
+    const settleAt=Math.min(wraps.length*15+820, 1050);
+    setTimeout(()=>{
+      // New grid positions after DOM reshuffle
+      const newRects=wraps.map(w=>w.getBoundingClientRect());
+      settleMoveGhosts(ghosts, newRects);
+    }, settleAt);
+
+    // Cleanup
+    const doneAt=settleAt+wraps.length*20+800;
+    setTimeout(()=>cleanupShuffle(stage, ghosts, wraps, btn), doneAt);
+  }
+
+  function reshuffleFlipData(wraps) {
+    // Fisher-Yates in-place on flipAssignments
+    for(let i=flipAssignments.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [flipAssignments[i],flipAssignments[j]]=[flipAssignments[j],flipAssignments[i]];
+    }
+    const grid=document.getElementById("flipGrid");
+    // Re-sort wraps by current data-idx, then reappend in new order
+    const sorted=[...wraps].sort((a,b)=>parseInt(a.dataset.idx)-parseInt(b.dataset.idx));
+    sorted.forEach((w,i)=>{ w.dataset.idx=i; grid.appendChild(w); });
+    // Re-attach click listeners (they were {once:true} so they auto-removed; re-add)
+    sorted.forEach(w=>{
+      w.removeEventListener("click",onFlipCardClick);
+      w.addEventListener("click",onFlipCardClick,{once:true});
+    });
+  }
+
+  function settleMoveGhosts(ghosts, newRects) {
+    ghosts.forEach((g,i)=>{
+      setTimeout(()=>{
+        g.classList.add("settling");
+        g.style.left=newRects[i].left+"px"; g.style.top=newRects[i].top+"px";
+        g.style.transform="rotate(0deg) scale(1)";
+      }, i*20);
+    });
+  }
+
+  function cleanupShuffle(stage, ghosts, wraps, btn) {
+    ghosts.forEach(g=>{ g.style.opacity="0"; });
+    setTimeout(()=>{
+      stage.remove();
+      wraps.forEach(w=>{ w.style.opacity=""; w.style.transition=""; });
+      btn.disabled=false;
+      shuffleAnimating=false;
+    }, 220);
+  }
+
+  document.getElementById("flipShuffleBtn").addEventListener("click", startFlipShuffle);
+
   function onFlipCardClick(e) {
     if(flipDone) return;
+    // Hide shuffle button once picking starts
+    document.getElementById("flipShuffleRow").style.display="none";
     const wrap=e.currentTarget;
     if(wrap.classList.contains("winner-selected")) return;
     const idx=parseInt(wrap.dataset.idx);
@@ -1070,6 +1178,7 @@
     if(flipActionsOverlay){ flipActionsOverlay.remove(); flipActionsOverlay=null; }
     const gw=document.getElementById("flipGridWrap"); gw.style.opacity="1"; gw.style.transform="";
     document.getElementById("flipWinnerOverlay").style.display="none";
+    document.getElementById("flipShuffleRow").style.display="none";
   }
 
   document.getElementById("flipBackBtn").addEventListener("click",()=>{ cleanFlipFly(); showView("menuView"); });

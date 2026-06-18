@@ -756,6 +756,18 @@
       </div>
       <div class="msg" id="coursesMsg"></div>
 
+      <!-- ── TripleMates Game ── -->
+      <div class="divider"></div>
+      <h2 class="section-title">TripleMates Game</h2>
+      <p class="section-sub">Enable so students from TBS, SCD, and SSET can find each other using 7-character codes. Disable after the event to stop new registrations.</p>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+        <span id="tmStatusBadge" class="msg" style="margin:0;flex:1;min-width:140px">Status: loading…</span>
+        <button class="btn-inline" id="tmEnableBtn" type="button">Enable</button>
+        <button class="btn-inline btn-danger" id="tmDisableBtn" type="button">Disable</button>
+      </div>
+      <p class="input-hint" id="tmTrioCount">Trios formed: —</p>
+      <div class="msg" id="tmAdminMsg"></div>
+
     </div>
   </main>
 
@@ -795,6 +807,7 @@
           loadPersonaCounters();
           loadCourses();
           loadAnalytics();
+          loadTriplemateSetting();
         } else {
           showPanel("loginPanel");
           document.getElementById("logoutBtn").style.display = "none";
@@ -1162,6 +1175,43 @@ by: <strong>${escHtml(data.updatedBy || "—")}</strong>`;
         msgEl.textContent = "Delete failed: " + e.message; msgEl.className = "msg error";
       }
     }
+
+    // ── TripleMates ───────────────────────────────────────────
+    function loadTriplemateSetting() {
+      db.ref("triplemates/enabled").on("value", snap => {
+        const enabled = snap.val() === true;
+        const badge = document.getElementById("tmStatusBadge");
+        if (badge) {
+          badge.textContent = "Status: " + (enabled ? "ENABLED — students can play" : "DISABLED");
+          badge.className = "msg " + (enabled ? "success" : "info");
+        }
+      });
+      db.ref("triplemates/trios").on("value", snap => {
+        const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+        const el = document.getElementById("tmTrioCount");
+        if (el) el.textContent = "Trios formed: " + count;
+      });
+    }
+
+    document.getElementById("tmEnableBtn").addEventListener("click", async () => {
+      const msg = document.getElementById("tmAdminMsg");
+      try {
+        await db.ref("triplemates/enabled").set(true);
+        msg.textContent = "✓ TripleMates enabled. Students can now play.";
+        msg.className = "msg success";
+        setTimeout(() => { msg.className = "msg"; }, 3500);
+      } catch(e) { msg.textContent = "Failed: "+e.message; msg.className = "msg error"; }
+    });
+
+    document.getElementById("tmDisableBtn").addEventListener("click", async () => {
+      const msg = document.getElementById("tmAdminMsg");
+      try {
+        await db.ref("triplemates/enabled").set(false);
+        msg.textContent = "TripleMates disabled.";
+        msg.className = "msg info";
+        setTimeout(() => { msg.className = "msg"; }, 3000);
+      } catch(e) { msg.textContent = "Failed: "+e.message; msg.className = "msg error"; }
+    });
   </script>
 
 </body>
