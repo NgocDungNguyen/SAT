@@ -222,145 +222,120 @@
     .flip-action-btn.primary { background:linear-gradient(135deg,#e61e2a,#a30015); border-color:transparent; }
 
     /* ═══════════════ GACHA MACHINE VIEW ═══════════════ */
-    .gacha-body { position:relative; z-index:3; flex:1; display:flex; flex-direction:column; align-items:center; padding:10px 16px 28px; gap:14px; }
+    .gacha-body { position:relative; z-index:3; flex:1; display:flex; flex-direction:column; align-items:center; padding:8px 16px 20px; gap:8px; }
     .gacha-title { font-size:clamp(1.1rem,2.8vw,2rem); font-weight:900; text-align:center; }
     .gacha-title span { color:#ffcc00; }
 
-    .gacha-scene { display:flex; align-items:flex-start; justify-content:center; gap:0; position:relative; }
+    /* ── Machine wrap ── */
+    .gm-wrap { display:flex; flex-direction:column; align-items:center; }
 
-    /* The machine itself */
-    .gacha-machine { display:flex; flex-direction:column; align-items:center; position:relative; }
-
-    .gacha-dome-wrap {
-      position:relative;
-      width:clamp(220px,30vw,320px);
-      height:clamp(220px,30vw,320px);
+    /* ── Dome ── */
+    .gm-dome-ring {
+      width:clamp(200px,26vw,320px); height:clamp(200px,26vw,320px);
+      border-radius:50%; padding:6px;
+      background:conic-gradient(from 120deg,#b8c8e0,#e8eef8,#8899b8,#d0dce8,#b8c8e0);
+      box-shadow:0 6px 24px rgba(0,0,0,0.55),0 0 0 2px rgba(255,255,255,0.08);
     }
-    .gacha-dome {
+    .gm-dome {
       width:100%; height:100%; border-radius:50%; overflow:hidden; position:relative;
-      background:radial-gradient(circle at 38% 28%, rgba(180,220,255,0.18), rgba(30,60,160,0.06));
-      border:5px solid rgba(255,255,255,0.28);
-      box-shadow:
-        inset 3px 3px 0 rgba(255,255,255,0.22),
-        inset -2px -2px 0 rgba(0,0,80,0.3),
-        0 0 60px rgba(80,120,255,0.2),
-        0 0 0 2px rgba(255,255,255,0.06);
+      background:radial-gradient(ellipse at 35% 28%,rgba(210,230,255,0.22),rgba(20,40,120,0.06) 60%,rgba(5,10,50,0.04));
     }
-    /* Glass shine highlight */
-    .gacha-dome-shine {
-      position:absolute; top:8%; left:12%; width:30%; height:22%;
-      background:radial-gradient(ellipse, rgba(255,255,255,0.45), rgba(255,255,255,0));
-      border-radius:50%; pointer-events:none; z-index:5;
-      transform:rotate(-20deg);
+    .gm-dome::before {
+      content:''; position:absolute; top:7%; left:13%; width:24%; height:16%;
+      background:radial-gradient(ellipse,rgba(255,255,255,0.55),rgba(255,255,255,0));
+      border-radius:50%; z-index:20; pointer-events:none; transform:rotate(-15deg);
     }
-    /* Ball inside dome */
-    .gacha-ball {
-      position:absolute; border-radius:50%; pointer-events:none;
-      box-shadow:inset -3px -3px 6px rgba(0,0,0,0.25), inset 2px 2px 4px rgba(255,255,255,0.5), 0 2px 8px rgba(0,0,0,0.3);
-      /* size + start position set via JS inline style */
+    .gm-dome::after {
+      content:''; position:absolute; bottom:18%; right:12%; width:11%; height:7%;
+      background:radial-gradient(ellipse,rgba(255,255,255,0.22),rgba(255,255,255,0));
+      border-radius:50%; z-index:20; pointer-events:none;
     }
-    /* Neck connecting dome to cabinet */
-    .gacha-neck {
-      width:clamp(50px,8vw,72px); height:clamp(28px,4vw,44px);
-      background:linear-gradient(to bottom, #1a2070, #0d1450);
-      border-left:3px solid rgba(255,255,255,0.15);
-      border-right:3px solid rgba(255,255,255,0.15);
-      position:relative; overflow:hidden;
-    }
-    /* Cabinet body */
-    .gacha-cabinet {
-      width:clamp(200px,28vw,280px);
-      background:linear-gradient(160deg, #1a1f70 0%, #0a0d40 100%);
-      border:3px solid rgba(255,255,255,0.18);
-      border-radius:10px 10px 18px 18px;
-      padding:14px 16px 18px;
-      display:flex; flex-direction:column; align-items:center; gap:10px;
-      box-shadow:0 10px 40px rgba(0,0,0,0.5);
-      position:relative;
-    }
-    .gacha-cabinet-label { font-size:clamp(0.6rem,1.5vw,0.85rem); font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.5); }
-    .gacha-cabinet-brand { font-size:clamp(0.9rem,2.5vw,1.4rem); font-weight:900; color:#ffcc00; letter-spacing:0.04em; text-shadow:0 0 12px rgba(255,204,0,0.5); }
+    .gm-ball { position:absolute; border-radius:50%; pointer-events:none; will-change:left,top; }
 
-    /* Output capsule door */
-    .gacha-output-door {
-      width:clamp(90px,14vw,130px); height:clamp(70px,10vw,96px);
-      background:rgba(0,0,0,0.45);
-      border:2px solid rgba(255,255,255,0.18);
-      border-radius:12px;
-      display:flex; align-items:center; justify-content:center;
-      position:relative; overflow:hidden;
-      box-shadow:inset 0 4px 12px rgba(0,0,0,0.5);
+    /* ── Funnel collar between dome and body ── */
+    .gm-collar {
+      width:clamp(70px,10vw,110px); height:clamp(20px,3vw,30px);
+      background:linear-gradient(to bottom,#8899b8 0%,#344ccc 40%,#1a2580 100%);
+      clip-path:polygon(15% 0%,85% 0%,100% 100%,0% 100%);
     }
-    .gacha-output-hint { font-size:clamp(0.55rem,1.1vw,0.72rem); font-weight:800; color:rgba(255,255,255,0.2); text-align:center; letter-spacing:0.06em; text-transform:uppercase; }
 
-    /* Capsule in output door */
-    .gacha-capsule {
-      width:clamp(52px,8vw,72px); height:clamp(64px,10vw,88px);
-      border-radius:50%;
-      position:relative; overflow:visible;
+    /* ── Body + lever row ── */
+    .gm-body-row { display:flex; align-items:stretch; gap:0; }
+    .gm-body {
+      width:clamp(190px,25vw,280px);
+      background:linear-gradient(175deg,#1e2c9a 0%,#0d1870 40%,#060b38 100%);
+      border:2px solid rgba(255,255,255,0.14); border-top:3px solid rgba(255,255,255,0.28);
+      border-radius:4px 4px 16px 16px; overflow:hidden;
+      box-shadow:0 12px 40px rgba(0,0,0,0.6);
+      display:flex; flex-direction:column;
+    }
+    .gm-body-stripe { height:8px; background:linear-gradient(to right,#c0000e,#ff3344,#c0000e); flex-shrink:0; }
+    .gm-body-inner { padding:10px 14px 8px; display:flex; flex-direction:column; align-items:center; gap:5px; flex:1; }
+    .gm-brand-jp { font-size:clamp(1.3rem,3vw,2rem); font-weight:900; color:#ffcc00; text-shadow:0 0 18px rgba(255,200,0,0.65); letter-spacing:0.04em; line-height:1; }
+    .gm-brand-en { font-size:clamp(0.45rem,0.9vw,0.65rem); font-weight:900; letter-spacing:0.18em; text-transform:uppercase; color:rgba(255,255,255,0.38); }
+    .gm-coin-row { display:flex; align-items:center; gap:8px; padding:5px 0; border-top:1px solid rgba(255,255,255,0.09); border-bottom:1px solid rgba(255,255,255,0.09); width:100%; justify-content:center; }
+    .gm-coin-slot { width:clamp(22px,3.2vw,30px); height:clamp(6px,0.9vw,8px); background:rgba(0,0,0,0.55); border:1.5px solid rgba(255,255,255,0.22); border-radius:3px; }
+    .gm-price-tag { font-size:clamp(0.45rem,0.85vw,0.62rem); font-weight:900; color:#ffcc00; opacity:0.55; letter-spacing:0.1em; }
+    /* Tray section */
+    .gm-tray-section { padding:0 12px 12px; }
+    .gm-tray-label { font-size:0.42rem; font-weight:900; letter-spacing:0.18em; text-transform:uppercase; color:rgba(255,255,255,0.28); text-align:center; margin-bottom:4px; }
+    .gm-tray {
+      background:rgba(0,0,0,0.55); border:2px solid rgba(255,255,255,0.12);
+      border-radius:10px 10px 18px 18px; min-height:clamp(72px,10vw,100px);
+      display:flex; align-items:center; justify-content:center; position:relative;
+      box-shadow:inset 0 4px 16px rgba(0,0,0,0.65);
+    }
+    .gm-tray::before {
+      content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+      width:clamp(28px,4vw,40px); height:clamp(12px,1.8vw,18px);
+      background:#0a0d2a; border-radius:0 0 16px 16px;
+      border:2px solid rgba(255,255,255,0.08); border-top:none;
+    }
+    .gacha-output-hint { font-size:clamp(0.5rem,1vw,0.68rem); font-weight:800; color:rgba(255,255,255,0.18); text-align:center; letter-spacing:0.06em; text-transform:uppercase; }
+
+    /* ── Ball in tray ── */
+    .gm-out-ball { border-radius:50%; position:relative; overflow:hidden; box-shadow:inset -3px -3px 8px rgba(0,0,0,0.4),inset 3px 3px 6px rgba(255,255,255,0.55),0 4px 14px rgba(0,0,0,0.4); }
+    @keyframes ball-drop-tray { 0%{transform:translateY(-90px) scale(0.55);opacity:0} 55%{transform:translateY(6px) scale(1.06);opacity:1} 75%{transform:translateY(-4px) scale(0.97)} 100%{transform:translateY(0) scale(1)} }
+    @keyframes ball-bounce { 0%,100%{transform:translateY(0) scaleY(1)} 45%{transform:translateY(-14px) scaleY(0.94)} 55%{transform:translateY(-14px) scaleY(0.94)} }
+    @keyframes ball-crack-top { from{transform:translateY(0) rotate(0)} to{transform:translateY(-75%) rotate(-18deg)} }
+    @keyframes ball-crack-bot { from{transform:translateY(0) rotate(0)} to{transform:translateY(75%) rotate(18deg)} }
+    .gm-out-ball.dropping { animation:ball-drop-tray 0.65s cubic-bezier(0.34,1.2,0.64,1) both; }
+    .gm-out-ball.bouncing { animation:ball-bounce 0.38s ease-in-out 3; }
+    .gm-out-ball-half { position:absolute; width:100%; height:50%; overflow:hidden; }
+    .gm-out-ball-half.top { top:0; border-radius:50% 50% 0 0; transform-origin:center bottom; }
+    .gm-out-ball-half.bot { bottom:0; border-radius:0 0 50% 50%; transform-origin:center top; }
+    .gm-out-ball.cracking .gm-out-ball-half.top { animation:ball-crack-top 0.45s ease-out forwards; }
+    .gm-out-ball.cracking .gm-out-ball-half.bot { animation:ball-crack-bot 0.45s ease-out forwards; }
+    @keyframes tray-card-pop { 0%{opacity:0;transform:scale(0.4) rotate(-12deg)} 100%{opacity:1;transform:scale(1) rotate(0)} }
+    .gm-tray-win-card { border-radius:9px; overflow:hidden; border:2px solid #ffcc00; box-shadow:0 0 22px rgba(255,204,0,0.55); animation:tray-card-pop 0.45s cubic-bezier(0.34,1.4,0.64,1) both; }
+    .gm-tray-win-card img { width:100%; display:block; aspect-ratio:3/4; object-fit:cover; object-position:top; }
+
+    /* ── Lever ── */
+    .gm-lever-section { display:flex; align-items:center; padding-left:clamp(4px,0.6vw,8px); }
+    .gm-lever-mount {
+      background:linear-gradient(to right,#1a2580,#2233aa,#1a2580);
+      border:2px solid rgba(255,255,255,0.15); border-left:none;
+      border-radius:0 10px 10px 0; padding:clamp(14px,2.5vw,22px) clamp(6px,1.1vw,12px);
+      position:relative; display:flex; align-items:center;
+    }
+    .gm-lever-pivot { width:clamp(12px,1.8vw,16px); height:clamp(12px,1.8vw,16px); border-radius:50%; background:radial-gradient(circle at 38% 34%,#cce,#667); box-shadow:0 2px 5px rgba(0,0,0,0.5); position:absolute; left:-1px; }
+    .gm-lever {
       display:flex; flex-direction:column; align-items:center;
+      cursor:pointer; transform-origin:top center;
+      transition:transform 0.2s cubic-bezier(0.34,1.55,0.64,1);
     }
-    .cap-top, .cap-bot {
-      width:100%; height:50%; border-radius:50% 50% 0 0; position:absolute;
-      transition:transform 0.5s cubic-bezier(0.34,1.4,0.64,1);
-    }
-    .cap-top { top:0; transform-origin:center bottom; }
-    .cap-bot { bottom:0; border-radius:0 0 50% 50%; transform-origin:center top; }
-    .gacha-capsule.open .cap-top { transform:translateY(-55%) rotate(-20deg) scale(1.05); }
-    .gacha-capsule.open .cap-bot { transform:translateY(55%) rotate(20deg) scale(1.05); }
-    @keyframes capsule-drop { from{transform:translateY(-60px) scale(0.7);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
-    @keyframes capsule-shake { 0%,100%{transform:rotate(0) scale(1)} 15%{transform:rotate(-8deg) scale(1.05)} 35%{transform:rotate(8deg) scale(1.05)} 55%{transform:rotate(-5deg)} 75%{transform:rotate(5deg)} }
-    .gacha-capsule.dropping { animation:capsule-drop 0.55s cubic-bezier(0.34,1.3,0.64,1) both; }
-    .gacha-capsule.shaking  { animation:capsule-shake 0.7s ease-in-out; }
+    .gm-lever.pulled { transform:rotate(-30deg); }
+    .gm-lever:hover .gm-lever-knob { filter:brightness(1.2) saturate(1.15); }
+    .gm-lever-knob { width:clamp(36px,5.5vw,52px); height:clamp(36px,5.5vw,52px); border-radius:50%; background:radial-gradient(circle at 36% 30%,#ff9999,#cc1111 48%,#770000); box-shadow:0 5px 18px rgba(160,0,0,0.7),inset 3px 3px 6px rgba(255,255,255,0.4),inset -2px -2px 5px rgba(0,0,0,0.3); }
+    .gm-lever-shaft { width:clamp(8px,1.1vw,10px); height:clamp(65px,10vw,96px); background:linear-gradient(to right,#99a,#dde,#889,#ccd); border-radius:0 0 4px 4px; }
+    .gm-lever-disc { width:clamp(14px,2.2vw,20px); height:clamp(14px,2.2vw,20px); border-radius:50%; background:radial-gradient(circle at 40% 35%,#cce,#556); box-shadow:0 2px 6px rgba(0,0,0,0.5); }
 
-    /* Winner card that replaces capsule */
-    @keyframes card-emerge { from{transform:scale(0.4) rotate(-5deg);opacity:0} to{transform:scale(1) rotate(0);opacity:1} }
-    .gacha-win-card {
-      width:clamp(72px,11vw,100px); border-radius:10px; overflow:hidden;
-      border:2px solid #ffcc00; box-shadow:0 0 24px rgba(255,204,0,0.5);
-      animation:card-emerge 0.5s cubic-bezier(0.34,1.4,0.64,1) both;
-    }
-    .gacha-win-card img { width:100%; display:block; aspect-ratio:3/4; object-fit:cover; object-position:top; }
-    .gacha-win-card .win-card-text { background:linear-gradient(to top,rgba(0,0,0,0.85),transparent); padding:6px 6px 4px; }
-    .gacha-win-card .win-card-name { font-size:clamp(0.5rem,1vw,0.7rem); font-weight:900; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; text-align:center; }
+    /* ── Base ── */
+    .gm-base { width:clamp(170px,22vw,250px); height:clamp(10px,1.5vw,14px); background:linear-gradient(to bottom,#1a2070,#090d30); border-radius:0 0 16px 16px; border:2px solid rgba(255,255,255,0.08); border-top:none; box-shadow:0 8px 18px rgba(0,0,0,0.5); }
 
-    /* Lever on the right */
-    .gacha-lever-mount {
-      display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
-      padding-bottom:clamp(20px,3vw,36px);
-      padding-left:clamp(8px,1.5vw,16px);
-      height:100%;
-    }
-    .gacha-lever {
-      width:clamp(44px,6vw,62px); position:relative; cursor:pointer;
-      transform-origin:bottom center;
-      transition:transform 0.25s cubic-bezier(0.34,1.4,0.64,1);
-    }
-    .gacha-lever:hover .gacha-lever-ball { filter:brightness(1.2); }
-    .gacha-lever.pulled { transform:rotate(28deg); }
-    .gacha-lever-ball {
-      width:100%; aspect-ratio:1; border-radius:50%; margin:0 auto;
-      background:radial-gradient(circle at 38% 35%, #ff9a9a, #cc0000);
-      box-shadow:0 4px 14px rgba(200,0,0,0.5), inset 2px 2px 4px rgba(255,255,255,0.4);
-      display:flex; align-items:center; justify-content:center;
-      font-size:clamp(0.6rem,1.2vw,0.85rem); font-weight:900; color:rgba(255,255,255,0.7);
-    }
-    .gacha-lever-arm {
-      width:clamp(8px,1.4vw,12px); height:clamp(70px,12vw,110px);
-      background:linear-gradient(to right,#888,#ddd,#777);
-      border-radius:6px; margin:0 auto;
-    }
-    .gacha-lever-base {
-      width:clamp(28px,4.5vw,40px); height:clamp(10px,1.8vw,16px);
-      background:linear-gradient(to bottom,#555,#333);
-      border-radius:6px 6px 2px 2px; margin:0 auto;
-    }
-
-    /* Gacha draw count + status */
+    /* Gacha status + buttons */
     .gacha-status { font-size:clamp(0.88rem,2vw,1.2rem); font-weight:800; opacity:0.7; text-align:center; min-height:1.4em; color:#fff; }
     .gacha-status .hl { color:#ffcc00; opacity:1; }
-
-    /* Winners row: mini cards that appear as each winner is drawn */
     .gacha-winners-row { display:flex; gap:14px; justify-content:center; align-items:flex-start; min-height:80px; }
     .gacha-winner-slot { display:flex; flex-direction:column; align-items:center; gap:6px; }
     .gacha-winner-slot-label { font-size:0.65rem; font-weight:900; opacity:0.35; text-transform:uppercase; letter-spacing:0.12em; color:#fff; }
@@ -371,20 +346,51 @@
     @keyframes slot-fill { from{transform:scale(0.7) rotate(-6deg);opacity:0} to{transform:scale(1) rotate(0);opacity:1} }
     .gacha-winner-slot-card.filling { animation:slot-fill 0.55s cubic-bezier(0.34,1.4,0.64,1) both; }
     .gacha-winner-slot-empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:1.5rem; opacity:0.15; }
-
     .gacha-btn-row { display:flex; gap:12px; justify-content:center; }
-    .gacha-pull-btn {
-      background:linear-gradient(135deg,#e61e2a,#a30015); color:#fff; font-family:var(--font);
-      font-size:clamp(1rem,2.5vw,1.4rem); font-weight:900; border:none; border-radius:50px;
-      padding:clamp(13px,2vh,20px) clamp(32px,6vw,56px); cursor:pointer; text-transform:uppercase;
-      letter-spacing:0.06em; box-shadow:0 6px 30px rgba(230,30,42,0.55);
-      transition:transform 0.12s, box-shadow 0.15s;
-    }
+    .gacha-pull-btn { background:linear-gradient(135deg,#e61e2a,#a30015); color:#fff; font-family:var(--font); font-size:clamp(1rem,2.5vw,1.4rem); font-weight:900; border:none; border-radius:50px; padding:clamp(13px,2vh,20px) clamp(32px,6vw,56px); cursor:pointer; text-transform:uppercase; letter-spacing:0.06em; box-shadow:0 6px 30px rgba(230,30,42,0.55); transition:transform 0.12s,box-shadow 0.15s; }
     .gacha-pull-btn:hover { transform:scale(1.04); }
     .gacha-pull-btn:active { transform:scale(0.97); }
     .gacha-pull-btn:disabled { opacity:0.3; pointer-events:none; box-shadow:none; }
     .gacha-reset-btn { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); color:#fff; font-family:var(--font); font-size:clamp(0.82rem,1.5vw,1rem); font-weight:800; border-radius:50px; padding:clamp(10px,1.8vh,16px) clamp(20px,3.5vw,32px); cursor:pointer; transition:background 0.15s; }
     .gacha-reset-btn:hover { background:rgba(255,255,255,0.15); }
+
+    /* Gacha full-screen winner overlay */
+    .gacha-winner-overlay { position:fixed; inset:0; z-index:50; background:rgba(3,6,26,0.97); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px; }
+    .gacha-winner-title { font-size:clamp(1.2rem,3vw,2rem); font-weight:900; color:#fff; text-align:center; }
+    .gacha-winner-title span { color:#ffcc00; }
+    .gacha-winner-cols { display:flex; gap:clamp(14px,3vw,28px); justify-content:center; align-items:flex-start; width:100%; max-width:860px; padding:0 20px; }
+    .gacha-winner-col { flex:1; max-width:250px; display:flex; flex-direction:column; align-items:center; gap:10px; opacity:0; transform:translateY(40px) scale(0.88); transition:opacity 0.65s ease,transform 0.65s cubic-bezier(0.34,1.36,0.64,1); }
+    .gacha-winner-col.revealed { opacity:1; transform:translateY(0) scale(1); }
+    .gacha-winner-col-label { font-size:0.65rem; font-weight:900; opacity:0.38; letter-spacing:0.16em; text-transform:uppercase; color:#fff; }
+    .gacha-winner-card-big { width:100%; aspect-ratio:3/4; border-radius:18px; overflow:hidden; position:relative; border:3px solid #ffcc00; box-shadow:0 0 50px rgba(255,204,0,0.45); }
+    .gacha-winner-card-big img { width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
+    .gacha-winner-rank { position:absolute; bottom:10px; right:10px; font-size:clamp(1.8rem,4vw,2.8rem); z-index:5; filter:drop-shadow(0 3px 8px rgba(0,0,0,0.7)); }
+    .gacha-winner-name { font-size:clamp(0.78rem,1.6vw,1rem); font-weight:900; color:#ffcc00; text-align:center; }
+    .gacha-winner-action-row { display:flex; gap:14px; justify-content:center; }
+    .gacha-winner-action-btn { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; font-family:var(--font); font-size:0.9rem; font-weight:800; border-radius:50px; padding:12px 28px; cursor:pointer; transition:background 0.15s; }
+    .gacha-winner-action-btn:hover { background:rgba(255,255,255,0.16); }
+    .gacha-winner-action-btn.primary { background:linear-gradient(135deg,#e61e2a,#a30015); border-color:transparent; }
+
+    /* ═══════════════ FLY CARD (flip wall reveal) ═══════════════ */
+    .fly-card { position:fixed; z-index:200; pointer-events:none; perspective:900px; transition:left 0.75s cubic-bezier(0.34,1.1,0.64,1),top 0.75s cubic-bezier(0.34,1.1,0.64,1),width 0.75s cubic-bezier(0.34,1.1,0.64,1),height 0.75s cubic-bezier(0.34,1.1,0.64,1); }
+    .fly-card-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; }
+    @keyframes artsy-flip { 0%{transform:rotateY(0deg) scale(1)} 22%{transform:rotateY(90deg) scale(1.07) translateY(-10px)} 60%{transform:rotateY(380deg) scale(1.03)} 80%{transform:rotateY(510deg) scale(1.01)} 100%{transform:rotateY(540deg) scale(1)} }
+    .fly-card-inner.flipping { animation:artsy-flip 0.95s cubic-bezier(0.4,0.05,0.25,1) forwards; }
+    .fly-front, .fly-back { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:18px; overflow:hidden; box-shadow:0 0 0 3px rgba(255,204,0,0.55),0 14px 48px rgba(0,0,0,0.6); }
+    .fly-back { transform:rotateY(180deg); }
+    .fly-front { background:linear-gradient(155deg,#0d1985,#1a2db0); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; border:2px solid rgba(255,255,255,0.14); }
+    .fly-front-q { font-size:clamp(2rem,5vw,4.5rem); color:rgba(255,255,255,0.18); font-weight:900; }
+    .fly-front-brand { font-size:clamp(0.5rem,1.1vw,0.85rem); font-weight:900; color:rgba(255,255,255,0.22); letter-spacing:0.14em; text-transform:uppercase; }
+    .fly-label { position:fixed; z-index:201; text-align:center; font-family:var(--font); font-size:clamp(0.75rem,1.5vw,1rem); font-weight:900; color:#ffcc00; text-shadow:0 2px 8px rgba(0,0,0,0.8); opacity:0; transition:opacity 0.45s ease; pointer-events:none; }
+    .fly-label.visible { opacity:1; }
+    .fly-actions-overlay { position:fixed; bottom:clamp(20px,4vh,44px); left:0; right:0; z-index:202; display:flex; flex-direction:column; align-items:center; gap:12px; pointer-events:none; opacity:0; transition:opacity 0.55s ease; }
+    .fly-actions-overlay.visible { opacity:1; pointer-events:auto; }
+    .fly-actions-title { font-family:var(--font); font-size:clamp(1.2rem,3vw,2rem); font-weight:900; color:#fff; text-shadow:0 2px 18px rgba(0,0,0,0.9); }
+    .fly-actions-title span { color:#ffcc00; }
+    .fly-actions-row { display:flex; gap:14px; }
+    .fly-action-btn { background:rgba(255,255,255,0.1); border:1.5px solid rgba(255,255,255,0.22); color:#fff; font-family:var(--font); font-size:0.9rem; font-weight:800; border-radius:50px; padding:12px 28px; cursor:pointer; transition:background 0.15s; }
+    .fly-action-btn:hover { background:rgba(255,255,255,0.18); }
+    .fly-action-btn.primary { background:linear-gradient(135deg,#e61e2a,#a30015); border-color:transparent; }
 
     /* ═══════════════ MODAL ═══════════════ */
     .entry-modal-overlay { position:fixed; inset:0; z-index:80; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:24px; }
@@ -538,59 +544,70 @@
     <span class="dark-topbar-brand">RMIT Challenge · Gacha Machine</span>
     <span style="width:120px"></span>
   </div>
-  <div class="congrats-banner" id="gachaCongrats" style="display:none">🎉 Congratulations to our winners! 🎉</div>
   <div class="gacha-body">
     <div class="gacha-title">🫧 <span>Gacha</span> Prize Draw</div>
 
-    <div class="gacha-scene">
-      <!-- The machine -->
-      <div class="gacha-machine" id="gachaMachine">
-        <div class="gacha-dome-wrap">
-          <div class="gacha-dome" id="gachaDome"></div>
-          <div class="gacha-dome-shine"></div>
+    <!-- Machine -->
+    <div class="gm-wrap">
+      <div class="gm-dome-ring">
+        <div class="gm-dome" id="gachaDome"></div>
+      </div>
+      <div class="gm-collar"></div>
+      <div class="gm-body-row">
+        <div class="gm-body">
+          <div class="gm-body-stripe"></div>
+          <div class="gm-body-inner">
+            <div class="gm-brand-jp">ガチャガチャ</div>
+            <div class="gm-brand-en">RMIT Challenge · Prize Draw</div>
+            <div class="gm-coin-row">
+              <div class="gm-coin-slot"></div>
+              <div class="gm-price-tag">× PRIZE DRAW ×</div>
+            </div>
+          </div>
+          <div class="gm-tray-section">
+            <div class="gm-tray-label">取出口 · OUTPUT</div>
+            <div class="gm-tray" id="gachaOutput">
+              <div class="gacha-output-hint">Pull the lever!</div>
+            </div>
+          </div>
         </div>
-        <div class="gacha-neck" id="gachaNeck">
-          <div id="gachaNeckBall" style="display:none; position:absolute; left:50%; top:0; transform:translateX(-50%); border-radius:50%; background:radial-gradient(circle at 38% 35%,rgba(255,255,255,0.5),transparent); width:clamp(22px,3.5vw,32px); height:clamp(22px,3.5vw,32px); transition:top 0.5s ease-in;"></div>
-        </div>
-        <div class="gacha-cabinet">
-          <div class="gacha-cabinet-label">RMIT Challenge</div>
-          <div class="gacha-cabinet-brand">Prize Draw</div>
-          <div class="gacha-output-door" id="gachaOutput">
-            <div class="gacha-output-hint">Pull the lever</div>
+        <div class="gm-lever-section">
+          <div class="gm-lever-mount">
+            <div class="gm-lever-pivot"></div>
+            <div class="gm-lever" id="gachaLever" title="Pull to draw!">
+              <div class="gm-lever-knob"></div>
+              <div class="gm-lever-shaft"></div>
+              <div class="gm-lever-disc"></div>
+            </div>
           </div>
         </div>
       </div>
-      <!-- Lever on right -->
-      <div class="gacha-lever-mount">
-        <div class="gacha-lever" id="gachaLever" title="Pull to draw!">
-          <div class="gacha-lever-ball">PULL</div>
-          <div class="gacha-lever-arm"></div>
-          <div class="gacha-lever-base"></div>
-        </div>
-      </div>
+      <div class="gm-base"></div>
     </div>
 
     <div class="gacha-status" id="gachaStatus">Pull the lever to draw a winner</div>
-
-    <!-- 3 winner slots that fill up -->
-    <div class="gacha-winners-row" id="gachaWinnersRow">
-      <div class="gacha-winner-slot">
-        <div class="gacha-winner-slot-label">Winner 1</div>
-        <div class="gacha-winner-slot-card" id="gachaSlot0"><div class="gacha-winner-slot-empty">?</div></div>
-      </div>
-      <div class="gacha-winner-slot">
-        <div class="gacha-winner-slot-label">Winner 2</div>
-        <div class="gacha-winner-slot-card" id="gachaSlot1"><div class="gacha-winner-slot-empty">?</div></div>
-      </div>
-      <div class="gacha-winner-slot">
-        <div class="gacha-winner-slot-label">Winner 3</div>
-        <div class="gacha-winner-slot-card" id="gachaSlot2"><div class="gacha-winner-slot-empty">?</div></div>
-      </div>
+    <div class="gacha-winners-row">
+      <div class="gacha-winner-slot"><div class="gacha-winner-slot-label">Winner 1</div><div class="gacha-winner-slot-card" id="gachaSlot0"><div class="gacha-winner-slot-empty">?</div></div></div>
+      <div class="gacha-winner-slot"><div class="gacha-winner-slot-label">Winner 2</div><div class="gacha-winner-slot-card" id="gachaSlot1"><div class="gacha-winner-slot-empty">?</div></div></div>
+      <div class="gacha-winner-slot"><div class="gacha-winner-slot-label">Winner 3</div><div class="gacha-winner-slot-card" id="gachaSlot2"><div class="gacha-winner-slot-empty">?</div></div></div>
     </div>
-
     <div class="gacha-btn-row">
       <button class="gacha-pull-btn" id="gachaPullBtn" type="button">🫧 Pull Lever</button>
       <button class="gacha-reset-btn" id="gachaResetBtn" type="button" style="display:none">↺ Reset</button>
+    </div>
+  </div>
+
+  <!-- Full-screen winner overlay after all 3 balls -->
+  <div class="gacha-winner-overlay" id="gachaWinnerOverlay" style="display:none">
+    <div class="gacha-winner-title">🎉 <span>RMIT Challenge</span> Winners!</div>
+    <div class="gacha-winner-cols">
+      <div class="gacha-winner-col" id="gachaWinCol0"><div class="gacha-winner-col-label">Winner 1</div><div class="gacha-winner-card-big" id="gachaWinCard0"></div><div class="gacha-winner-name" id="gachaWinName0"></div></div>
+      <div class="gacha-winner-col" id="gachaWinCol1"><div class="gacha-winner-col-label">Winner 2</div><div class="gacha-winner-card-big" id="gachaWinCard1"></div><div class="gacha-winner-name" id="gachaWinName1"></div></div>
+      <div class="gacha-winner-col" id="gachaWinCol2"><div class="gacha-winner-col-label">Winner 3</div><div class="gacha-winner-card-big" id="gachaWinCard2"></div><div class="gacha-winner-name" id="gachaWinName2"></div></div>
+    </div>
+    <div class="gacha-winner-action-row">
+      <button class="gacha-winner-action-btn primary" id="gachaPlayAgainBtn" type="button">🔄 Play Again</button>
+      <button class="gacha-winner-action-btn" id="gachaWinMenuBtn" type="button">← Back to Menu</button>
     </div>
   </div>
 </div>
@@ -972,241 +989,270 @@
     }
   }
 
+  /* Flying card reveal — picks fly from grid to centered 3-column layout then flip artsy */
+  let flipFlyEls=[], flipActionsOverlay=null;
+
   function revealFlipWinners() {
+    const rects=flipPicked.map(({wrap})=>wrap.getBoundingClientRect());
+    const cardW=Math.min(Math.floor(window.innerWidth*0.21),210);
+    const cardH=Math.floor(cardW*4/3);
+    const gap=Math.max(14,Math.floor(window.innerWidth*0.014));
+    const totalW=3*cardW+2*gap;
+    const cardX=Math.floor((window.innerWidth-totalW)/2);
+    const cardY=Math.max(55,Math.floor((window.innerHeight-cardH)/2)-24);
+
     // Fade out grid
-    const gridWrap=document.getElementById("flipGridWrap");
-    gridWrap.style.transition="opacity 0.5s ease, transform 0.5s ease";
-    gridWrap.style.opacity="0"; gridWrap.style.transform="scale(0.95)";
+    const gw=document.getElementById("flipGridWrap");
+    gw.style.transition="opacity 0.5s ease,transform 0.5s ease";
+    gw.style.opacity="0"; gw.style.transform="scale(0.93)";
 
-    // Build winner overlay
-    const overlay=document.getElementById("flipWinnerOverlay");
-    overlay.style.opacity="0"; overlay.style.display="flex";
-    overlay.style.transition="opacity 0.4s ease"; requestAnimationFrame(()=>requestAnimationFrame(()=>overlay.style.opacity="1"));
-
+    flipFlyEls=[];
     flipPicked.forEach(({entry},i)=>{
-      const cardEl=document.getElementById(`flipWinCard${i}`);
-      const nameEl=document.getElementById(`flipWinName${i}`);
-      cardEl.innerHTML="";
-
-      if(entry.img&&SAFE_IMG_RE.test(entry.img)) {
-        const img=document.createElement("img"); img.src=entry.img; img.alt=entry.name||""; cardEl.appendChild(img);
+      // Back face content
+      const back=document.createElement("div"); back.className="fly-back";
+      if(entry.img&&SAFE_IMG_RE.test(entry.img)){
+        const img=document.createElement("img"); img.src=entry.img; img.alt=entry.name||"";
+        img.style.cssText="width:100%;height:100%;object-fit:cover;object-position:top;display:block;position:absolute;inset:0;";
+        back.appendChild(img);
       } else {
-        cardEl.style.background=PERSONA_COLORS[entry.persona||"TBS"]||"#0a0d2a";
-        cardEl.innerHTML=`<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:6px"><div style="font-size:clamp(0.6rem,1.2vw,0.85rem);font-weight:900;opacity:0.6;letter-spacing:0.08em;text-transform:uppercase;color:#fff">${escHtml(entry.persona||"TBS")}</div><div style="font-size:clamp(0.85rem,1.8vw,1.3rem);font-weight:900;color:#fff;text-align:center">I'm ${escHtml(entry.name||"Guest")}</div></div>`;
+        back.style.background=PERSONA_COLORS[entry.persona||"TBS"]||"#0a0d2a";
+        back.innerHTML=`<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:8px"><div style="font-size:clamp(0.7rem,1.5vw,1rem);font-weight:900;opacity:0.6;letter-spacing:0.08em;text-transform:uppercase;color:#fff">${escHtml(entry.persona||"TBS")}</div><div style="font-size:clamp(0.95rem,2vw,1.35rem);font-weight:900;color:#fff;text-align:center">I'm ${escHtml(entry.name||"Guest")}</div></div>`;
       }
+      const rk=document.createElement("div"); rk.style.cssText="position:absolute;bottom:12px;right:12px;font-size:clamp(1.8rem,4vw,3rem);z-index:5;filter:drop-shadow(0 3px 8px rgba(0,0,0,0.75))"; rk.textContent=["🥇","🥈","🥉"][i]; back.appendChild(rk);
 
-      const rankEl=document.createElement("div"); rankEl.className="flip-winner-rank"; rankEl.textContent=["🥇","🥈","🥉"][i]; cardEl.appendChild(rankEl);
-      nameEl.textContent=entry.name||"Guest";
+      const inner=document.createElement("div"); inner.className="fly-card-inner";
+      inner.innerHTML=`<div class="fly-front"><div class="fly-front-q">?</div><div class="fly-front-brand">RMIT</div></div>`;
+      inner.appendChild(back);
 
+      const card=document.createElement("div"); card.className="fly-card";
+      card.style.left=rects[i].left+"px"; card.style.top=rects[i].top+"px";
+      card.style.width=rects[i].width+"px"; card.style.height=rects[i].height+"px";
+      card.appendChild(inner); document.body.appendChild(card);
+
+      const label=document.createElement("div"); label.className="fly-label";
+      label.textContent=entry.name||"Guest";
+      label.style.left=(cardX+i*(cardW+gap))+"px"; label.style.top=(cardY+cardH+10)+"px"; label.style.width=cardW+"px";
+      document.body.appendChild(label);
+
+      flipFlyEls.push(card,label);
+
+      // Fly to final position (staggered slightly)
       setTimeout(()=>{
-        document.getElementById(`flipWinCol${i}`).classList.add("revealed");
-        if(i===2) { setTimeout(()=>{ playClapping(); }, 300); }
-        else { playDing(); }
-      }, 500+i*500);
+        card.style.left=(cardX+i*(cardW+gap))+"px";
+        card.style.top=cardY+"px";
+        card.style.width=cardW+"px";
+        card.style.height=cardH+"px";
+      }, 280+i*80);
+
+      // Flip after arriving
+      setTimeout(()=>{
+        inner.classList.add("flipping"); playDing();
+        setTimeout(()=>label.classList.add("visible"),680);
+      }, 280+i*80+760);
     });
+
+    // Congrats + buttons after all 3 flip
+    setTimeout(()=>{ playClapping(); showFlipActionsOverlay(); }, 280+2*80+760+960);
   }
 
-  document.getElementById("flipBackBtn").addEventListener("click",()=>{
+  function showFlipActionsOverlay() {
+    if(flipActionsOverlay) flipActionsOverlay.remove();
+    const div=document.createElement("div"); div.className="fly-actions-overlay";
+    div.innerHTML=`<div class="fly-actions-title">🎉 <span>RMIT Challenge</span> Winners!</div><div class="fly-actions-row"><button class="fly-action-btn primary" id="_flyAgain">🔄 Play Again</button><button class="fly-action-btn" id="_flyMenu">← Back to Menu</button></div>`;
+    document.body.appendChild(div); flipActionsOverlay=div;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>div.classList.add("visible")));
+    div.querySelector("#_flyAgain").addEventListener("click",()=>{ cleanFlipFly(); initFlipWall(); });
+    div.querySelector("#_flyMenu").addEventListener("click",()=>{ cleanFlipFly(); showView("menuView"); });
+  }
+
+  function cleanFlipFly() {
+    flipFlyEls.forEach(e=>{ if(e.parentNode) e.parentNode.removeChild(e); }); flipFlyEls=[];
+    if(flipActionsOverlay){ flipActionsOverlay.remove(); flipActionsOverlay=null; }
+    const gw=document.getElementById("flipGridWrap"); gw.style.opacity="1"; gw.style.transform="";
     document.getElementById("flipWinnerOverlay").style.display="none";
-    [0,1,2].forEach(i=>document.getElementById(`flipWinCol${i}`).classList.remove("revealed"));
-    showView("menuView");
-  });
-  document.getElementById("flipMenuBtn").addEventListener("click",()=>{
-    document.getElementById("flipWinnerOverlay").style.display="none";
-    [0,1,2].forEach(i=>document.getElementById(`flipWinCol${i}`).classList.remove("revealed"));
-    showView("menuView");
-  });
-  document.getElementById("flipPlayAgainBtn").addEventListener("click",()=>{
-    document.getElementById("flipWinnerOverlay").style.display="none";
-    [0,1,2].forEach(i=>document.getElementById(`flipWinCol${i}`).classList.remove("revealed"));
-    initFlipWall();
-  });
+  }
+
+  document.getElementById("flipBackBtn").addEventListener("click",()=>{ cleanFlipFly(); showView("menuView"); });
+  document.getElementById("flipMenuBtn").addEventListener("click",()=>{ cleanFlipFly(); showView("menuView"); });
+  document.getElementById("flipPlayAgainBtn").addEventListener("click",()=>{ cleanFlipFly(); initFlipWall(); });
 
   /* ══════════════════════════════════════════════════════════
-     GACHA MACHINE GAME
+     GACHA MACHINE GAME — RAF physics balls
   ══════════════════════════════════════════════════════════ */
   const BALL_COLORS=["#ff4757","#ff6b81","#ffa502","#eccc68","#2ed573","#1e90ff","#a29bfe","#fd79a8","#00cec9","#6c5ce7","#e17055","#fdcb6e","#81ecec","#fab1a0","#ff7675","#74b9ff","#55efc4","#e84393","#00b894","#d63031"];
   const BALL_COUNT=20;
-  let gachaBallAnimIds=[], gachaWinnersDrawn=[], gachaDrawing=false, gachaStyleEl=null;
+  let gachaPhysRaf=null, gachaBalls=[], gachaWinnersDrawn=[], gachaDrawing=false;
 
-  function initGacha() {
-    gachaWinnersDrawn=[]; gachaDrawing=false;
-    document.getElementById("gachaCongrats").style.display="none";
-    document.getElementById("gachaPullBtn").disabled=false;
-    document.getElementById("gachaResetBtn").style.display="none";
-    document.getElementById("gachaOutput").innerHTML='<div class="gacha-output-hint">Pull the lever</div>';
-    document.getElementById("gachaStatus").innerHTML="Pull the lever to draw a winner";
-    document.getElementById("gachaLever").classList.remove("pulled");
-    // Reset winner slots
-    [0,1,2].forEach(i=>{ const s=document.getElementById(`gachaSlot${i}`); s.innerHTML=`<div class="gacha-winner-slot-empty">?</div>`; s.classList.remove("filled","filling"); });
-    // Build balls
-    buildGachaBalls();
+  function startGachaBallPhysics(balls){
+    if(gachaPhysRaf){ cancelAnimationFrame(gachaPhysRaf); gachaPhysRaf=null; }
+    let last=null;
+    function frame(now){
+      if(!last) last=now;
+      const dt=Math.min((now-last)/1000,0.035); last=now;
+      balls.forEach(b=>{
+        b.x+=b.vx*dt; b.y+=b.vy*dt;
+        const dist=Math.sqrt(b.x*b.x+b.y*b.y);
+        if(dist>b.maxR){
+          const nx=b.x/dist,ny=b.y/dist;
+          const dot=b.vx*nx+b.vy*ny;
+          b.vx-=2*dot*nx; b.vy-=2*dot*ny;
+          const rA=(Math.random()-0.5)*0.45;
+          const cs=Math.cos(rA),sn=Math.sin(rA);
+          const nvx=b.vx*cs-b.vy*sn, nvy=b.vx*sn+b.vy*cs;
+          b.vx=nvx; b.vy=nvy;
+          b.x=nx*b.maxR; b.y=ny*b.maxR;
+        }
+        b.el.style.left=(b.domeR+b.x-b.r)+"px";
+        b.el.style.top =(b.domeR+b.y-b.r)+"px";
+      });
+      gachaPhysRaf=requestAnimationFrame(frame);
+    }
+    gachaPhysRaf=requestAnimationFrame(frame);
   }
 
-  function buildGachaBalls() {
-    const dome=document.getElementById("gachaDome"); dome.innerHTML="";
-    const domeSize=dome.offsetWidth||240; const ballSize=Math.max(24,Math.round(domeSize*0.11));
-    const maxDist=(domeSize/2)-ballSize/2-4;
-
-    // Inject per-ball CSS animations
-    if(gachaStyleEl) gachaStyleEl.remove();
-    gachaStyleEl=document.createElement("style"); document.head.appendChild(gachaStyleEl);
-    let css="";
-
+  function buildGachaBalls(){
+    const dome=document.getElementById("gachaDome"); dome.querySelectorAll(".gm-ball").forEach(b=>b.remove()); gachaBalls=[];
+    const domeR=dome.offsetWidth/2; if(domeR<=0) return;
+    const ballR=Math.max(12,Math.round(domeR*0.1)); const maxR=domeR-ballR-4;
     for(let i=0;i<BALL_COUNT;i++){
       const color=BALL_COLORS[i%BALL_COLORS.length];
-      // Random start position
-      const startAngle=Math.random()*Math.PI*2, startDist=Math.random()*maxDist*0.7;
-      const sx=Math.cos(startAngle)*startDist, sy=Math.sin(startAngle)*startDist;
-
-      // Generate 6 random waypoints inside circle
-      const pts=[];
-      for(let p=0;p<6;p++){
-        const a=Math.random()*Math.PI*2, d=Math.random()*maxDist*0.85;
-        pts.push({x:Math.round(Math.cos(a)*d), y:Math.round(Math.sin(a)*d)});
-      }
-      pts.push(pts[0]);
-      const dur=(2.5+Math.random()*3.5).toFixed(2);
-      const kf=pts.map((p,pi)=>`${Math.round(pi*100/(pts.length-1))}%{transform:translate(calc(-50% + ${p.x}px),calc(-50% + ${p.y}px))}`).join(" ");
-      css+=`@keyframes gb${i}{${kf}}.gacha-ball-${i}{animation:gb${i} ${dur}s ease-in-out infinite alternate;}\n`;
-
-      const ball=document.createElement("div");
-      ball.className=`gacha-ball gacha-ball-${i}`;
-      ball.style.cssText=`width:${ballSize}px;height:${ballSize}px;background:radial-gradient(circle at 38% 32%,rgba(255,255,255,0.6),${color});left:50%;top:50%;transform:translate(calc(-50% + ${sx}px),calc(-50% + ${sy}px));`;
-      ball.dataset.idx=i;
-      dome.appendChild(ball);
+      const a=Math.random()*Math.PI*2, r=Math.random()*maxR*0.75;
+      const x=Math.cos(a)*r, y=Math.sin(a)*r;
+      const speed=190+Math.random()*230;
+      const va=Math.random()*Math.PI*2;
+      const el=document.createElement("div"); el.className="gm-ball";
+      el.style.cssText=`width:${ballR*2}px;height:${ballR*2}px;background:radial-gradient(circle at 33% 28%,rgba(255,255,255,0.75),${color} 42%,rgba(0,0,0,0.15));position:absolute;left:${domeR+x-ballR}px;top:${domeR+y-ballR}px;box-shadow:inset -2px -2px 4px rgba(0,0,0,0.3),0 2px 6px rgba(0,0,0,0.3);`;
+      dome.appendChild(el);
+      gachaBalls.push({x,y,vx:Math.cos(va)*speed,vy:Math.sin(va)*speed,el,r:ballR,maxR,domeR,color});
     }
-    gachaStyleEl.textContent=css;
+    startGachaBallPhysics(gachaBalls);
   }
 
-  function doDraw() {
+  function initGacha(){
+    gachaWinnersDrawn=[]; gachaDrawing=false;
+    document.getElementById("gachaPullBtn").disabled=false;
+    document.getElementById("gachaResetBtn").style.display="none";
+    document.getElementById("gachaOutput").innerHTML='<div class="gacha-output-hint">Pull the lever!</div>';
+    document.getElementById("gachaStatus").innerHTML="Pull the lever to draw a winner";
+    document.getElementById("gachaLever").classList.remove("pulled");
+    document.getElementById("gachaWinnerOverlay").style.display="none";
+    [0,1,2].forEach(i=>{ document.getElementById(`gachaWinCol${i}`).classList.remove("revealed"); const s=document.getElementById(`gachaSlot${i}`); s.innerHTML=`<div class="gacha-winner-slot-empty">?</div>`; s.classList.remove("filled","filling"); s.style.background=""; });
+    requestAnimationFrame(()=>requestAnimationFrame(buildGachaBalls));
+  }
+
+  function doDraw(){
     if(gachaDrawing||gachaWinnersDrawn.length>=3) return;
     gachaDrawing=true;
     document.getElementById("gachaPullBtn").disabled=true;
     document.getElementById("gachaLever").classList.add("pulled");
 
-    // Pick random winner
     const remaining=activePool.filter(e=>!gachaWinnersDrawn.find(w=>w.id===e.id));
     const winner=shuffle(remaining)[0];
     if(!winner){ gachaDrawing=false; return; }
 
-    // Lever snaps back
-    setTimeout(()=>document.getElementById("gachaLever").classList.remove("pulled"),400);
+    setTimeout(()=>document.getElementById("gachaLever").classList.remove("pulled"),350);
 
-    // Pause ball animations briefly
-    const dome=document.getElementById("gachaDome");
-    dome.style.animationPlayState="paused";
-    dome.querySelectorAll(".gacha-ball").forEach(b=>b.style.animationPlayState="paused");
-
-    // Show neck ball falling
-    const neckBall=document.getElementById("gachaNeckBall");
-    const neckH=document.getElementById("gachaNeck").offsetHeight;
-    const ballSize=dome.querySelector(".gacha-ball")?.offsetWidth||28;
-    neckBall.style.width=neckBall.style.height=ballSize+"px";
-    neckBall.style.background=`radial-gradient(circle at 38% 32%, rgba(255,255,255,0.5), ${BALL_COLORS[Math.floor(Math.random()*BALL_COLORS.length)]})`;
-    neckBall.style.top="0px"; neckBall.style.display="block";
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{ neckBall.style.top=(neckH-ballSize)+"px"; }));
+    const ejectIdx=Math.floor(Math.random()*gachaBalls.length);
+    const ejected=gachaBalls.splice(ejectIdx,1)[0];
+    const ballColor=ejected?ejected.color:BALL_COLORS[Math.floor(Math.random()*BALL_COLORS.length)];
+    const ballR=ejected?ejected.r:14;
 
     setTimeout(()=>{
-      neckBall.style.display="none";
-      dome.querySelectorAll(".gacha-ball").forEach(b=>b.style.animationPlayState="");
+      if(ejected){
+        ejected.el.style.transition="left 0.4s ease-in,top 0.4s ease-in";
+        const dome=document.getElementById("gachaDome"); const dR=dome.offsetWidth/2;
+        ejected.el.style.left=(dR-ejected.r)+"px"; ejected.el.style.top=(dR*2-ejected.r*2-2)+"px";
+        setTimeout(()=>ejected.el.remove(),420);
+      }
+      startGachaBallPhysics(gachaBalls);
 
-      // Build and drop capsule in output door
-      const output=document.getElementById("gachaOutput");
-      output.innerHTML="";
-      const capsule=document.createElement("div"); capsule.className="gacha-capsule dropping";
-      const winnerIdx=gachaWinnersDrawn.length;
-      const capColor=BALL_COLORS[winnerIdx*3%BALL_COLORS.length];
-      const capColor2=BALL_COLORS[(winnerIdx*3+1)%BALL_COLORS.length];
-      capsule.innerHTML=`<div class="cap-top" style="background:${capColor}"></div><div class="cap-bot" style="background:${capColor2}"></div>`;
-      output.appendChild(capsule);
-
-      // Shake then open
       setTimeout(()=>{
-        capsule.classList.remove("dropping"); capsule.classList.add("shaking");
+        const output=document.getElementById("gachaOutput");
+        const trayW=output.offsetWidth||100;
+        const bSize=Math.min(Math.round(trayW*0.58),72);
+        output.innerHTML="";
+        const ballEl=document.createElement("div"); ballEl.className="gm-out-ball dropping";
+        ballEl.style.cssText=`width:${bSize}px;height:${bSize}px;background:radial-gradient(circle at 33% 28%,rgba(255,255,255,0.75),${ballColor} 42%,rgba(0,0,0,0.15));`;
+        ballEl.innerHTML=`<div class="gm-out-ball-half top" style="background:radial-gradient(ellipse at 50% 95%,rgba(255,255,255,0.2),${ballColor})"></div><div class="gm-out-ball-half bot" style="background:radial-gradient(ellipse at 50% 5%,${ballColor},rgba(0,0,0,0.2))"></div>`;
+        output.appendChild(ballEl);
+
         setTimeout(()=>{
-          capsule.classList.remove("shaking"); capsule.classList.add("open");
-          playPop();
-          // Replace capsule with winner card after open
+          ballEl.classList.remove("dropping"); ballEl.classList.add("bouncing"); playPop();
           setTimeout(()=>{
-            output.innerHTML="";
-            const winCard=buildGachaWinCard(winner);
-            output.appendChild(winCard);
-
-            // Add to winner slots
-            gachaWinnersDrawn.push(winner);
-            fillGachaSlot(winnerIdx,winner);
-            playDing();
-
-            const remaining2=gachaWinnersDrawn.length;
-            document.getElementById("gachaStatus").innerHTML=`<span class="hl">${remaining2}</span> / 3 winners drawn`;
-
-            if(remaining2>=3) {
-              setTimeout(()=>{
-                document.getElementById("gachaResetBtn").style.display="";
-                const cg=document.getElementById("gachaCongrats"); cg.style.display=""; cg.style.animation="none"; void cg.offsetWidth; cg.style.animation="";
-                setTimeout(playClapping,300);
-                document.getElementById("gachaStatus").innerHTML="🎉 All 3 winners drawn!";
-              },600);
-            } else {
-              document.getElementById("gachaPullBtn").disabled=false;
-            }
-            gachaDrawing=false;
-          },500);
-        },800);
-      },700);
-    },600);
+            ballEl.classList.remove("bouncing"); ballEl.classList.add("cracking");
+            setTimeout(()=>{
+              output.innerHTML="";
+              const winCard=buildGachaTrayCard(winner); output.appendChild(winCard);
+              const winnerIdx=gachaWinnersDrawn.length;
+              gachaWinnersDrawn.push(winner);
+              fillGachaSlot(winnerIdx,winner); playDing();
+              document.getElementById("gachaStatus").innerHTML=`<span class="hl">${gachaWinnersDrawn.length}</span> / 3 winners drawn`;
+              if(gachaWinnersDrawn.length>=3){
+                setTimeout(showGachaWinnerOverlay,700);
+              } else {
+                document.getElementById("gachaPullBtn").disabled=false;
+              }
+              gachaDrawing=false;
+            },520);
+          },700);
+        },680);
+      },480);
+    },380);
   }
 
-  function buildGachaWinCard(entry) {
+  function buildGachaTrayCard(entry){
     const persona=entry.persona||"TBS";
-    const card=document.createElement("div"); card.className="gacha-win-card";
-    if(entry.img&&SAFE_IMG_RE.test(entry.img)) {
+    const card=document.createElement("div"); card.className="gm-tray-win-card";
+    card.style.width="58px";
+    if(entry.img&&SAFE_IMG_RE.test(entry.img)){
       card.innerHTML=`<img src="${escHtml(entry.img)}" alt="${escHtml(entry.name||"")}" />`;
     } else {
       card.style.background=PERSONA_COLORS[persona]||"#0a0d2a";
-      const inner=document.createElement("div");
-      inner.style.cssText="width:100%;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;gap:4px";
-      inner.innerHTML=`<div style="font-size:0.55rem;font-weight:900;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.07em">${escHtml(persona)}</div><div style="font-size:clamp(0.6rem,1.2vw,0.85rem);font-weight:900;color:#fff;text-align:center">I'm ${escHtml(entry.name||"Guest")}</div>`;
-      card.appendChild(inner);
+      card.innerHTML=`<div style="width:58px;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;gap:2px"><div style="font-size:0.42rem;font-weight:900;color:rgba(255,255,255,0.5);text-transform:uppercase">${escHtml(persona)}</div><div style="font-size:0.55rem;font-weight:900;color:#fff;text-align:center">I'm ${escHtml(entry.name||"Guest")}</div></div>`;
     }
     return card;
   }
 
-  function fillGachaSlot(slotIndex,entry) {
-    const slot=document.getElementById(`gachaSlot${slotIndex}`);
-    slot.innerHTML="";
-    const persona=entry.persona||"TBS";
-    if(entry.img&&SAFE_IMG_RE.test(entry.img)) {
-      const img=document.createElement("img"); img.src=entry.img; img.alt=entry.name||""; slot.appendChild(img);
-    } else {
-      slot.style.background=PERSONA_COLORS[persona]||"#0a0d2a";
-      const txt=document.createElement("div");
-      txt.style.cssText="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;gap:3px;";
-      txt.innerHTML=`<div style="font-size:0.5rem;font-weight:900;color:rgba(255,255,255,0.5);text-transform:uppercase">${escHtml(persona)}</div><div style="font-size:clamp(0.55rem,1vw,0.75rem);font-weight:900;color:#fff;text-align:center">I'm ${escHtml(entry.name||"Guest")}</div>`;
-      slot.appendChild(txt);
-    }
-    const rank=document.createElement("div"); rank.className="slot-rank"; rank.textContent=["🥇","🥈","🥉"][slotIndex]; slot.appendChild(rank);
-    slot.classList.add("filled","filling");
-    setTimeout(()=>slot.classList.remove("filling"),600);
+  function showGachaWinnerOverlay(){
+    if(gachaPhysRaf){ cancelAnimationFrame(gachaPhysRaf); gachaPhysRaf=null; }
+    const ov=document.getElementById("gachaWinnerOverlay");
+    ov.style.opacity="0"; ov.style.display="flex"; ov.style.transition="opacity 0.4s ease";
+    requestAnimationFrame(()=>requestAnimationFrame(()=>ov.style.opacity="1"));
+    gachaWinnersDrawn.forEach((entry,i)=>{
+      const cardEl=document.getElementById(`gachaWinCard${i}`); cardEl.innerHTML="";
+      const nameEl=document.getElementById(`gachaWinName${i}`);
+      if(entry.img&&SAFE_IMG_RE.test(entry.img)){
+        const img=document.createElement("img"); img.src=entry.img; img.alt=entry.name||""; cardEl.appendChild(img);
+      } else {
+        cardEl.style.background=PERSONA_COLORS[entry.persona||"TBS"]||"#0a0d2a";
+        cardEl.innerHTML=`<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:6px"><div style="font-size:clamp(0.6rem,1.2vw,0.85rem);font-weight:900;opacity:0.6;letter-spacing:0.08em;text-transform:uppercase;color:#fff">${escHtml(entry.persona||"TBS")}</div><div style="font-size:clamp(0.85rem,1.8vw,1.3rem);font-weight:900;color:#fff;text-align:center">I'm ${escHtml(entry.name||"Guest")}</div></div>`;
+      }
+      const rk=document.createElement("div"); rk.className="gacha-winner-rank"; rk.textContent=["🥇","🥈","🥉"][i]; cardEl.appendChild(rk);
+      nameEl.textContent=entry.name||"Guest";
+      setTimeout(()=>{ document.getElementById(`gachaWinCol${i}`).classList.add("revealed"); if(i===2) setTimeout(playClapping,300); else playDing(); },400+i*500);
+    });
   }
 
-  function resetGacha() {
-    gachaWinnersDrawn=[]; gachaDrawing=false;
-    document.getElementById("gachaCongrats").style.display="none";
-    document.getElementById("gachaPullBtn").disabled=false;
-    document.getElementById("gachaResetBtn").style.display="none";
-    document.getElementById("gachaOutput").innerHTML='<div class="gacha-output-hint">Pull the lever</div>';
-    document.getElementById("gachaStatus").textContent="Pull the lever to draw a winner";
-    document.getElementById("gachaLever").classList.remove("pulled");
-    [0,1,2].forEach(i=>{ const s=document.getElementById(`gachaSlot${i}`); s.innerHTML=`<div class="gacha-winner-slot-empty">?</div>`; s.classList.remove("filled","filling"); s.style.background=""; });
-    buildGachaBalls();
+  function fillGachaSlot(slotIndex,entry){
+    const slot=document.getElementById(`gachaSlot${slotIndex}`); slot.innerHTML="";
+    const persona=entry.persona||"TBS";
+    if(entry.img&&SAFE_IMG_RE.test(entry.img)){ const img=document.createElement("img"); img.src=entry.img; img.alt=entry.name||""; slot.appendChild(img); }
+    else { slot.style.background=PERSONA_COLORS[persona]||"#0a0d2a"; const txt=document.createElement("div"); txt.style.cssText="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;gap:3px;"; txt.innerHTML=`<div style="font-size:0.5rem;font-weight:900;color:rgba(255,255,255,0.5);text-transform:uppercase">${escHtml(persona)}</div><div style="font-size:clamp(0.55rem,1vw,0.75rem);font-weight:900;color:#fff;text-align:center">I'm ${escHtml(entry.name||"Guest")}</div>`; slot.appendChild(txt); }
+    const rank=document.createElement("div"); rank.className="slot-rank"; rank.textContent=["🥇","🥈","🥉"][slotIndex]; slot.appendChild(rank);
+    slot.classList.add("filled","filling"); setTimeout(()=>slot.classList.remove("filling"),600);
+  }
+
+  function resetGacha(){
+    if(gachaPhysRaf){ cancelAnimationFrame(gachaPhysRaf); gachaPhysRaf=null; }
+    initGacha();
   }
 
   document.getElementById("gachaPullBtn").addEventListener("click",doDraw);
   document.getElementById("gachaLever").addEventListener("click",doDraw);
   document.getElementById("gachaResetBtn").addEventListener("click",resetGacha);
-  document.getElementById("gachaBackBtn").addEventListener("click",()=>{ if(gachaDrawing) return; showView("menuView"); });
+  document.getElementById("gachaPlayAgainBtn").addEventListener("click",resetGacha);
+  document.getElementById("gachaWinMenuBtn").addEventListener("click",()=>{ if(gachaPhysRaf){ cancelAnimationFrame(gachaPhysRaf); gachaPhysRaf=null; } showView("menuView"); });
+  document.getElementById("gachaBackBtn").addEventListener("click",()=>{ if(gachaDrawing) return; if(gachaPhysRaf){ cancelAnimationFrame(gachaPhysRaf); gachaPhysRaf=null; } showView("menuView"); });
 
   /* ── Init — no auto-load; user clicks "Load Students" ─── */
 </script>
