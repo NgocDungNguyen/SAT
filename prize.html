@@ -173,7 +173,7 @@
     .flip-status-bar.picking { opacity:1; }
 
     .flip-grid-wrap { flex:1; overflow-y:auto; padding:12px 14px 16px; position:relative; z-index:3; }
-    .flip-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(68px, 1fr)); gap:6px; width:100%; }
+    .flip-grid { display:grid; gap:6px; width:100%; }
 
     /* 3D card flip */
     .flip-card-wrap { aspect-ratio:3/4; perspective:700px; cursor:default; transition:opacity 0.35s,transform 0.35s; }
@@ -556,7 +556,7 @@
           <div class="gacha-cabinet-label">RMIT Challenge</div>
           <div class="gacha-cabinet-brand">Prize Draw</div>
           <div class="gacha-output-door" id="gachaOutput">
-            <div class="gacha-output-hint" id="gachaOutputHint">Pull the lever</div>
+            <div class="gacha-output-hint">Pull the lever</div>
           </div>
         </div>
       </div>
@@ -885,6 +885,28 @@
     return back;
   }
 
+  function computeFlipCols(n) {
+    // Find column count that maximises card size while fitting all cards on screen without scrolling.
+    // Uses viewport dimensions because the flip view may not be laid out yet when called.
+    const topbarH=56, statusH=44, padV=28, padH=28, gap=6;
+    const W = window.innerWidth  - padH;
+    const H = window.innerHeight - topbarH - statusH - padV;
+    const cardRatio = 3/4; // width / height
+    if (n<=0 || W<=0 || H<=0) return Math.min(n, 5);
+    let bestCols=1, bestCardW=0;
+    for (let cols=1; cols<=n; cols++) {
+      const rows = Math.ceil(n/cols);
+      // Max card width constrained by horizontal space
+      const cwByW = (W - (cols-1)*gap) / cols;
+      // Max card width constrained by vertical space
+      const chByH = (H - (rows-1)*gap) / rows;
+      const cwByH = chByH * cardRatio;
+      const cw = Math.min(cwByW, cwByH);
+      if (cw > bestCardW) { bestCardW=cw; bestCols=cols; }
+    }
+    return bestCols;
+  }
+
   function initFlipWall() {
     flipPicked=[]; flipPickCount=0; flipDone=false;
     document.getElementById("flipWinnerOverlay").style.display="none";
@@ -898,13 +920,15 @@
     const poolSlice=shuffle(activePool).slice(0,120);
     flipAssignments=shuffle(poolSlice);
 
+    // Compute optimal columns so cards fill the screen
+    const bestCols=computeFlipCols(flipAssignments.length);
+    grid.style.gridTemplateColumns=`repeat(${bestCols}, 1fr)`;
+
     flipAssignments.forEach((entry,i)=>{
       const wrap=document.createElement("div"); wrap.className="flip-card-wrap"; wrap.dataset.idx=i;
       const inner=document.createElement("div"); inner.className="flip-card-inner";
-      // Front (face-down)
       const front=document.createElement("div"); front.className="flip-card-front";
       front.innerHTML=`<div class="flip-front-q">?</div><div class="flip-front-brand">RMIT</div>`;
-      // Back (face-up)
       const back=buildFlipCardBack(entry);
       inner.appendChild(front); inner.appendChild(back); wrap.appendChild(inner); grid.appendChild(wrap);
     });
@@ -1010,8 +1034,7 @@
     document.getElementById("gachaCongrats").style.display="none";
     document.getElementById("gachaPullBtn").disabled=false;
     document.getElementById("gachaResetBtn").style.display="none";
-    document.getElementById("gachaOutputHint").style.display="";
-    document.getElementById("gachaOutput").innerHTML=""; document.getElementById("gachaOutput").appendChild(document.getElementById("gachaOutputHint"));
+    document.getElementById("gachaOutput").innerHTML='<div class="gacha-output-hint">Pull the lever</div>';
     document.getElementById("gachaStatus").innerHTML="Pull the lever to draw a winner";
     document.getElementById("gachaLever").classList.remove("pulled");
     // Reset winner slots
@@ -1173,8 +1196,7 @@
     document.getElementById("gachaCongrats").style.display="none";
     document.getElementById("gachaPullBtn").disabled=false;
     document.getElementById("gachaResetBtn").style.display="none";
-    const output=document.getElementById("gachaOutput"); output.innerHTML="";
-    const hint=document.getElementById("gachaOutputHint"); output.appendChild(hint); hint.style.display="";
+    document.getElementById("gachaOutput").innerHTML='<div class="gacha-output-hint">Pull the lever</div>';
     document.getElementById("gachaStatus").textContent="Pull the lever to draw a winner";
     document.getElementById("gachaLever").classList.remove("pulled");
     [0,1,2].forEach(i=>{ const s=document.getElementById(`gachaSlot${i}`); s.innerHTML=`<div class="gacha-winner-slot-empty">?</div>`; s.classList.remove("filled","filling"); s.style.background=""; });
