@@ -1051,8 +1051,13 @@
     .friend-modal-hint { font-size: 0.8rem; color: var(--navy); opacity: 0.65; margin: 0 0 18px; }
 
     /* ── TripleMates ───────────────────────────────────────────────────────── */
-    .triplemate-divider { height:1px; background:rgba(13,25,133,0.1); margin:10px 0; }
-    .triplemate-panel { background:rgba(255,255,255,0.82); border-radius:22px; padding:16px; box-shadow:var(--shadow); backdrop-filter:blur(6px); margin-top:4px; }
+    @keyframes tm-slide-up { from{opacity:0;transform:translateY(48px)} to{opacity:1;transform:translateY(0)} }
+    .tm-modal-overlay { position:fixed; inset:0; z-index:9000; background:rgba(13,25,133,0.52); backdrop-filter:blur(5px); display:flex; align-items:flex-end; justify-content:center; }
+    .tm-modal-card { background:#fff; border-radius:26px 26px 0 0; padding:20px 20px 38px; width:100%; max-width:480px; max-height:85dvh; overflow-y:auto; animation:tm-slide-up 0.32s cubic-bezier(0.22,1,0.36,1) both; }
+    .tm-modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .tm-modal-title { font-size:1rem; font-weight:900; color:var(--navy); }
+    .tm-modal-close { background:rgba(13,25,133,0.08); border:none; border-radius:50%; width:34px; height:34px; font-size:1.1rem; color:var(--navy); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background 0.15s; }
+    .tm-modal-close:hover { background:rgba(13,25,133,0.15); }
     .tm-label { font-size:0.65rem; font-weight:900; text-transform:uppercase; letter-spacing:0.09em; color:var(--navy); opacity:0.55; margin-bottom:8px; }
     .tm-code-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
     .tm-code { font-size:1.55rem; font-weight:900; letter-spacing:0.18em; color:var(--navy); flex:1; word-break:break-all; }
@@ -1063,7 +1068,7 @@
     .tm-status.error { color:#c0000e; }
     .tm-status.success { color:#1a7f3c; }
     .tm-input-row { display:flex; gap:8px; margin-bottom:10px; }
-    .tm-code-input { flex:1; font-size:1rem; font-family:monospace; letter-spacing:0.08em; text-transform:uppercase; border:2px solid rgba(13,25,133,0.22); border-radius:12px; padding:9px 12px; color:var(--navy); outline:none; background:#fff; }
+    .tm-code-input { flex:1; font-size:1rem; font-family:monospace; letter-spacing:0.08em; border:2px solid rgba(13,25,133,0.22); border-radius:12px; padding:9px 12px; color:var(--navy); outline:none; background:#fff; }
     .tm-code-input:focus { border-color:var(--navy); }
     .tm-chip { display:flex; align-items:center; gap:6px; background:rgba(13,25,133,0.06); border-radius:10px; padding:6px 10px; margin-bottom:5px; font-size:0.78rem; font-weight:700; color:var(--navy); }
     .tm-chip-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
@@ -1256,10 +1261,7 @@
               <button class="btn btn-full btn-share-fb" id="fbStoryBtn" type="button">📘 Share to FB Story</button>
             </div>
             <button class="btn btn-secondary btn-full" id="friendShareBtn" type="button">🔗 Share to a Friend</button>
-            <div id="triplemateSection" style="display:none">
-              <div class="triplemate-divider"></div>
-              <button class="btn btn-secondary btn-full" id="triplemateBtn" type="button">🔺 Find your TripleMates</button>
-            </div>
+            <button class="btn btn-secondary btn-full" id="triplemateBtn" type="button" style="display:none">🔺 Find your TripleMates</button>
             <button class="btn btn-secondary btn-full" id="backToUploadBtn" type="button">Upload / change photo</button>
             <button class="btn btn-ghost btn-full" id="restartBtn" type="button">Restart Quiz</button>
           </div>
@@ -1268,26 +1270,33 @@
             <span class="course-cards-eyebrow" id="courseCardsEyebrow">Courses recommended for you</span>
             <div class="course-cards-list" id="courseCardsList"></div>
           </div>
-          <!-- TripleMates panel (shown when button clicked) -->
-          <div id="triplematePanel" class="triplemate-panel" style="display:none">
-            <div class="tm-label">TripleMates · Your Code</div>
-            <div class="tm-code-row">
-              <span class="tm-code" id="tmMyCode">——</span>
-              <button class="tm-copy-btn" id="tmCopyBtn" type="button">Copy</button>
-            </div>
-            <p class="tm-hint">Share this with students from the other 2 schools</p>
-            <div class="tm-status" id="tmStatus"></div>
-            <div class="tm-input-row">
-              <input type="text" id="tmCodeInput" class="tm-code-input" placeholder="Enter friend's code"
-                     maxlength="7" autocomplete="off" autocapitalize="none" spellcheck="false" />
-              <button class="btn btn-primary" id="tmLinkBtn" type="button">Connect</button>
-            </div>
-            <div id="tmConnections"></div>
-          </div>
         </div>
       </div>
     </section>
   </main>
+
+  <!-- TripleMates panel modal -->
+  <div id="triplemateModal" class="tm-modal-overlay" style="display:none" role="dialog" aria-modal="true">
+    <div class="tm-modal-card">
+      <div class="tm-modal-header">
+        <div class="tm-modal-title">🔺 Find your TripleMates</div>
+        <button class="tm-modal-close" id="tmModalClose" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="tm-label">Your Code</div>
+      <div class="tm-code-row">
+        <span class="tm-code" id="tmMyCode">——</span>
+        <button class="tm-copy-btn" id="tmCopyBtn" type="button">Copy</button>
+      </div>
+      <p class="tm-hint">Share this with students from the other 2 schools</p>
+      <div class="tm-status" id="tmStatus"></div>
+      <div class="tm-input-row">
+        <input type="text" id="tmCodeInput" class="tm-code-input" placeholder="Enter friend's code"
+               maxlength="7" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+        <button class="btn btn-primary" id="tmLinkBtn" type="button">Connect</button>
+      </div>
+      <div id="tmConnections"></div>
+    </div>
+  </div>
 
   <!-- TripleMates celebration modal -->
   <div id="trioModal" class="trio-modal-overlay" style="display:none" role="dialog" aria-modal="true">
@@ -2758,8 +2767,8 @@
         // TripleMates enable/disable toggle
         db.ref("triplemates/enabled").on("value", snap => {
           _triplemateEnabled = snap.val() === true;
-          const sect = document.getElementById("triplemateSection");
-          if (sect) sect.style.display = _triplemateEnabled ? "" : "none";
+          const btn = document.getElementById("triplemateBtn");
+          if (btn) btn.style.display = _triplemateEnabled ? "" : "none";
         });
 
       } catch (e) {
@@ -2787,7 +2796,7 @@
       }
     })();
 
-    const TM_ALPHA = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const TM_ALPHA = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // 32 chars, no 0/O/1/I — always uppercase
     function generateTriplemateCode() {
       return Array.from({length:7}, ()=>TM_ALPHA[Math.floor(Math.random()*TM_ALPHA.length)]).join('');
     }
@@ -2817,14 +2826,17 @@
 
     function initTriplemateUI(code) {
       document.getElementById("tmMyCode").textContent = code || "——";
-      if (_triplemateEnabled) document.getElementById("triplemateSection").style.display = "";
+      if (_triplemateEnabled) {
+        const btn = document.getElementById("triplemateBtn");
+        if (btn) btn.style.display = "";
+      }
     }
 
     function watchTriplemateStatus(myId) {
       try {
         const db = firebase.database();
         db.ref("triplemates/students/"+myId+"/trioId").on("value", snap => {
-          if (snap.val()) loadAndShowTrio(snap.val());
+          if (snap.val()) { loadAndShowTrio(snap.val()); renderTmConnections(); }
         });
         db.ref("triplemates/students/"+myId+"/connections").on("value", ()=>renderTmConnections());
       } catch(e) {}
@@ -2891,22 +2903,16 @@
 
     async function linkTriplemate(enteredCode) {
       const raw = (enteredCode || "").trim().toUpperCase();
-      const status = document.getElementById("tmStatus");
       if (!raw || raw.length !== 7) { setTmStatus("Please enter a 7-character code.", "error"); return; }
       if (!_triplemateMyId) { setTmStatus("Register first by completing the quiz.", "error"); return; }
       setTmStatus("Searching…", "");
 
       try {
         const db = firebase.database();
-        // Resolve code (case-insensitive: try original case stored)
         let pushIdY = null;
         const codeSnap = await db.ref("triplemates/codes/"+raw).once("value");
-        if (!codeSnap.exists()) {
-          // Try original case from input too
-          const codeSnap2 = await db.ref("triplemates/codes/"+(enteredCode||"").trim()).once("value");
-          if (!codeSnap2.exists()) { setTmStatus("Code not found. Check for typos.", "error"); return; }
-          pushIdY = codeSnap2.val();
-        } else { pushIdY = codeSnap.val(); }
+        if (!codeSnap.exists()) { setTmStatus("Code not found. Check for typos.", "error"); return; }
+        pushIdY = codeSnap.val();
 
         if (pushIdY === _triplemateMyId) { setTmStatus("That's your own code!", "error"); return; }
 
@@ -2984,20 +2990,39 @@
       if (!_triplemateMyId) return;
       try {
         const db = firebase.database();
-        const snap = await db.ref("triplemates/students/"+_triplemateMyId+"/connections").once("value");
         const wrap = document.getElementById("tmConnections"); if (!wrap) return;
         wrap.innerHTML = "";
-        if (!snap.exists()) return;
-        const ids = Object.keys(snap.val());
-        for (const id of ids) {
+        const mySnap = await db.ref("triplemates/students/"+_triplemateMyId).once("value");
+        const myData = mySnap.val() || {};
+
+        function makeChip(name, school) {
+          const chip = document.createElement("div"); chip.className = "tm-chip";
+          const dot = document.createElement("div"); dot.className="tm-chip-dot"; dot.style.background=SCHOOL_COLORS[school]||"#333";
+          const lbl = document.createElement("span"); const strong = document.createElement("strong"); strong.textContent=" "+school;
+          lbl.textContent=(name||"Guest"); lbl.appendChild(strong);
+          chip.appendChild(dot); chip.appendChild(lbl);
+          return chip;
+        }
+
+        if (myData.trioId) {
+          // Show all other trio members (not just direct connections)
+          const trioSnap = await db.ref("triplemates/trios/"+myData.trioId).once("value");
+          const trio = trioSnap.val();
+          if (trio && trio.members) {
+            for (const [pid, school] of Object.entries(trio.members)) {
+              if (pid === _triplemateMyId) continue;
+              wrap.appendChild(makeChip((trio.memberNames && trio.memberNames[pid])||"Guest", school));
+            }
+          }
+          return;
+        }
+
+        // Not in a trio yet — show direct connections only
+        if (!myData.connections) return;
+        for (const id of Object.keys(myData.connections)) {
           const s = await db.ref("triplemates/students/"+id).once("value");
           const d = s.val(); if (!d) continue;
-          const chip = document.createElement("div"); chip.className = "tm-chip";
-          const dot = document.createElement("div"); dot.className="tm-chip-dot"; dot.style.background=SCHOOL_COLORS[d.school]||"#333";
-          const lbl = document.createElement("span"); const strong = document.createElement("strong"); strong.textContent=" "+d.school;
-          lbl.textContent=(d.name||"Guest"); lbl.appendChild(strong);
-          chip.appendChild(dot); chip.appendChild(lbl);
-          wrap.appendChild(chip);
+          wrap.appendChild(makeChip(d.name||"Guest", d.school));
         }
       } catch(e) {}
     }
@@ -3008,11 +3033,11 @@
     }
 
     function toggleTriplematePanel() {
-      const panel = document.getElementById("triplematePanel");
-      if (!panel) return;
-      const visible = panel.style.display !== "none" && panel.style.display !== "";
-      panel.style.display = visible ? "none" : "";
-      if (!visible && _triplemateMyCode) initTriplemateUI(_triplemateMyCode);
+      const modal = document.getElementById("triplemateModal");
+      if (!modal) return;
+      modal.style.display = "flex";
+      if (_triplemateMyCode) initTriplemateUI(_triplemateMyCode);
+      renderTmConnections();
     }
 
     async function copyTmCode() {
@@ -3027,6 +3052,10 @@
 
     // Wire up TripleMates UI events
     document.getElementById("triplemateBtn").addEventListener("click", toggleTriplematePanel);
+    document.getElementById("tmModalClose").addEventListener("click", ()=>{ document.getElementById("triplemateModal").style.display="none"; });
+    document.getElementById("triplemateModal").addEventListener("click", e=>{
+      if (e.target === document.getElementById("triplemateModal")) document.getElementById("triplemateModal").style.display="none";
+    });
     document.getElementById("tmCopyBtn").addEventListener("click", copyTmCode);
     document.getElementById("tmLinkBtn").addEventListener("click", ()=>{
       linkTriplemate(document.getElementById("tmCodeInput").value);
