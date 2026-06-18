@@ -43,7 +43,11 @@
     .date-bar input[type=date] { border:2px solid rgba(13,25,133,0.18); border-radius:10px; padding:8px 12px; font-family:var(--font); font-size:0.9rem; color:var(--navy); background:#fff; outline:none; flex:1; min-width:130px; }
     .date-bar input[type=date]:focus { border-color:var(--navy); }
     .date-sep { font-size:0.85rem; opacity:0.4; }
-    .pool-badge { margin-left:auto; background:rgba(13,25,133,0.1); color:var(--navy); border-radius:20px; padding:5px 14px; font-size:0.8rem; font-weight:800; white-space:nowrap; flex-shrink:0; }
+    .pool-badge { background:rgba(13,25,133,0.1); color:var(--navy); border-radius:20px; padding:5px 14px; font-size:0.8rem; font-weight:800; white-space:nowrap; flex-shrink:0; }
+    .btn-load { background:var(--navy); color:#fff; font-family:var(--font); font-size:0.88rem; font-weight:900; border:none; border-radius:50px; padding:9px 22px; cursor:pointer; margin-left:auto; transition:opacity 0.15s,transform 0.12s; white-space:nowrap; flex-shrink:0; }
+    .btn-load:hover { opacity:0.85; }
+    .btn-load:active { transform:scale(0.96); }
+    .btn-load:disabled { opacity:0.45; pointer-events:none; }
     .pool-card { background:#fff; border-radius:22px; padding:22px; box-shadow:0 2px 14px rgba(13,25,133,0.07); margin-bottom:22px; }
     .pool-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
     .pool-card-title { font-size:0.95rem; font-weight:900; }
@@ -413,7 +417,8 @@
       <span class="date-sep">→</span>
       <label for="dateTo">To</label>
       <input type="date" id="dateTo" />
-      <span class="pool-badge" id="activeBadge">0 active</span>
+      <button class="btn-load" id="loadPoolBtn" type="button">Load Students →</button>
+      <span class="pool-badge" id="activeBadge" style="display:none">0 active</span>
     </div>
     <div class="pool-card">
       <div class="pool-card-header">
@@ -675,28 +680,57 @@
   /* ── Date pickers ──────────────────────────────────────── */
   const dfEl=document.getElementById("dateFrom"), dtEl=document.getElementById("dateTo");
   dfEl.value=dtEl.value=todayStr();
-  dfEl.addEventListener("change",()=>{ if(dtEl.value<dfEl.value) dtEl.value=dfEl.value; loadPool(); });
-  dtEl.addEventListener("change",()=>{ if(dfEl.value>dtEl.value) dfEl.value=dtEl.value; loadPool(); });
+  // Validate date order on change — do NOT auto-load; user clicks the Load button
+  dfEl.addEventListener("change",()=>{ if(dtEl.value<dfEl.value) dtEl.value=dfEl.value; });
+  dtEl.addEventListener("change",()=>{ if(dfEl.value>dtEl.value) dfEl.value=dtEl.value; });
+  document.getElementById("loadPoolBtn").addEventListener("click", loadPool);
 
   /* ── Pool ──────────────────────────────────────────────── */
   function loadPool() {
-    if (!db) { renderPoolList([]); return; }
+    const loadBtn=document.getElementById("loadPoolBtn");
+    if (!db) {
+      document.getElementById("poolEmpty").textContent="No database connection";
+      renderPoolList([]); return;
+    }
+    // Unsubscribe previous live listener
     if (unsubFn) { unsubFn(); unsubFn=null; }
-    const ref=db.ref("studentResults");
-    const fn=ref.on("value",snap=>{ allEntries=[]; snap.forEach(c=>{ const v=c.val(); if(v) allEntries.push({id:c.key,...v}); }); rebuildPool(); });
+    allEntries=[]; activePool=[];
+    renderPoolList([]);
+
+    const from=dfEl.value, to=dtEl.value||from;
+    // Use timestamps so filtering is timezone-safe (local midnight → local end-of-day)
+    const fromMs=new Date(from+"T00:00:00").getTime();
+    const toMs  =new Date(to  +"T23:59:59.999").getTime();
+
+    loadBtn.textContent="Loading…"; loadBtn.disabled=true;
+
+    const ref=db.ref("studentResults").orderByChild("t").startAt(fromMs).endAt(toMs);
+    const fn=ref.on("value",snap=>{
+      allEntries=[];
+      snap.forEach(c=>{ const v=c.val(); if(v) allEntries.push({id:c.key,...v}); });
+      rebuildPool();
+      // Restore button after first result
+      loadBtn.textContent="↺ Reload"; loadBtn.disabled=false;
+      document.getElementById("activeBadge").style.display="";
+    });
     unsubFn=()=>ref.off("value",fn);
   }
+
   function rebuildPool() {
-    const from=dfEl.value, to=dtEl.value||from;
-    activePool=allEntries.filter(e=>{ if(e.excluded) return false; const d=new Date(e.t).toLocaleDateString("en-CA"); return d>=from&&d<=to; });
-    const rangeAll=allEntries.filter(e=>{ const d=new Date(e.t).toLocaleDateString("en-CA"); return d>=from&&d<=to; });
-    renderPoolList(rangeAll); updateConfirmBar();
+    // allEntries is already date-filtered by the Firebase query
+    activePool=allEntries.filter(e=>!e.excluded);
+    renderPoolList(allEntries);
+    updateConfirmBar();
   }
+
   function renderPoolList(entries) {
-    const list=document.getElementById("poolList"),empty=document.getElementById("poolEmpty");
+    const list=document.getElementById("poolList");
+    // Remove only entry rows — do NOT clear innerHTML (would nuke #poolEmpty from DOM)
+    list.querySelectorAll(".entry-row").forEach(r=>r.remove());
+    const empty=document.getElementById("poolEmpty");
     document.getElementById("activeBadge").textContent=`${activePool.length} active`;
-    if (!entries.length) { list.innerHTML=""; empty.style.display=""; return; }
-    empty.style.display="none"; list.innerHTML="";
+    if (!entries.length) { if(empty) empty.style.display=""; return; }
+    if(empty) empty.style.display="none";
     entries.forEach(entry=>{
       const div=document.createElement("div"); div.className="entry-row"+(entry.excluded?" is-excluded":"");
       div.innerHTML=`<span class="persona-chip ${escHtml(entry.persona)}">${escHtml(entry.persona)}</span><span class="entry-name">${escHtml(entry.name||"Guest")}</span><span class="entry-school">${escHtml(entry.school||"")}</span><div class="entry-actions"><button class="btn btn-sm btn-edit" data-id="${entry.id}" type="button">Edit</button>${entry.excluded?`<button class="btn btn-sm btn-restore" data-id="${entry.id}" type="button">Restore</button>`:`<button class="btn btn-sm btn-remove" data-id="${entry.id}" type="button">Remove</button>`}</div>`;
@@ -1152,8 +1186,7 @@
   document.getElementById("gachaResetBtn").addEventListener("click",resetGacha);
   document.getElementById("gachaBackBtn").addEventListener("click",()=>{ if(gachaDrawing) return; showView("menuView"); });
 
-  /* ── Init ──────────────────────────────────────────────── */
-  loadPool();
+  /* ── Init — no auto-load; user clicks "Load Students" ─── */
 </script>
 </body>
 </html>
