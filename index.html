@@ -493,6 +493,28 @@
       backdrop-filter: blur(4px);
     }
 
+    .story-challenge-note {
+      margin-top: 12px;
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      line-height: 1.45;
+      display: none;
+    }
+    .story-challenge-note.pending {
+      display: block;
+      background: rgba(13, 25, 133, 0.08);
+      color: var(--navy);
+      border: 1px solid rgba(13, 25, 133, 0.2);
+    }
+    .story-challenge-note.completed {
+      display: block;
+      background: rgba(26, 127, 60, 0.1);
+      color: #1a7f3c;
+      border: 1px solid rgba(26, 127, 60, 0.26);
+    }
+
     .download-help { margin-top: 12px; font-size: 0.76rem; line-height: 1.4; color: var(--muted); }
 
     @media (min-width: 431px) {
@@ -1050,6 +1072,78 @@
     #friendQrCode img, #friendQrCode canvas { border-radius: 10px; border: 3px solid rgba(13,25,133,0.08); }
     .friend-modal-hint { font-size: 0.8rem; color: var(--navy); opacity: 0.65; margin: 0 0 18px; }
 
+    /* ── Story Challenge Modal ─────────────────────────────────────────── */
+    .story-challenge-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9050;
+      background: rgba(6, 10, 42, 0.66);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .story-challenge-modal-card {
+      width: 100%;
+      max-width: 360px;
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+      padding: 22px 18px 16px;
+      text-align: center;
+    }
+    .story-challenge-modal-title {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: var(--navy);
+      margin-bottom: 6px;
+      line-height: 1.28;
+    }
+    .story-challenge-modal-sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+    .story-challenge-tags-preview {
+      border-radius: 12px;
+      border: 1px dashed rgba(13, 25, 133, 0.2);
+      background: rgba(13, 25, 133, 0.04);
+      padding: 10px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.45;
+      word-break: break-word;
+      margin-bottom: 12px;
+      min-height: 48px;
+    }
+    .story-challenge-modal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .story-challenge-modal-grid .btn {
+      min-height: 42px;
+      padding: 9px 10px;
+      font-size: 0.84rem;
+    }
+    .story-challenge-proof-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 4px;
+      margin-bottom: 6px;
+    }
+    .story-challenge-modal-footnote {
+      font-size: 0.7rem;
+      color: var(--muted);
+      line-height: 1.45;
+      margin: 8px 4px 0;
+    }
+
     /* ── TripleMates ───────────────────────────────────────────────────────── */
     @keyframes tm-slide-up { from{opacity:0;transform:translateY(48px)} to{opacity:1;transform:translateY(0)} }
     .tm-modal-overlay { position:fixed; inset:0; z-index:9000; background:rgba(13,25,133,0.52); backdrop-filter:blur(5px); display:flex; align-items:flex-end; justify-content:center; }
@@ -1197,6 +1291,7 @@
         <div class="result-intro">
           <div class="eyebrow" id="resultEyebrow">Your Persona Card</div>
           <h2 id="resultTitle">Your Instagram Story card is ready.</h2>
+          <div class="story-challenge-note" id="storyChallengeNote"></div>
         </div>
 
         <div class="story-wrap">
@@ -1333,6 +1428,25 @@
 
   <div class="share-toast" id="shareToast" role="status" aria-live="polite"></div>
 
+  <div class="story-challenge-modal-overlay" id="storyChallengeModal" role="dialog" aria-modal="true">
+    <div class="story-challenge-modal-card">
+      <h3 class="story-challenge-modal-title" id="storyChallengeModalTitle">Share your Story challenge now</h3>
+      <p class="story-challenge-modal-sub" id="storyChallengeModalSub">Copy tags, share to Instagram or Facebook Story, then upload one screenshot as proof.</p>
+      <div class="story-challenge-tags-preview" id="storyChallengeTagsPreview">#RMITVietnam</div>
+      <div class="story-challenge-modal-grid">
+        <button class="btn btn-primary" id="modalCopyTagsBtn" type="button">Copy Tags</button>
+        <button class="btn btn-share-ig" id="modalShareIgBtn" type="button">IG Story</button>
+        <button class="btn btn-share-fb" id="modalShareFbBtn" type="button">FB Story</button>
+        <button class="btn btn-ghost" id="modalCloseStoryChallengeBtn" type="button">Close</button>
+      </div>
+      <div class="story-challenge-proof-row">
+        <button class="btn btn-secondary btn-full" id="modalProofUploadBtn" type="button">I Uploaded Story - Submit Proof</button>
+      </div>
+      <p class="story-challenge-modal-footnote" id="storyChallengeModalFootnote">Direct Story upload confirmation is not exposed by Instagram or Facebook to websites. Screenshot proof is used for challenge completion.</p>
+    </div>
+  </div>
+  <input id="storyProofInput" type="file" accept="image/*" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;" />
+
   <script>
     const content = {
       en: {
@@ -1357,6 +1471,14 @@
         restartBtn: "Restart Quiz",
         campaignTagsLabel: "Story caption",
         campaignTagsHint: "👆 Click tag/hashtag to copy",
+        challengeModalTitle: "Story challenge: share now",
+        challengeModalSub: "Copy these tags, share to Instagram/Facebook Story, then submit one screenshot as proof.",
+        challengeCopyTagsBtn: "Copy Tags",
+        challengeCloseBtn: "Close",
+        challengeProofBtn: "I Uploaded Story - Submit Proof",
+        challengeFootnote: "Instagram/Facebook do not provide direct Story-post confirmation to websites, so screenshot proof is used.",
+        challengeNotePending: "Story challenge in progress. Share your Story, then upload proof to complete.",
+        challengeNoteCompleted: "Challenge completed. Story proof submitted.",
         courseCardsEyebrow: "Courses recommended for you",
         slotSpinnerLabel: "Revealing your persona…",
         squadBannerCountSuffix: "students discovered {school} with you!",
@@ -1441,6 +1563,14 @@
         restartBtn: "Làm lại Quiz",
         campaignTagsLabel: "Caption cho Story",
         campaignTagsHint: "👆 Nhấn tag/hashtag để sao chép",
+        challengeModalTitle: "Thử thách Story: chia sẻ ngay",
+        challengeModalSub: "Sao chép các tag, chia sẻ lên Instagram/Facebook Story rồi gửi 1 ảnh chụp màn hình để xác nhận.",
+        challengeCopyTagsBtn: "Sao chép tag",
+        challengeCloseBtn: "Đóng",
+        challengeProofBtn: "Tôi đã đăng Story - Gửi minh chứng",
+        challengeFootnote: "Instagram/Facebook không cung cấp xác nhận đăng Story trực tiếp cho website, nên dùng ảnh chụp màn hình để xác nhận.",
+        challengeNotePending: "Bạn đang trong thử thách Story. Hãy chia sẻ Story rồi tải minh chứng để hoàn tất.",
+        challengeNoteCompleted: "Bạn đã hoàn thành thử thách. Minh chứng Story đã được gửi.",
         courseCardsEyebrow: "Môn học dành cho bạn",
         slotSpinnerLabel: "Đang khám phá persona của bạn…",
         squadBannerCountSuffix: "học sinh cùng khám phá {school} với bạn!",
@@ -1513,6 +1643,13 @@
       ig: "#RMITVietnam @rmitsathanoi",   // shown + copied when sharing to Instagram
       fb: "#RMITVietnam @RMITVietnam",    // shown + copied when sharing to Facebook
     };
+
+    const REVEAL_FLOW = {
+      spinnerMs: 1500,
+      postRevealModalDelayMs: 3000
+    };
+
+    const STORY_CHALLENGE_STORAGE_KEY = "rmitStoryChallengeStateV1";
     // ─────────────────────────────────────────────────────────────────────────
 
     // All coordinates are percentages of the 1080×1920 reference canvas.
@@ -1547,6 +1684,41 @@
     let currentQuestion = 0;
     let answers = [];
     let uploadedImageData = "";
+    let _storyChallengeModalTimer = null;
+
+    function getParticipantToken() {
+      const existing = localStorage.getItem("rmitParticipantToken");
+      if (existing) return existing;
+      const token = (window.crypto && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : `p-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      localStorage.setItem("rmitParticipantToken", token);
+      return token;
+    }
+
+    function readStoryChallengeState() {
+      try {
+        const raw = localStorage.getItem(STORY_CHALLENGE_STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        return parsed && typeof parsed === "object" ? parsed : { status: "idle" };
+      } catch (_) {
+        return { status: "idle" };
+      }
+    }
+
+    function writeStoryChallengeState(patch) {
+      const next = { ...readStoryChallengeState(), ...patch };
+      localStorage.setItem(STORY_CHALLENGE_STORAGE_KEY, JSON.stringify(next));
+      renderStoryChallengeNote();
+      return next;
+    }
+
+    function getUnifiedCampaignTags() {
+      return [
+        ...(CAMPAIGN_TAGS.ig || "").split(/\s+/),
+        ...(CAMPAIGN_TAGS.fb || "").split(/\s+/)
+      ].filter(tag => tag).filter((tag, i, arr) => arr.indexOf(tag) === i);
+    }
 
     const screens = {
       welcome: document.getElementById("welcomeScreen"),
@@ -1636,8 +1808,15 @@
       setText("avatarEmpty", t().avatarEmpty);
       setText("footerLeft", t().footerLeft);
       setText("footerRight", t().footerRight);
+      setText("storyChallengeModalTitle", t().challengeModalTitle);
+      setText("storyChallengeModalSub", t().challengeModalSub);
+      setText("modalCopyTagsBtn", t().challengeCopyTagsBtn);
+      setText("modalCloseStoryChallengeBtn", t().challengeCloseBtn);
+      setText("modalProofUploadBtn", t().challengeProofBtn);
+      setText("storyChallengeModalFootnote", t().challengeFootnote);
 
       updateWelcomeTitle();
+      renderStoryChallengeNote();
       if (screens.quiz.classList.contains("active")) renderQuestion();
       if (screens.result.classList.contains("active")) renderResult();
 
@@ -1804,10 +1983,7 @@
       }
 
       // Render campaign tag chips (merge ig + fb tags, deduplicate)
-      const allTags = [
-        ...(CAMPAIGN_TAGS.ig || "").split(/\s+/),
-        ...(CAMPAIGN_TAGS.fb || "").split(/\s+/)
-      ].filter(t => t).filter((t, i, a) => a.indexOf(t) === i);
+      const allTags = getUnifiedCampaignTags();
 
       const chipsWrap = document.getElementById("campaignTagsChips");
       const bar = document.getElementById("campaignTagsBar");
@@ -1835,9 +2011,18 @@
       } else {
         bar.style.display = "none";
       }
+
+      const modalPreview = document.getElementById("storyChallengeTagsPreview");
+      if (modalPreview) {
+        modalPreview.textContent = allTags.length ? allTags.join(" ") : "#RMITVietnam";
+      }
+
+      renderStoryChallengeNote();
     }
 
     function resetQuiz() {
+      clearTimeout(_storyChallengeModalTimer);
+      closeStoryChallengeModal();
       currentQuestion = 0;
       answers = [];
       uploadedImageData = "";
@@ -2163,11 +2348,121 @@
       toast._t = setTimeout(() => toast.classList.remove("visible"), 3000);
     }
 
+    function renderStoryChallengeNote() {
+      const note = document.getElementById("storyChallengeNote");
+      if (!note) return;
+      const state = readStoryChallengeState();
+      note.className = "story-challenge-note";
+      note.textContent = "";
+      if (state.status === "completed") {
+        note.classList.add("completed");
+        note.textContent = t().challengeNoteCompleted;
+        return;
+      }
+      if (state.status === "pending") {
+        note.classList.add("pending");
+        note.textContent = t().challengeNotePending;
+      }
+    }
+
+    function openStoryChallengeModal() {
+      const state = readStoryChallengeState();
+      if (state.status === "completed") return;
+      const modal = document.getElementById("storyChallengeModal");
+      if (!modal) return;
+      const tags = getUnifiedCampaignTags();
+      const preview = document.getElementById("storyChallengeTagsPreview");
+      if (preview) preview.textContent = tags.length ? tags.join(" ") : "#RMITVietnam";
+      modal.style.display = "flex";
+    }
+
+    function closeStoryChallengeModal() {
+      const modal = document.getElementById("storyChallengeModal");
+      if (modal) modal.style.display = "none";
+    }
+
+    async function copyChallengeTags() {
+      const tags = getUnifiedCampaignTags().join(" ");
+      if (!tags) {
+        showShareToast("No tags configured yet");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(tags);
+        showShareToast("Tags copied. Paste into your Story caption.");
+      } catch (_) {
+        showShareToast("Could not copy tags on this browser");
+      }
+    }
+
+    function markChallengePending(platform) {
+      writeStoryChallengeState({
+        status: "pending",
+        lastPlatform: platform,
+        lastSharedAt: Date.now(),
+        participantToken: getParticipantToken()
+      });
+    }
+
+    async function submitStoryProof(file) {
+      if (!file) return;
+      try {
+        const objectUrl = URL.createObjectURL(file);
+        const img = new Image();
+        const compressed = await new Promise((resolve, reject) => {
+          img.onload = () => {
+            const maxW = 720;
+            const scale = Math.min(maxW / img.width, 1);
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(blob => {
+              if (!blob) { reject(new Error("Proof image conversion failed")); return; }
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            }, "image/jpeg", 0.74);
+          };
+          img.onerror = reject;
+          img.src = objectUrl;
+        });
+        URL.revokeObjectURL(objectUrl);
+
+        const payload = {
+          t: Date.now(),
+          participantToken: getParticipantToken(),
+          studentName: getStudentName() || "Guest",
+          highSchool: getSchoolName(),
+          persona: { A: "TBS", B: "SCD", C: "SSET" }[getResultLetter()] || "TBS",
+          proofImg: compressed
+        };
+
+        if (typeof firebase !== "undefined" && firebase.apps && firebase.apps.length) {
+          await firebase.database().ref("storyChallengeProofs").push(payload);
+        }
+
+        writeStoryChallengeState({
+          status: "completed",
+          completedAt: Date.now(),
+          proofSubmittedAt: Date.now()
+        });
+        showShareToast("Proof submitted. Challenge marked as completed.");
+        closeStoryChallengeModal();
+      } catch (error) {
+        console.warn("Story proof upload failed:", error);
+        showShareToast("Could not submit proof. Please try again.");
+      }
+    }
+
     // platform: "ig" | "fb"
     async function shareToStory(platform) {
       const btnId = platform === "ig" ? "igStoryBtn" : "fbStoryBtn";
       const btn = document.getElementById(btnId);
       if (btn.disabled) return;
+      markChallengePending(platform);
       logShareClick(platform); // log before async work so even aborted shares are counted
       const originalHTML = btn.innerHTML;
       btn.disabled = true;
@@ -2308,7 +2603,7 @@
     function playSlotSound() {
       try {
         const audio = document.getElementById("slotAudio");
-        if (audio) { audio.currentTime = 0; audio.volume = 0.7; audio.playbackRate = 2; audio.loop = true; audio.play().catch(() => {}); }
+        if (audio) { audio.currentTime = 0; audio.volume = 0.7; audio.playbackRate = 4; audio.loop = true; audio.play().catch(() => {}); }
       } catch (_) {}
     }
     function stopSlotSound() {
@@ -2333,12 +2628,11 @@
         for (let k = 0; k < count; k++) { steps.push({ idx: pos % 3, delay }); pos++; }
       }
 
-      // ~5 seconds of spinning — 2× faster than original 10s schedule
-      addSteps(50, 30);   // fast  : 50 × 30ms  = 1500ms
-      addSteps(15, 60);   // medium: 15 × 60ms  =  900ms
-      addSteps(8,  125);  // slow-m: 8  × 125ms = 1000ms
-      [175, 225, 275, 325, 375].forEach(d => { steps.push({ idx: pos % 3, delay: d }); pos++; });
-      // deceleration: 175+225+275+325+375 = 1375ms → cumulative ≈ 4775ms
+      // ~2.5 seconds of spinning (half of the previous ~5s)
+      addSteps(50, 15);   // fast
+      addSteps(15, 30);   // medium
+      addSteps(8,  62);   // slow-medium
+      [88, 112, 138, 162, 188].forEach(d => { steps.push({ idx: pos % 3, delay: d }); pos++; });
       // pos = 78; nextIdx = 78 % 3 = 0 (TBS)
 
       // General formula: last extra step must land on targetIndex
@@ -2346,14 +2640,12 @@
       let extraCount = ((targetIndex - nextIdx + 1) % 3 + 3) % 3;
       if (extraCount === 0) extraCount = 3;
       for (let e = 0; e < extraCount; e++) { steps.push({ idx: pos % 3, delay: 325 }); pos++; }
-      // TBS → 1 extra (0 extra delays)  ≈ 4775ms total
-      // SCD → 2 extras (1 extra delay)  ≈ 5100ms total
-      // SSET→ 3 extras (2 extra delays) ≈ 5425ms total
+      // TBS/SCD/SSET landing adds up to two extra 162ms waits based on target
 
       // Total spinning time = sum of every step delay except the last
       const totalSpinMs = steps.slice(0, -1).reduce((s, step) => s + step.delay, 0);
-      // Fire clapping 2s before the slot stops (crowd cheers in anticipation)
-      setTimeout(playClapping, Math.max(0, totalSpinMs - 2000));
+      // Fire clapping near the end of the shorter spin
+      setTimeout(playClapping, Math.max(0, totalSpinMs - 1000));
 
       let i = 0;
       function tick() {
@@ -2364,7 +2656,7 @@
         });
         const newBg = document.getElementById(bgIds[idx]);
         newBg.classList.add("active");
-        if (delay >= 100) newBg.classList.add("slot-slide-in"); // threshold halved to match 2× speed
+        if (delay >= 50) newBg.classList.add("slot-slide-in");
 
         if (i < steps.length - 1) {
           i++;
@@ -2537,6 +2829,8 @@
         showScreen("quiz");
         return;
       }
+      clearTimeout(_storyChallengeModalTimer);
+      closeStoryChallengeModal();
       const resultLetter = getResultLetter();
       const targetIndex = { A: 0, B: 1, C: 2 }[resultLetter];
 
@@ -2552,7 +2846,7 @@
       resultActionsEl.style.display = "none";
       squadBannerEl.style.display   = "none";
 
-      // Card shows plain white during the 3s slot.mp3 buildup — spinner visible, no bg image
+      // Card shows plain white during the short spinner buildup
       document.querySelectorAll(".story-bg").forEach(bg => bg.classList.remove("active"));
       document.getElementById("personaCard").classList.remove("has-bg");
       document.getElementById("slotWaitSpinner").style.display = "flex";
@@ -2570,7 +2864,7 @@
           personaCard.style.setProperty("--name-font-size", `${Math.round(cssFontPx * 10) / 10}px`);
         }
 
-        // t = 3s — spinner out, slot machine cycling begins
+        // Spinner out, slot machine cycling begins
         setTimeout(() => {
           document.getElementById("slotWaitSpinner").style.display = "none";
           document.getElementById("personaCard").classList.add("has-bg");
@@ -2622,8 +2916,12 @@
             storyWrap.classList.add("reveal-anim");
             storyWrap.addEventListener("animationend", () => storyWrap.classList.remove("reveal-anim"), { once: true });
             launchConfetti();
+
+            _storyChallengeModalTimer = setTimeout(() => {
+              openStoryChallengeModal();
+            }, REVEAL_FLOW.postRevealModalDelayMs);
           });
-        }, 3000);
+        }, REVEAL_FLOW.spinnerMs);
       });
     });
 
@@ -2632,6 +2930,20 @@
     downloadBtn.addEventListener("click", downloadPersonaCard);
     document.getElementById("igStoryBtn").addEventListener("click", () => shareToStory("ig"));
     document.getElementById("fbStoryBtn").addEventListener("click", () => shareToStory("fb"));
+    document.getElementById("modalCopyTagsBtn").addEventListener("click", copyChallengeTags);
+    document.getElementById("modalShareIgBtn").addEventListener("click", () => shareToStory("ig"));
+    document.getElementById("modalShareFbBtn").addEventListener("click", () => shareToStory("fb"));
+    document.getElementById("modalCloseStoryChallengeBtn").addEventListener("click", closeStoryChallengeModal);
+    document.getElementById("modalProofUploadBtn").addEventListener("click", () => {
+      document.getElementById("storyProofInput").click();
+    });
+    document.getElementById("storyProofInput").addEventListener("change", (e) => {
+      submitStoryProof(e.target.files && e.target.files[0]);
+      e.target.value = "";
+    });
+    document.getElementById("storyChallengeModal").addEventListener("click", (e) => {
+      if (e.target === document.getElementById("storyChallengeModal")) closeStoryChallengeModal();
+    });
 
     // Friend QR share — build card canvas, store in Firebase, QR links to friend.html?k=<key>
     document.getElementById("friendShareBtn").addEventListener("click", async () => {
@@ -2688,6 +3000,7 @@
     });
 
     updateWelcomeTitle();
+    renderStoryChallengeNote();
 
     // ── Firebase: tags · student counter · courses ────────────────────────────
     (function initFirebase() {
@@ -2709,10 +3022,7 @@
           if (typeof data.fb === "string") CAMPAIGN_TAGS.fb = data.fb;
           const resultScreen = document.getElementById("resultScreen");
           if (resultScreen && resultScreen.classList.contains("active")) {
-            const allTags = [
-              ...(CAMPAIGN_TAGS.ig || "").split(/\s+/),
-              ...(CAMPAIGN_TAGS.fb || "").split(/\s+/)
-            ].filter(t => t).filter((t, i, a) => a.indexOf(t) === i);
+            const allTags = getUnifiedCampaignTags();
             const chipsWrap = document.getElementById("campaignTagsChips");
             const bar = document.getElementById("campaignTagsBar");
             if (!chipsWrap || !bar) return;
@@ -2728,6 +3038,9 @@
             } else {
               bar.style.display = "none";
             }
+
+            const preview = document.getElementById("storyChallengeTagsPreview");
+            if (preview) preview.textContent = allTags.length ? allTags.join(" ") : "#RMITVietnam";
           }
         });
 
